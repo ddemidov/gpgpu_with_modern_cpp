@@ -1,5 +1,9 @@
-\documentclass{elsarticle}
-\usepackage{rotating}
+\documentclass[1p]{elsarticle}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks,unicode,linkcolor=black]{hyperref}
 
 \journal{Journal of Parallel and Distributed Computing}
 
@@ -7,15 +11,17 @@
 
 \begin{frontmatter}
 
-\title{VexCL:\\Vector Expression Template Library for OpenCL}
+\title{VexCL: Vector Expression Template Library for OpenCL}
 
-\author{Denis Demidov}
+\author{Denis Demidov\corref{cor1}}
 \ead{ddemidov@ksu.ru}
 \address{
-Russian Academy of Sciences,
-Kazan Branch of Joint Supercomputer Center,\\
+Kazan Branch of Joint Supercomputer Center,
+Russian Academy of Sciences,\\
 Lobachevsky st. 2/31, 420008 Kazan, Russia
 }
+
+\cortext[cor1]{Corresponding author}
 
 \author{Karsten Ahnert}
 \ead{kahnert@uni-potsdam.de}
@@ -25,16 +31,29 @@ Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany
 }
 
 \begin{abstract}
-    VexCL odeint OpenCL CUDA
+    VexCL is vector expression template library created for ease of C++ based
+    OpenCL developement. This article gives short introduction to the
+    programming interface of the library. Performance of the library is
+    compared with existing general purpose and linear algebra GPGPU packages.
 \end{abstract}
 
 \begin{keyword}
-    GPGPU \sep OpenCL \sep expression templates
+    GPGPU \sep OpenCL \sep expression templates \sep linear algebra
 \end{keyword}
 
 \end{frontmatter}
 
 \section{Introduction}
+
+Recently, GPGPU based computing has aquiered considerable momentum in
+scientific community. This is confirmed by constantly increasing number of GPU
+based supercomputers in
+top500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
+programming frameworks are NVIDIA CUDA and OpenCL.  The former is proprietary
+parallel computing architecture developed by Nvidia for general purpose
+computing on Nvidia graphics cards, and the latter is open, royalty-free
+standard for cross-platform, parallel programming of modern processors backed
+by Khronos group.
 
 \section{VexCL interface}
 
@@ -48,6 +67,7 @@ Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany
 
 This work has been supported by RFBR grant No 12-07-0007.
 
+\nocite{*}
 \bibliographystyle{model1-num-names}
 \bibliography{ref}
 
