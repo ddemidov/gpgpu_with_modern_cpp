@@ -1,0 +1,206 @@
+\documentclass[1p]{elsarticle}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks,unicode,linkcolor=black]{hyperref}
+\usepackage{listings}
+\lstset{
+    language=C++,
+    basicstyle=\small,
+    %numbers=left,
+    columns=flexible,
+    %extendedchars=false,
+    showstringspaces=false,
+    %texcl=true,
+    frame=shadowbox
+    }
+\newcommand{\code}[1]{\lstinline|#1|}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
+
+\journal{Journal of Parallel and Distributed Computing}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Comparing OpenCL and CUDA:\\a Case Study Using Modern C++ Libraries}
+
+\author{Karsten Ahnert}
+\ead{kahnert@uni-potsdam.de}
+\address{
+Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,\\
+Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany
+}
+
+\author{Denis Demidov}
+\ead{ddemidov@ksu.ru}
+\address{
+Kazan Branch of Joint Supercomputer Center,
+Russian Academy of Sciences,\\
+Lobachevsky st. 2/31, 420008 Kazan, Russia
+}
+
+\begin{abstract}
+    We present comparison of OpenCL and CUDA frameworks performance. The
+    comparison is based on odeint~--- modern C++ library for solution of
+    ordinary differential equations. Odeint is designed in a very flexible way
+    such that the algorithms are completely independent from the underlying
+    containers and even from the basic algebraic computations. This allows to
+    effectively use such libraries as VexCL, ViennaCL or Thrust to solve ODEs
+    with OpenCL or CUDA technologies. We found that OpenCL and CUDA work
+    equally well for problems of large sizes, although OpenCL is not well
+    suited for smaller problems due to its higher initialization overhead.
+\end{abstract}
+
+\begin{keyword}
+    GPGPU \sep OpenCL \sep CUDA \sep performance comparison
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+
+Recently, GPGPU based computing has acquired considerable momentum in
+scientific community. This is confirmed both by increasing numbers of
+GPGPU-related publications and GPU based supercomputers in
+top500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
+programming frameworks are NVIDIA CUDA and OpenCL.  The former is proprietary
+parallel computing architecture developed by Nvidia for general purpose
+computing on Nvidia graphics cards, and the latter is open, royalty-free
+standard for cross-platform, parallel programming of modern processors backed
+by Khronos group. The frameworks have their distinctive pros and cons. CUDA has
+more mature programming environment with larger set of scientific libraries;
+but it is only supported on NVIDIA hardware. Weak side of OpenCL is lack of
+tools and libraries around it and the amount of boilerplate code needed to
+develop OpenCL applications. But OpenCL is an open standard and it may run both
+on Nvidia and AMD GPUs as well as on multicore CPUs.
+
+This paper presents comparison of OpenCL and CUDA performance in the context of
+solving ordinary differential equations. The comparison is based on odeint~---
+modern C++ library for solution of ODEs. Odeint is designed in a very flexible
+way such that the algorithms are completely independent from the underlying
+containers and even from the basic algebraic computations. This allows to
+effectively use libraries implementing basic linear algebra operations with
+either OpenCL or CUDA technologies for solution of ODEs.
+
+\section{Examples Used in Comparison}
+\subsection{Lorenz Attractor Ensemble}
+
+In the first example we will use the Lorenz system and study its dependence on
+one of the parameters. The Lorenz system is a system of three coupled ODEs
+which shows chaotic behavior for a large range of parameters. The ODE reads
+\begin{align}
+    \frac{dx}{dt} &= -\sigma \left( x - y \right), \\
+    \frac{dy}{dt} &= R x - y - xz, \\
+    \frac{dz}{dt} &= -bz + xy.
+\end{align}
+
+We will study the dependence on the parameter $R$. Therefore, we create a large
+set of these systems (each with a different parameter $R$), pack them all into
+one system and solve them simultaneously on the GPU.
+
+\subsection{Chain of Coupled Phase Oscillators}
+
+As a second example we choose a chain of coupled phase oscillators. Phase
+oscillators are a very simplified version of usual oscillator where the state
+is described by a $2\pi$ periodic variable. If a single phase oscillator is
+uncoupled its phase $\phi$ is described by a linear growth $d\phi/dt = \omega$
+where $\omega$ is the phase velocity. Therefore, interesting behavior can only
+be observed if two or more oscillators are coupled. In fact, a system of
+coupled phase oscillators is a prominent example of an emergent system where
+the coupled system shows a more complex behavior than its constitutes.
+
+The concrete example we analyze here is:
+\begin{equation}
+    \frac{d\phi_i}{dt} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
+    - \phi_{i-1}).
+\end{equation}
+Note that $\phi_i$ is a function of the time, the index $i$ denotes here the
+$i$-th phase in the chain.
+
+\subsection{Damped Harmonic Oscillator Ensemble}
+
+\section{Libraries Used in the Case Study}
+
+Some words about odeint\footnote{\href{http://odeint.com}{http://odeint.com}}
+and steps required to solve an ODE with libraries below.
+
+\subsection{VexCL}
+\subsection{Thrust}
+\subsection{ViennaCL}
+
+The Vienna Computing Library%
+\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
+(ViennaCL) is a scientific computing library written in C++ and based on
+OpenCL. It allows simple, high-level access to the vast computing resources
+available on parallel architectures such as GPUs and is primarily focused on
+common linear algebra operations (BLAS levels 1, 2 and 3) and the solution of
+large systems of equations by means of iterative methods with optional
+preconditioner.
+
+Odeint supports Thrust and VexCL natively, but for ViennaCL we needed to
+provide adaptation code. Since ViennaCL already supports expression templates
+it can directly be used with the \code{vector_space_algebra} of odeint. There
+is no need to introduce an additional algebra or new operations. So in order to
+use \code{viennacl::vector} with odeint we only only needed to adapt the
+resizing operation. Resizing in odeint is necessary since many solvers need
+temporary state types. These state types need to be constructed and initialized
+which is done by the resizing mechanism of odeint.
+
+The resizing mechanism of odeint consist of three class templates. These
+classes are \code{is_resizeable<>} which is simply a meta function telling
+odeint if the type is really resizable. The second class is
+\code{same_size_impl<>} which has a static method \code{same_size} taking two
+\code{state_type} instances as arguments and returning if both instances have
+the same size. The third class is \code{resize_impl<>} which performs the
+actual resizing. These classes have a default implementation and can be
+specialized for any type.
+
+For ViennaCL the specialization is very simple and is presented on
+\figref{fig:adapt:viennacl}.
+\begin{figure}
+\begin{lstlisting}
+template<typename T>
+struct is_resizeable<viennacl::vector<T>> : boost::true_type { };
+
+template<typename T>
+struct resize_impl<viennacl::vector<T>, viennacl::vector<T>> {
+    static void resize(
+        viennacl::vector<T> &x1,
+	const viennacl::vector<T> &x2
+	)
+    {
+	x1.resize(x2.size(), false);
+    }
+};
+
+template<typename T>
+struct same_size_impl<viennacl::vector<T>, viennacl::vector<T>> {
+    static bool same_size(
+        const viennacl::vector<T> &x1,
+	const viennacl::vector<T> &x2
+	)
+    {
+	return x1.size() == x2.size();
+    }
+};
+\end{lstlisting}
+\caption{Code needed for ViennaCL adaption.}
+\label{fig:adapt:viennacl}
+\end{figure}
+
+
+\section{Results}
+
+\section{Conclusion}
+
+\section{Acknowledgments}
+
+This work has been partially supported by RFBR grant No 12-07-0007.
+
+\nocite{*}
+\bibliographystyle{model1-num-names}
+\bibliography{ref}
+
+\end{document}
