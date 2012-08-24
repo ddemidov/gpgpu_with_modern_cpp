@@ -127,7 +127,25 @@ Some words about odeint\footnote{\href{http://odeint.com}{http://odeint.com}}
 and steps required to solve an ODE with libraries below.
 
 \subsection{VexCL}
+
+VexCL%
+\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
+is vector expression template library for OpenCL. It has been created for
+ease of C++ based OpenCL development. Multi-device or multi-platform
+computations are supported.
+
 \subsection{Thrust}
+
+Thrust%
+\footnote{\href{https://code.google.com/p/thrust}{https://code.google.com/p/thrust}}
+is a parallel algorithms library which resembles the C++ Standard Template
+Library. Thrust's high-level interface greatly enhances developer
+productivity while enabling performance portability between GPUs and multicore
+CPUs. Interoperability with established technologies (such as CUDA, TBB and
+OpenMP) facilitates integration with existing software. odeint supports Thrust
+natively, so we only needed to implement system functions in order to conduct
+the numeric experiments.
+
 \subsection{ViennaCL}
 
 The Vienna Computing Library%
@@ -155,10 +173,26 @@ odeint if the type is really resizable. The second class is
 \code{state_type} instances as arguments and returning if both instances have
 the same size. The third class is \code{resize_impl<>} which performs the
 actual resizing. These classes have a default implementation and can be
-specialized for any type.
+specialized for any type.  For ViennaCL the specialization is very simple and
+is presented on \figref{fig:adapt:viennacl}.
 
-For ViennaCL the specialization is very simple and is presented on
-\figref{fig:adapt:viennacl}.
+We were only able to test damped harmonic oscillator example with ViennaCL,
+since the library lacks such vector operations as elementwise multiplication or
+function application necessary for the other examples.  Nevertheless we
+consider comparison with ViennaCL interesting enough to include in this paper.
+Indeed, ViennaCL and VexCL employ somewhat different approaches to OpenCL
+kernel generation. ViennaCL has limited number of kernels, which coincide
+functionally with BLAS level 1 routines. These kernels are compiled in batch at
+the program start to allow for faster initialization. However, due to this
+design decision each vector expression may result in launch of more than one
+kernel.  On the other hand, VexCL generates and compiles single kernel for each
+vector expression it encounters.  This leads to higher initialization overhead,
+but should prove more effective in the long runs. It should be noted that main
+aim of ViennaCL is provision of iterative solvers for large sparse systems of
+equations. In this context complex vector expressions are rare and we think
+that authors of ViennaCL made correct design decision.  However, we think it is
+interesting to compare approaches of VexCL and ViennaCL.
+
 \begin{figure}
 \begin{lstlisting}
 template<typename T>
