@@ -57,18 +57,44 @@ int main( int argc , char **argv )
 
     N = argc > 1 ? atoi( argv[1] ) : 1024;
 
-    // Select NVIDIA platform
+    // Get first available GPU device which supports double precision.
     std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
-    if (platform.empty()) return 1;
-    for(int i = 0; i < platform.size(); i++)
-	if (platform[i].getInfo<CL_PLATFORM_NAME>() == "NVIDIA CUDA") {
-	    viennacl::ocl::set_context_platform_index(0, i);
-	    break;
-	}
-    viennacl::ocl::current_context().switch_device(1);
-    cout << viennacl::ocl::current_device().name() << endl;
+    if (platform.empty()) {
+	std::cerr << "OpenCL platforms not found." << std::endl;
+	return 1;
+    }
+    cl::Context context;
+    std::vector<cl::Device> device;
+    for(auto p = platform.begin(); device.empty() && p != platform.end(); p++) {
+	std::vector<cl::Device> pldev;
+	try {
+	    p->getDevices(CL_DEVICE_TYPE_GPU, &pldev);
+	    for(auto d = pldev.begin(); device.empty() && d != pldev.end(); d++) {
+		if (!d->getInfo<CL_DEVICE_AVAILABLE>()) continue;
+		std::string ext = d->getInfo<CL_DEVICE_EXTENSIONS>();
+		if (
+			ext.find("cl_khr_fp64") == std::string::npos &&
+			ext.find("cl_amd_fp64") == std::string::npos
+		   ) continue;
 
+		device.push_back(*d);
+		context = cl::Context(device);
+	    }
+	} catch(...) {
+	    device.clear();
+	}
+    }
+    if (device.empty()) {
+	std::cerr << "GPUs with double precision not found." << std::endl;
+	return 1;
+    }
+    cl::CommandQueue queue(context, device[0]);
+    std::vector<cl_device_id> dev_id(1, device[0]());
+    std::vector<cl_command_queue> queue_id(1, queue());
+    viennacl::ocl::setup_context(0, context(), dev_id, queue_id);
+
+    cout << viennacl::ocl::current_device().name() << endl;
 
     std::mt19937 rng;
     std::normal_distribution< value_type > gauss( 0.0 , 1.0 );
