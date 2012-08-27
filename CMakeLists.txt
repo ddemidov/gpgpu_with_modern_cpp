@@ -8,3 +8,5 @@ add_latex_document(ahnert_demidov_2012.tex
     DEFAULT_PDF
     MANGLE_TARGET_NAMES
     )
+
+add_subdirectory(src)
