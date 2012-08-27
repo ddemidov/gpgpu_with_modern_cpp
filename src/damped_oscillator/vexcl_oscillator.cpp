@@ -46,7 +46,7 @@ int main( int argc , char **argv )
     n = argc > 1 ? atoi(argv[1]) : 1024;
     using namespace std;
 
-    vex::Context ctx( vex::Filter::Env );
+    vex::Context ctx( vex::Filter::DoublePrecision && vex::Filter::Env );
     std::cout << ctx << std::endl;
 
 
