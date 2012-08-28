@@ -57,7 +57,7 @@ struct oscillator
     };
 
 
-    oscillator( size_t N , double omega = 1.0 , double amp = 0.5 , double offset = 0.0 , double omega_d = 1.2 )
+    oscillator(size_t N, double omega, double amp, double offset, double omega_d)
         : m_N( N ) , m_omega( omega ) , m_amp( amp ) , m_offset( offset ) , m_omega_d( omega_d ) { }
 
     void operator()( const state_type &x , state_type &dxdt , double t ) const
@@ -108,7 +108,8 @@ int main( int argc , char* argv[] )
 
     typedef runge_kutta4< state_type , value_type , state_type , value_type ,
 			  thrust_algebra , thrust_operations > stepper_type;
-    integrate_const( stepper_type() , oscillator( 1.0 , 0.2 , 0.0 , 1.2 ) , X , value_type(0.0) , t_max , dt );
+    integrate_const( stepper_type() , oscillator( 1.0 , 0.2 , 0.0 , 1.2 )
+	    , X , value_type(0.0) , t_max , dt );
 
     thrust::host_vector< value_type > res = X;
     // for( size_t i=0 ; i<N ; ++i ) cout << res[i] << "\t" << beta_host[i] << "\n";

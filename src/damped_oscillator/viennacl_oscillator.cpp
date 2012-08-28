@@ -145,11 +145,8 @@ int main( int argc , char **argv )
 
     cout << viennacl::ocl::current_device().name() << endl;
 
-    std::mt19937 rng;
-    std::normal_distribution< value_type > gauss( 0.0 , 1.0 );
-    std::vector<value_type> x( N ) , y( N );
-    std::generate( x.begin() , x.end() , std::bind( gauss , std::ref( rng ) ) );
-    std::generate( y.begin() , y.end() , std::bind( gauss , std::ref( rng ) ) );
+    std::vector<value_type> x( 2 * N );
+    std::generate( x.begin() , x.end() , drand48 );
 
 
     state_type S;
@@ -160,8 +157,8 @@ int main( int argc , char **argv )
     X.resize( N );
     Y.resize( N );
 
-    viennacl::copy( x , X );
-    viennacl::copy( y , Y );
+    viennacl::copy( x.begin(), x.begin() + N, X.begin() );
+    viennacl::copy( x.begin() + N, x.end(), Y.begin() );
 
     odeint::runge_kutta4<
         state_type , value_type , state_type , value_type ,
