@@ -81,20 +81,9 @@ struct oscillator
 		fusion::at_c< 1 >( x ));
 
         value_type eps = m_offset + m_amp * cos( m_omega_d * t );
-
-	// This works
-	dX =  m_omega * Y + eps * X;
-	dY = -m_omega * X + eps * Y;
-
-	// This gives me wrong (seemingly random, but consistent between runs)
-	// result. If the lines below are switched though, then result is
-	// changed. Adding get_queue().finish() at the end of each call does
-	// not help.
-	/*
 	value_type minus_omega = -m_omega;
 	viennacl::ocl::enqueue( (*ax_plus_by)(dX, Y, X, m_omega, eps) );
 	viennacl::ocl::enqueue( (*ax_plus_by)(dY, X, Y, minus_omega, eps) );
-	*/
     }
 };
 
@@ -109,7 +98,6 @@ int main( int argc , char **argv )
     N = argc > 1 ? atoi( argv[1] ) : 1024;
 
     // Get first available GPU device which supports double precision.
-    /*
     std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
     if (platform.empty()) {
@@ -145,7 +133,6 @@ int main( int argc , char **argv )
     std::vector<cl_device_id> dev_id(1, device[0]());
     std::vector<cl_command_queue> queue_id(1, queue());
     viennacl::ocl::setup_context(0, context(), dev_id, queue_id);
-    */
 
     cout << viennacl::ocl::current_device().name() << endl;
 
