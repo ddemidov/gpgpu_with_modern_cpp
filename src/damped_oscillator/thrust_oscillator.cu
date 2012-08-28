@@ -108,7 +108,7 @@ int main( int argc , char* argv[] )
 
     typedef runge_kutta4< state_type , value_type , state_type , value_type ,
 			  thrust_algebra , thrust_operations > stepper_type;
-    integrate_const( stepper_type() , oscillator( 1.0 , 0.2 , 0.0 , 1.2 )
+    integrate_const( stepper_type() , oscillator( N, 1.0 , 0.2 , 0.0 , 1.2 )
 	    , X , value_type(0.0) , t_max , dt );
 
     thrust::host_vector< value_type > res = X;
