@@ -5,16 +5,14 @@
 #include <random>
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <CL/cl.hpp>
 
 #include <viennacl/vector.hpp>
-#include <viennacl/scalar.hpp>
-#include "viennacl/generator/custom_operation.hpp"
-
+#include <viennacl/generator/custom_operation.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/fusion_algebra.hpp>
-
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
 
 namespace odeint = boost::numeric::odeint;
@@ -62,12 +60,23 @@ struct oscillator
     value_type m_offset;
     value_type m_omega_d;
 
-    viennacl::generator::custom_operation *ax_plus_by;
+    std::shared_ptr<viennacl::generator::symbolic_vector    <0, value_type>> sym_r;
+    std::shared_ptr<viennacl::generator::symbolic_vector    <1, value_type>> sym_x;
+    std::shared_ptr<viennacl::generator::symbolic_vector    <2, value_type>> sym_y;
+    std::shared_ptr<viennacl::generator::cpu_symbolic_scalar<3, value_type>> sym_a;
+    std::shared_ptr<viennacl::generator::cpu_symbolic_scalar<4, value_type>> sym_b;
+    std::shared_ptr<viennacl::generator::custom_operation> ax_plus_by;
 
-    oscillator(value_type omega, value_type amp, value_type offset, value_type omega_d,
-	    viennacl::generator::custom_operation &kernel)
+    oscillator(value_type omega, value_type amp, value_type offset, value_type omega_d)
         : m_omega(omega), m_amp(amp) , m_offset(offset) , m_omega_d(omega_d),
-	  ax_plus_by(&kernel)
+	  sym_r(new viennacl::generator::symbolic_vector    <0, value_type>()),
+	  sym_x(new viennacl::generator::symbolic_vector    <1, value_type>()),
+	  sym_y(new viennacl::generator::symbolic_vector    <2, value_type>()),
+	  sym_a(new viennacl::generator::cpu_symbolic_scalar<3, value_type>()),
+	  sym_b(new viennacl::generator::cpu_symbolic_scalar<4, value_type>()),
+	  ax_plus_by(new viennacl::generator::custom_operation(
+		      (*sym_r) = (*sym_a) * (*sym_x) + (*sym_b) * (*sym_y)
+		      ))
     { }
 
     void operator()( const state_type &x , state_type &dxdt , value_type t )
@@ -154,21 +163,12 @@ int main( int argc , char **argv )
     viennacl::copy( x , X );
     viennacl::copy( y , Y );
 
-    viennacl::generator::symbolic_vector    <0, value_type> sym_res;
-    viennacl::generator::symbolic_vector    <1, value_type> sym_x;
-    viennacl::generator::symbolic_vector    <2, value_type> sym_y;
-    viennacl::generator::cpu_symbolic_scalar<3, value_type> sym_a;
-    viennacl::generator::cpu_symbolic_scalar<4, value_type> sym_b;
-
-    viennacl::generator::custom_operation ax_plus_by(
-	    sym_res = sym_a * sym_x + sym_b * sym_y );
-
     odeint::runge_kutta4<
         state_type , value_type , state_type , value_type ,
         odeint::fusion_algebra , odeint::default_operations
         > stepper;
 
-    odeint::integrate_const( stepper , oscillator(1.0, 0.2, 0.0, 1.2, ax_plus_by),
+    odeint::integrate_const( stepper , oscillator(1.0, 0.2, 0.0, 1.2),
 	    S , value_type(0.0) , t_max , dt );
 
     std::vector< value_type > res( N );
