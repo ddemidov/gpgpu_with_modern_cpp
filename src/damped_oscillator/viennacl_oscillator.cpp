@@ -15,6 +15,8 @@
 #include <boost/numeric/odeint/algebra/fusion_algebra.hpp>
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
 
+#include <boost/numeric/odeint/external/viennacl/viennacl_operations.hpp>
+
 namespace odeint = boost::numeric::odeint;
 namespace fusion = boost::fusion;
 
@@ -132,7 +134,7 @@ int main( int argc , char **argv )
 
     odeint::runge_kutta4<
         state_type , value_type , state_type , value_type ,
-        odeint::fusion_algebra , odeint::default_operations
+        odeint::fusion_algebra , odeint::viennacl_operations
         > stepper;
 
     odeint::integrate_const( stepper , oscillator(1.0, 0.2, 0.0, 1.2),
