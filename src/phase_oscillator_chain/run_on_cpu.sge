@@ -1,0 +1,33 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N phase_oscillator_cpu
+#$ -cwd
+#$ -l cores=4
+#$ -t 1:20
+
+export OCL_PLATFORM=AMD
+
+# warming run
+./thrust_phase_oscillator_openmp
+./vexcl_phase_oscillator
+#./viennacl_phase_oscillator
+
+rm -f thrust_cpu_${SGE_TASK_ID}.dat
+rm -f vexcl_cpu_${SGE_TASK_ID}.dat
+#rm -f viennacl_cpu_${SGE_TASK_ID}.dat
+
+for ((a=256;a<=4194304;a*=2)); do
+    echo "$a"
+
+    echo -n "$a " >> thrust_cpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o thrust_cpu_${SGE_TASK_ID}.dat -a ./thrust_phase_oscillator_openmp $a > /dev/null
+
+    echo -n "$a " >> vexcl_cpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o vexcl_cpu_${SGE_TASK_ID}.dat -a ./vexcl_phase_oscillator $a > /dev/null
+
+    #echo -n "$a " >> viennacl_cpu_${SGE_TASK_ID}.dat
+    #/usr/bin/time -f %e -o viennacl_cpu_${SGE_TASK_ID}.dat -a ./viennacl_phase_oscillator $a > /dev/null
+
+    echo ""
+done

@@ -1,0 +1,41 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N phase_oscillator_1gpu
+#$ -cwd
+#$ -l cores=4,tesla_2070=1
+#$ -t 1:20
+
+# Speed up cuda initialization on headless nodes.
+nvidia-smi -l 2>&1 > /dev/null &
+NVSMI_PID=$!
+
+export OCL_PLATFORM=NVIDIA
+export OCL_DEVICE=2070
+export OCL_MAX_DEVICES=1
+
+# warming runs
+./thrust_phase_oscillator
+./vexcl_phase_oscillator
+#./viennacl_phase_oscillator
+
+rm -f thrust_gpu_${SGE_TASK_ID}.dat
+rm -f vexcl_1gpu_${SGE_TASK_ID}.dat
+#rm -f viennacl_gpu_${SGE_TASK_ID}.dat
+
+for ((a=256;a<=4194304;a*=2)); do
+    echo "$a "
+
+    echo -n "$a " >> thrust_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o thrust_gpu_${SGE_TASK_ID}.dat -a ./thrust_phase_oscillator $a > /dev/null
+
+    echo -n "$a " >> vexcl_1gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o vexcl_1gpu_${SGE_TASK_ID}.dat -a ./vexcl_phase_oscillator $a > /dev/null
+
+    #echo -n "$a " >> viennacl_gpu_${SGE_TASK_ID}.dat
+    #/usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./viennacl_phase_oscillator $a > /dev/null
+
+    echo ""
+done
+
+kill $NVSMI_PID

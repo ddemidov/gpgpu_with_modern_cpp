@@ -10,3 +10,11 @@ target_link_libraries(thrust_phase_oscillator_openmp gomp)
 add_executable(vexcl_phase_oscillator vexcl_phase_oscillator_chain.cpp)
 target_link_libraries(vexcl_phase_oscillator OpenCL)
 set_target_properties(vexcl_phase_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
+
+foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
+    configure_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
+	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge
+	COPYONLY
+	)
+endforeach(script)
