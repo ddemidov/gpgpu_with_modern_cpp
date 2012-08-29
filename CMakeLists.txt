@@ -3,7 +3,7 @@ project(ahnert_demidov_2012)
 
 find_package(LATEX)
 
-if (LATEX_FOUND)
+if (LATEX_COMPILER)
     include(UseLATEX.cmake)
 
     add_latex_document(ahnert_demidov_2012.tex
@@ -16,6 +16,6 @@ if (LATEX_FOUND)
 	DEFAULT_PDF
 	MANGLE_TARGET_NAMES
 	)
-endif (LATEX_FOUND)
+endif (LATEX_COMPILER)
 
 add_subdirectory(src)
