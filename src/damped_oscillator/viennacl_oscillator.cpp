@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
-#include <CL/cl.hpp>
 
+#include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
 #include <viennacl/generator/custom_operation.hpp>
 
@@ -106,44 +106,14 @@ int main( int argc , char **argv )
 
     N = argc > 1 ? atoi( argv[1] ) : 1024;
 
-    // Get first available GPU device which supports double precision.
-    std::vector<cl::Platform> platform;
-    cl::Platform::get(&platform);
-    if (platform.empty()) {
-	std::cerr << "OpenCL platforms not found." << std::endl;
-	return 1;
-    }
-    cl::Context context;
-    std::vector<cl::Device> device;
-    for(auto p = platform.begin(); device.empty() && p != platform.end(); p++) {
-	std::vector<cl::Device> pldev;
-	try {
-	    p->getDevices(CL_DEVICE_TYPE_GPU, &pldev);
-	    for(auto d = pldev.begin(); device.empty() && d != pldev.end(); d++) {
-		if (!d->getInfo<CL_DEVICE_AVAILABLE>()) continue;
-		std::string ext = d->getInfo<CL_DEVICE_EXTENSIONS>();
-		if (
-			ext.find("cl_khr_fp64") == std::string::npos &&
-			ext.find("cl_amd_fp64") == std::string::npos
-		   ) continue;
+    vex::Context ctx( vex::Filter::Env && vex::Filter::Count(1));
 
-		device.push_back(*d);
-		context = cl::Context(device);
-	    }
-	} catch(...) {
-	    device.clear();
-	}
-    }
-    if (device.empty()) {
-	std::cerr << "GPUs with double precision not found." << std::endl;
-	return 1;
-    }
-    cl::CommandQueue queue(context, device[0]);
-    std::vector<cl_device_id> dev_id(1, device[0]());
-    std::vector<cl_command_queue> queue_id(1, queue());
-    viennacl::ocl::setup_context(0, context(), dev_id, queue_id);
+    std::vector<cl_device_id> dev_id(1, ctx.queue(0).getInfo<CL_QUEUE_DEVICE>()());
+    std::vector<cl_command_queue> queue_id(1, ctx.queue(0)());
 
-    cout << viennacl::ocl::current_device().name() << endl;
+    viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
+
+    cout << ctx << endl;
 
     std::vector<value_type> x( 2 * N );
     std::generate( x.begin() , x.end() , drand48 );
