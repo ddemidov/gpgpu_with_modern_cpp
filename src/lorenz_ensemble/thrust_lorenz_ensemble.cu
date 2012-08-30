@@ -22,12 +22,7 @@ using namespace boost::numeric::odeint;
 
 typedef double value_type;
 
-//change this to host_vector< ... > of you want to run on CPU
 typedef thrust::device_vector< value_type > state_type;
-typedef thrust::device_vector< size_t > index_vector_type;
-// typedef thrust::host_vector< value_type > state_type;
-// typedef thrust::host_vector< size_t > index_vector_type;
-
 
 const value_type sigma = 10.0;
 const value_type b = 8.0 / 3.0;

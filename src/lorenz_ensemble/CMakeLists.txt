@@ -11,9 +11,9 @@ add_executable(vexcl_lorenz vexcl_lorenz_ensemble.cpp)
 target_link_libraries(vexcl_lorenz OpenCL)
 set_target_properties(vexcl_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-#add_executable(viennacl_lorenz viennacl_lorenz_ensemble.cpp)
-#target_link_libraries(viennacl_lorenz OpenCL)
-#set_target_properties(viennacl_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
+add_executable(viennacl_lorenz viennacl_lorenz_ensemble.cpp)
+target_link_libraries(viennacl_lorenz OpenCL)
+set_target_properties(viennacl_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
     configure_file(

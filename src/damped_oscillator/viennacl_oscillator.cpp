@@ -9,7 +9,6 @@
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
-#include <viennacl/generator/custom_operation.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/fusion_algebra.hpp>
@@ -96,13 +95,11 @@ struct oscillator
 
     void operator()( const state_type &x , state_type &dxdt , value_type t )
     {
+        const viennacl::vector< value_type > &X = fusion::at_c< 0 >( x );
+        const viennacl::vector< value_type > &Y = fusion::at_c< 1 >( x );
+
         viennacl::vector< value_type > &dX = fusion::at_c< 0 >( dxdt );
         viennacl::vector< value_type > &dY = fusion::at_c< 1 >( dxdt );
-
-        viennacl::vector< value_type > &X = const_cast<viennacl::vector<value_type>&>(
-		fusion::at_c< 0 >( x ));
-        viennacl::vector< value_type > &Y = const_cast<viennacl::vector<value_type>&>(
-		fusion::at_c< 1 >( x ));
 
         value_type eps = m_offset + m_amp * cos( m_omega_d * t );
 
