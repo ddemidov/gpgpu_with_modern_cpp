@@ -18,7 +18,6 @@ typedef vex::multivector< value_type, 3 > state_type;
 
 const value_type sigma = 10.0;
 const value_type b = 8.0 / 3.0;
-const value_type R = 28.0;
 
 struct sys_func
 {
@@ -107,9 +106,7 @@ int main( int argc , char **argv )
     for( size_t i=0 ; i<n ; ++i ) r[i] = Rmin + dR * value_type( i );
 
     state_type X(ctx.queue(), n);
-    X(0) = 10.0;
-    X(1) = 10.0;
-    X(2) = 10.0;
+    X = 10.0;
 
     vector_type R( ctx.queue() , r );
 
@@ -120,10 +117,10 @@ int main( int argc , char **argv )
 
     odeint::integrate_const( stepper , sys_func( R ) , X , value_type(0.0) , t_max , dt );
 
-    std::vector< value_type > res( 3 * n );
+    std::vector< value_type > res( n );
     vex::copy( X(0) , res );
     //for( size_t i=0 ; i<n ; ++i )
     //	cout << res[i] << "\t" << r[i] << "\n";
-    // cout << res[0] << endl;
+    cout << res[0] << endl;
 
 }
