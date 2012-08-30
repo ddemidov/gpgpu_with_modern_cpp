@@ -162,4 +162,5 @@ int main( int argc , char **argv )
 //      	cout << res[i] << "\t" << r[i] << "\n";
     cout << res[0] << endl;
 
+    exit(0);
 }
