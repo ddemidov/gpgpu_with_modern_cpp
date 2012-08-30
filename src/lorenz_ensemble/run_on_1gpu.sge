@@ -17,11 +17,11 @@ export OCL_MAX_DEVICES=1
 # warming runs
 ./thrust_lorenz
 ./vexcl_lorenz
-#./viennacl_lorenz
+./viennacl_lorenz
 
 rm -f thrust_gpu_${SGE_TASK_ID}.dat
 rm -f vexcl_1gpu_${SGE_TASK_ID}.dat
-#rm -f viennacl_gpu_${SGE_TASK_ID}.dat
+rm -f viennacl_gpu_${SGE_TASK_ID}.dat
 
 for ((a=256;a<=4194304;a*=2)); do
     echo "$a "
@@ -32,8 +32,8 @@ for ((a=256;a<=4194304;a*=2)); do
     echo -n "$a " >> vexcl_1gpu_${SGE_TASK_ID}.dat
     /usr/bin/time -f %e -o vexcl_1gpu_${SGE_TASK_ID}.dat -a ./vexcl_lorenz $a > /dev/null
 
-    #echo -n "$a " >> viennacl_gpu_${SGE_TASK_ID}.dat
-    #/usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./viennacl_lorenz $a > /dev/null
+    echo -n "$a " >> viennacl_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./viennacl_lorenz $a > /dev/null
 
     echo ""
 done
