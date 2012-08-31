@@ -28,3 +28,9 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/run_tests.sh
     COPYONLY
     )
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/gather_data.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/gather_data.sh
+    COPYONLY
+    )
