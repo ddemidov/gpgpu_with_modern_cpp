@@ -85,7 +85,9 @@ struct ham_lattice
 
 int main( int argc , char **argv )
 {
-    size_t n1 = 64 , n2 = 64;
+    size_t n1 = argc > 1 ? atoi(argv[1]) : 64;
+    size_t n2 = n1;
+
     size_t n = n1 * n2;
     value_type K = 0.1;
     value_type t_max = 1000.0;
