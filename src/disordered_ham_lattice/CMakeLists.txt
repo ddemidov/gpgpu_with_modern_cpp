@@ -5,14 +5,14 @@ add_executable(vexcl_disordered_lattice vexcl_disordered_lattice.cpp)
 target_link_libraries(vexcl_disordered_lattice OpenCL)
 set_target_properties(vexcl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-# add_executable(viennacl_oscillator viennacl_oscillator.cpp)
-# target_link_libraries(viennacl_oscillator OpenCL)
-# set_target_properties(viennacl_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
+add_executable(viennacl_disordered_lattice viennacl_disordered_lattice.cpp)
+target_link_libraries(viennacl_disordered_lattice OpenCL)
+set_target_properties(viennacl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-# foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
-#    configure_file(
-#	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
-#	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge
-#	COPYONLY
-#	)
-#endforeach(script)
+foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
+    configure_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
+	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge
+	COPYONLY
+	)
+endforeach(script)
