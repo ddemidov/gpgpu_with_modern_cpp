@@ -21,6 +21,7 @@ namespace odeint = boost::numeric::odeint;
 
 typedef double value_type;
 typedef viennacl::vector< value_type > state_type;
+typedef viennacl::ell_matrix< value_type > matrix_type; 
 
 using namespace std;
 
@@ -46,7 +47,7 @@ struct ham_lattice
 	    }
 	}
 
-	m_A.reset( new viennacl::ell_matrix< value_type >( m_N , m_N) );
+	m_A.reset( new matrix_type( m_N , m_N) );
 
 	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
 		    cpu_matrix, m_N, m_N), *m_A);
@@ -66,7 +67,7 @@ struct ham_lattice
     }
 
     long m_N ;
-    std::shared_ptr< viennacl::ell_matrix< value_type > > m_A;
+    std::shared_ptr< matrix_type > m_A;
 };
 
 
