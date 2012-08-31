@@ -10,7 +10,7 @@ export OCL_PLATFORM=AMD
 
 # warming run
 ./vexcl_disordered_lattice
-#./viennacl_disordered_lattice
+./viennacl_disordered_lattice
 
 rm -f vexcl_cpu_${SGE_TASK_ID}.dat
 rm -f viennacl_cpu_${SGE_TASK_ID}.dat
@@ -21,8 +21,8 @@ for ((a=256;a<=4194304;a*=2)); do
     echo -n "$a " >> vexcl_cpu_${SGE_TASK_ID}.dat
     /usr/bin/time -f %e -o vexcl_cpu_${SGE_TASK_ID}.dat -a ./vexcl_disordered_lattice $a > /dev/null
 
-    #echo -n "$a " >> viennacl_cpu_${SGE_TASK_ID}.dat
-    #/usr/bin/time -f %e -o viennacl_cpu_${SGE_TASK_ID}.dat -a ./viennacl_disordered_lattice $a > /dev/null
+    echo -n "$a " >> viennacl_cpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_cpu_${SGE_TASK_ID}.dat -a ./viennacl_disordered_lattice $a > /dev/null
 
     echo ""
 done
