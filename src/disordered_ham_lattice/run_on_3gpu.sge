@@ -3,7 +3,7 @@
 #$ -j y
 #$ -N disordered_lattice_3gpu
 #$ -cwd
-#$ -l tesla_2070=3
+#$ -l cores=4,tesla_2070=3
 #$ -t 1:20
 
 # Speed up cuda initialization on headless nodes.

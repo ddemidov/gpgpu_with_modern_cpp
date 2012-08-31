@@ -3,7 +3,7 @@
 #$ -j y
 #$ -N lorenz_ensemble_2gpu
 #$ -cwd
-#$ -l tesla_2070=2
+#$ -l cores=4,tesla_2070=2
 #$ -t 1:20
 
 # Speed up cuda initialization on headless nodes.
