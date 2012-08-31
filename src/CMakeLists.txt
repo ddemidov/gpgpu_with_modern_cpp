@@ -18,5 +18,6 @@ find_package(CUDA)
 set(CUDA_NVCC_FLAGS "-arch=sm_13")
 
 add_subdirectory(damped_oscillator)
+add_subdirectory(disordered_ham_lattice)
 add_subdirectory(lorenz_ensemble)
 add_subdirectory(phase_oscillator_chain)
