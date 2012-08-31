@@ -8,7 +8,7 @@ if (LATEX_COMPILER)
 
     add_latex_document(ahnert_demidov_2012.tex
 	IMAGES data/lorenz_ensemble/abs.eps
-	       data/lorenz_ensemble/rel.eps
+	       #data/lorenz_ensemble/rel.eps
 	       data/phase_oscillator_chain/abs.eps
 	       data/phase_oscillator_chain/rel.eps
 	BIBFILES ref.bib

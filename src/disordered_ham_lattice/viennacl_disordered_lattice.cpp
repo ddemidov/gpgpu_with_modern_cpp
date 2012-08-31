@@ -8,12 +8,14 @@
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
-#include "viennacl/compressed_matrix.hpp"
+#include "viennacl/hyb_matrix.hpp"
 #include "viennacl/linalg/prod.hpp"
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
-#include <boost/numeric/odeint/external/vexcl/vexcl_resize.hpp>
+
+#include <boost/numeric/odeint/external/viennacl/viennacl_operations.hpp>
+#include <boost/numeric/odeint/external/viennacl/viennacl_resize.hpp>
 
 namespace odeint = boost::numeric::odeint;
 
@@ -24,10 +26,31 @@ using namespace std;
 
 struct ham_lattice
 {
-    ham_lattice( long n1 , long n2 , value_type K , std::vector< value_type > disorder )
-        : m_n1( 0 ) , m_n2( 0 ) , m_N( 0 ) , m_K( 0.0 ) , m_A()
+    ham_lattice( long n1 , long n2 , value_type K ,
+	    const std::vector< value_type > &disorder ) : m_N( n1 * n2 )
     {
-        init( n1 , n2 , K , disorder );
+	if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
+
+
+	std::vector<std::map<unsigned int, value_type>> cpu_matrix(m_N);
+
+	for( long i = 0, idx = 0 ; i < n1 ; ++i ) 
+	{
+	    for( long j = 0 ; j < n2 ; ++j, ++idx )
+	    {
+		cpu_matrix[idx][index_modulus(idx - n2)] = K;
+		cpu_matrix[idx][index_modulus(idx - 1)] = K;
+		cpu_matrix[idx][idx] = - disorder[idx]  - 4.0 * K;
+		cpu_matrix[idx][index_modulus(idx + 1)] = K;
+		cpu_matrix[idx][index_modulus(idx + n2)] = K;
+	    }
+	}
+
+	m_A.reset( new viennacl::hyb_matrix< value_type, 1U >( m_N , m_N) );
+
+	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
+		    cpu_matrix, m_N, m_N), *m_A);
+
     }
 
     inline long index_modulus( long idx )
@@ -37,42 +60,13 @@ struct ham_lattice
         return idx;
     }
 
-    void init( long n1 , long n2 , value_type K , std::vector< value_type > disorder )
-    {
-        m_n1 = n1;
-        m_n2 = n2;
-        m_N = m_n1 * m_n2;
-        m_K = K;
-
-        if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
-
-
-	std::vector<std::map<unsigned int, value_type>> cpu_matrix(m_N);
-
-        for( long i=0, idx=0 ; i<m_n1 ; ++i ) 
-        {
-            for( long j=0 ; j<m_n2 ; ++j, ++idx )
-            {
-		cpu_matrix[idx][index_modulus(idx - m_n2)] = K;
-		cpu_matrix[idx][index_modulus(idx - 1)] = K;
-		cpu_matrix[idx][idx] = - disorder[idx]  - 4.0 * K;
-		cpu_matrix[idx][index_modulus(idx + 1)] = K;
-		cpu_matrix[idx][index_modulus(idx + m_n2)] = K;
-            }
-        }
-
-        m_A.reset( new viennacl::compressed_matrix< value_type >( m_N , m_N) );
-	copy(cpu_matrix, *m_A);
-    }
-
     void operator()( const state_type &q , state_type &dp ) const
     {
         dp = viennacl::linalg::prod(*m_A, q);
     }
 
-    long m_n1 , m_n2 , m_N ;
-    value_type m_K;
-    std::unique_ptr< viennacl::compressed_matrix< value_type > > m_A;
+    long m_N ;
+    std::shared_ptr< viennacl::hyb_matrix< value_type, 1U > > m_A;
 };
 
 
@@ -105,7 +99,7 @@ int main( int argc , char **argv )
 
     odeint::symplectic_rkn_sb3a_mclachlan<
         state_type , state_type , value_type , state_type , state_type , value_type ,
-        odeint::vector_space_algebra , odeint::default_operations
+        odeint::vector_space_algebra , odeint::viennacl_operations
         > stepper;
 
     ham_lattice sys( n1 , n2 , K , disorder );
@@ -115,12 +109,15 @@ int main( int argc , char **argv )
     std::vector< value_type > x1( n ) , p1( n );
     viennacl::copy( X.first , x1 );
     viennacl::copy( X.second , p1 );
+    cout << x1[0] << "\t" << p1[0] << std::endl;
+    /*
     for( size_t i=0 ; i<n1 ; ++i )
     {
         for( size_t j=0 ; j<n2 ; ++j )
             cout << i << "\t" << j << "\t" << x1[i*n2+j] << "\t" << p1[i*n2+j] << "\n";
         cout << "\n";
     }
+    */
 
     exit(0);
 }

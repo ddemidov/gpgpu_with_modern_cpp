@@ -120,10 +120,13 @@ int main( int argc , char **argv )
     std::vector< value_type > x1( n ) , p1( n );
     vex::copy( X.first , x1 );
     vex::copy( X.second , p1 );
+    cout << x1[0] << "\t" << p1[0] << std::endl;
+    /*
     for( size_t i=0 ; i<n1 ; ++i )
     {
         for( size_t j=0 ; j<n2 ; ++j )
             cout << i << "\t" << j << "\t" << x1[i*n2+j] << "\t" << p1[i*n2+j] << "\n";
         cout << "\n";
     }
+    */
 }
