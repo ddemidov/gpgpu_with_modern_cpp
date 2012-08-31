@@ -4,7 +4,7 @@
 #$ -N damped_oscillator_3gpu
 #$ -cwd
 #$ -l cores=4,tesla_2070=3
-#$ -t 1:20
+#$ -t 1:10
 
 # Speed up cuda initialization on headless nodes.
 nvidia-smi -l 2>&1 > /dev/null &
