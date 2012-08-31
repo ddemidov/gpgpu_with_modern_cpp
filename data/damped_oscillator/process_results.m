@@ -1,45 +1,40 @@
 close all
 clear all
 
-thrust = load('thrust_gpu.dat');
-vexcl  = load('vexcl_1gpu.dat');
-vienna = load('viennacl_gpu.dat');
-n  = unique(thrust(:,1))';
-
-thrust_avg = [];
-vexcl_avg  = [];
-vienna_avg = [];
-
-for i = n
-    I = find(thrust(:,1) == i);
-    time = sum(thrust(I,2)) / length(I);
-    thrust_avg = [thrust_avg time];
-
-    I = find(vexcl(:,1) == i);
-    time = sum(vexcl(I,2)) / length(I);
-    vexcl_avg = [vexcl_avg time];
-
-    I = find(vienna(:,1) == i);
-    time = sum(vienna(I,2)) / length(I);
-    vienna_avg = [vienna_avg time];
-end
-
+test = {'thrust_cpu', 'thrust_gpu', ...
+	'vexcl_cpu', 'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu'...
+	'viennacl_cpu', 'viennacl_gpu' };
+style = {'kd-', 'ko-', 'rd-', 'ro-', 'rs-', 'rv-', 'bd-', 'bo-'};
+legstr = {};
 
 figure(1)
 set(gca, 'FontSize', 18)
 
+idx = 0;
+for t = test
+    idx = idx + 1;
+    data = load([cell2mat(t) '.dat']);
+    avg = [];
 
-loglog(n, thrust_avg, 'ko-', 'linewidth', 1, 'markersize', 6, 'markerfacecolor', 'w');
-hold on
-loglog(n, vexcl_avg,  'ro-', 'linewidth', 1, 'markersize', 6, 'markerfacecolor', 'w');
-loglog(n, vienna_avg, 'bo-', 'linewidth', 1, 'markersize', 6, 'markerfacecolor', 'w');
+    n = unique(data(:,1))';
+    for i = n
+	I = find(data(:,1) == i);
+	time = sum(data(I,2)) / length(I);
+	avg = [avg time];
+    end
+
+    loglog(n, avg, style{idx}, 'linewidth', 1, 'markersize', 6, 'markerfacecolor', 'w');
+    hold on
+
+    legstr{idx} = strrep(cell2mat(t), '_', ' ');
+end
 
 xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T (sec)');
 
-legend('thrust gpu', 'vexcl 1 gpu', 'viennacl gpu', 'location', 'northwest');
+legend(legstr, 'location', 'northwest');
 legend boxoff
 
-print('-depsc', 'abs.eps');
+%print('-depsc', 'abs.eps');

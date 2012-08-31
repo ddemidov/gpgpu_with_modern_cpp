@@ -12,7 +12,7 @@ NVSMI_PID=$!
 
 export OCL_PLATFORM=NVIDIA
 export OCL_DEVICE=2070
-export OCL_MAX_DEVICES=2
+export OCL_MAX_DEVICES=3
 
 # warming runs
 ./vexcl_lorenz
