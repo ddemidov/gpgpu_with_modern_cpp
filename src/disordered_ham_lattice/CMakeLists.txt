@@ -6,7 +6,7 @@ target_link_libraries(vexcl_disordered_lattice OpenCL)
 set_target_properties(vexcl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(viennacl_disordered_lattice viennacl_disordered_lattice.cpp)
-target_link_libraries(viennacl_disordered_lattice OpenCL pugixml)
+target_link_libraries(viennacl_disordered_lattice OpenCL)
 set_target_properties(viennacl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
