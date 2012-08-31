@@ -24,7 +24,7 @@ using namespace std;
 
 struct ham_lattice
 {
-    ham_lattice( long n1 , long n2 , value_type K , std::vector< double > disorder )
+    ham_lattice( long n1 , long n2 , value_type K , std::vector< value_type > disorder )
         : m_n1( 0 ) , m_n2( 0 ) , m_N( 0 ) , m_K( 0.0 ) , m_A()
     {
         init( n1 , n2 , K , disorder );
@@ -37,7 +37,7 @@ struct ham_lattice
         return idx;
     }
 
-    void init( long n1 , long n2 , value_type K , std::vector< double > disorder )
+    void init( long n1 , long n2 , value_type K , std::vector< value_type > disorder )
     {
         m_n1 = n1;
         m_n2 = n2;
@@ -47,7 +47,7 @@ struct ham_lattice
         if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
 
 
-	std::vector<std::map<unsigned int, double>> cpu_matrix(m_N);
+	std::vector<std::map<unsigned int, value_type>> cpu_matrix(m_N);
 
         for( long i=0, idx=0 ; i<m_n1 ; ++i ) 
         {
@@ -61,7 +61,7 @@ struct ham_lattice
             }
         }
 
-        m_A.reset( new viennacl::compressed_matrix< double >( m_N , m_N) );
+        m_A.reset( new viennacl::compressed_matrix< value_type >( m_N , m_N) );
 	copy(cpu_matrix, *m_A);
     }
 
@@ -72,7 +72,7 @@ struct ham_lattice
 
     long m_n1 , m_n2 , m_N ;
     value_type m_K;
-    std::unique_ptr< viennacl::compressed_matrix< double > > m_A;
+    std::unique_ptr< viennacl::compressed_matrix< value_type > > m_A;
 };
 
 
