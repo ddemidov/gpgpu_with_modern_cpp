@@ -21,3 +21,10 @@ add_subdirectory(damped_oscillator)
 add_subdirectory(disordered_ham_lattice)
 add_subdirectory(lorenz_ensemble)
 add_subdirectory(phase_oscillator_chain)
+
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/run_tests.sh
+    COPYONLY
+    )
