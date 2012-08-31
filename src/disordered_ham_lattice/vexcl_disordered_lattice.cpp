@@ -46,6 +46,10 @@ struct ham_lattice
         std::vector< size_t > col;
         std::vector< size_t > row;
 
+	val.reserve(m_N * 5);
+	col.reserve(m_N * 5);
+	row.reserve(m_N + 1);
+
         row.push_back( 0 );
         for( size_t i=0 ; i<m_n1 ; ++i ) 
         {
@@ -87,7 +91,8 @@ int main( int argc , char **argv )
     value_type t_max = 1000.0;
     value_type dt = 0.01;
     
-    vex::Context ctx( vex::Filter::Env );
+    vex::Context ctx( vex::Filter::Env && vex::Filter::DoublePrecision );
+    std::cout << ctx << std::endl;
     
 
     std::vector<value_type> disorder( n );

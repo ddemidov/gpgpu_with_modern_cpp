@@ -1,21 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-
 project(disordered_ham_lattice)
-
-find_package(Boost)
-
-set(ODEINT_ROOT   "/home/karsten/src/odeint-v2")
-set(VEXCL_ROOT    "/home/karsten/boost/vexcl")
-set(VIENNACL_ROOT "/home/karsten/boost/testing/ViennaCL-1.3.1")
-set(CUDA_ROOT     "/usr/local/cuda/include")
-
-include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${ODEINT_ROOT}
-    ${VEXCL_ROOT}
-    ${CUDA_ROOT}
-    ${VIENNACL_ROOT}
-    )
 
 add_executable(vexcl_disordered_lattice vexcl_disordered_lattice.cpp)
 target_link_libraries(vexcl_disordered_lattice OpenCL)

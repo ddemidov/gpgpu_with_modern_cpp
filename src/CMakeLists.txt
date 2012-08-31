@@ -3,6 +3,9 @@ project(vexcl_odeint_paper_sources)
 
 find_package(Boost)
 
+find_package(CUDA)
+set(CUDA_NVCC_FLAGS "-arch=sm_13")
+
 set(ODEINT_ROOT   "/home/demidov/work/karsten/odeint-v2"     CACHE STRING "odeint root")
 set(VEXCL_ROOT    "/home/demidov/work/vexcl"                 CACHE STRING "VexCL root")
 set(VIENNACL_ROOT "/home/demidov/work/opencl/ViennaCL-1.3.1" CACHE STRING "ViennaCL root")
@@ -13,9 +16,6 @@ include_directories(
     ${VEXCL_ROOT}
     ${VIENNACL_ROOT}
     )
-
-find_package(CUDA)
-set(CUDA_NVCC_FLAGS "-arch=sm_13")
 
 add_subdirectory(damped_oscillator)
 add_subdirectory(disordered_ham_lattice)
