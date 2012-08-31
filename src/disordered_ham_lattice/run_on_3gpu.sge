@@ -19,7 +19,7 @@ export OCL_MAX_DEVICES=2
 
 rm -f vexcl_3gpu_${SGE_TASK_ID}.dat
 
-for ((a=256;a<=4194304;a*=2)); do
+for ((a=16;a<=2048;a*=2)); do
     echo "$a "
 
     echo -n "$a " >> vexcl_3gpu_${SGE_TASK_ID}.dat
