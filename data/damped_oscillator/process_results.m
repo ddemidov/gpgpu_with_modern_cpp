@@ -1,14 +1,25 @@
 close all
 clear all
 
-test = {'thrust_cpu', 'thrust_gpu', ...
-	'vexcl_cpu', 'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu'...
-	'viennacl_cpu', 'viennacl_gpu' };
-style = {'kd-', 'ko-', 'rd-', 'ro-', 'rs-', 'rv-', 'bd-', 'bo-'};
-legstr = {};
+test = {'thrust_gpu', 'thrust_cpu', ...
+	'viennacl_gpu', 'viennacl_cpu', ...
+	'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu', 'vexcl_cpu'};
+
+lgnd = {'Thrust GPU', 'Thrust CPU', ...
+	'ViennaCL GPU', 'ViennaCL CPU', ...
+	'VexCL 1 GPU', 'VexCL 2 GPU', 'VexCL 3 GPU', 'VexCL CPU'};
+
+style = {'ko-', 'kd-', ...
+	 'bo-', 'bd-', ...
+	 'ro-', 'rs-', 'rv-', 'rd-'};
 
 figure(1)
-set(gca, 'FontSize', 18)
+set(gcf, 'position', [50, 50, 1000, 500]);
+
+subplot(1, 2, 1);
+set(gca, 'FontSize', 10);
+subplot(1, 2, 2);
+set(gca, 'FontSize', 10);
 
 idx = 0;
 for t = test
@@ -23,18 +34,34 @@ for t = test
 	avg = [avg time];
     end
 
-    loglog(n, avg, style{idx}, 'linewidth', 1, 'markersize', 6, 'markerfacecolor', 'w');
+    if idx == 1
+	ref_avg = avg;
+    end
+
+    subplot(1, 2, 1);
+    loglog(n, avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
     hold on
 
-    legstr{idx} = strrep(cell2mat(t), '_', ' ');
+    subplot(1, 2, 2);
+    loglog(n, avg ./ ref_avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
+    hold on
 end
 
+subplot(1, 2, 1);
 xlim([1e2 1e7])
+ylim([1e-1 1e5])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T (sec)');
-
-legend(legstr, 'location', 'northwest');
+legend(lgnd, 'location', 'NorthWest');
 legend boxoff
+axis square
 
-%print('-depsc', 'abs.eps');
+subplot(1, 2, 2);
+xlim([1e2 1e7])
+set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
+xlabel('N');
+ylabel('T / T(Thrust GPU)');
+axis square
+
+print('-depsc', 'damped_oscillator.eps');
