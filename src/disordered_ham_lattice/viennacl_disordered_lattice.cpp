@@ -8,8 +8,11 @@
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
+#include "viennacl/compressed_matrix.hpp"
+#include "viennacl/hyb_matrix.hpp"
 #include "viennacl/ell_matrix.hpp"
 #include "viennacl/linalg/prod.hpp"
+#include <viennacl/io/kernel_parameters.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
@@ -21,6 +24,7 @@ namespace odeint = boost::numeric::odeint;
 
 typedef double value_type;
 typedef viennacl::vector< value_type > state_type;
+typedef viennacl::ell_matrix< value_type > matrix_type;
 
 using namespace std;
 
@@ -46,7 +50,7 @@ struct ham_lattice
 	    }
 	}
 
-	m_A.reset( new viennacl::ell_matrix< value_type >( m_N , m_N) );
+	m_A.reset( new matrix_type( m_N , m_N) );
 
 	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
 		    cpu_matrix, m_N, m_N), *m_A);
@@ -66,7 +70,7 @@ struct ham_lattice
     }
 
     long m_N ;
-    std::shared_ptr< viennacl::ell_matrix< value_type > > m_A;
+    std::shared_ptr< matrix_type > m_A;
 };
 
 
@@ -86,6 +90,8 @@ int main( int argc , char **argv )
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
     std::cout << ctx << std::endl;
     
+    viennacl::io::read_kernel_parameters< viennacl::vector<value_type> >("vector_parameters.xml");
+    viennacl::io::read_kernel_parameters< viennacl::compressed_matrix<value_type> >("sparse_parameters.xml");
 
     std::vector<value_type> disorder( n, 0 );
 
