@@ -8,6 +8,7 @@
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
+#include "viennacl/compressed_matrix.hpp"
 #include "viennacl/ell_matrix.hpp"
 #include "viennacl/linalg/prod.hpp"
 
@@ -21,14 +22,15 @@ namespace odeint = boost::numeric::odeint;
 
 typedef double value_type;
 typedef viennacl::vector< value_type > state_type;
-typedef viennacl::ell_matrix< value_type > matrix_type; 
 
 using namespace std;
 
+template <class matrix_type>
 struct ham_lattice
 {
     ham_lattice( long n1 , long n2 , value_type K ,
-	    const std::vector< value_type > &disorder ) : m_N( n1 * n2 )
+	    const std::vector< value_type > &disorder )
+	: m_N( n1 * n2 ), m_A(m_N, m_N)
     {
 	if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
 
@@ -47,10 +49,8 @@ struct ham_lattice
 	    }
 	}
 
-	m_A.reset( new matrix_type( m_N , m_N) );
-
 	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
-		    cpu_matrix, m_N, m_N), *m_A);
+		    cpu_matrix, m_N, m_N), m_A);
 
     }
 
@@ -63,11 +63,11 @@ struct ham_lattice
 
     void operator()( const state_type &q , state_type &dp ) const
     {
-        dp = viennacl::linalg::prod(*m_A, q);
+        dp = viennacl::linalg::prod(m_A, q);
     }
 
     long m_N ;
-    std::shared_ptr< matrix_type > m_A;
+    matrix_type m_A;
 };
 
 
@@ -86,7 +86,8 @@ int main( int argc , char **argv )
     std::vector<cl_command_queue> queue_id(1, ctx.queue(0)());
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
     std::cout << ctx << std::endl;
-    
+
+    bool cpu = ctx.queue(0).getInfo<CL_QUEUE_DEVICE>().getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU;
 
     std::vector<value_type> disorder( n, 0 );
 
@@ -105,8 +106,13 @@ int main( int argc , char **argv )
         odeint::vector_space_algebra , odeint::viennacl_operations
         > stepper;
 
-    ham_lattice sys( n1 , n2 , K , disorder );
-    odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
+    if (cpu) {
+	ham_lattice< viennacl::compressed_matrix<value_type> > sys( n1 , n2 , K , disorder );
+	odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
+    } else {
+	ham_lattice< viennacl::ell_matrix<value_type> > sys( n1 , n2 , K , disorder );
+	odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
+    }
 
 
     std::vector< value_type > x1( n ) , p1( n );
