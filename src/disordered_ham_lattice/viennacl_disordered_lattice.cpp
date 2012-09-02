@@ -107,7 +107,7 @@ int main( int argc , char **argv )
     size_t n = n1 * n2;
     value_type K = 0.1;
     value_type beta = 0.01;
-    value_type t_max = 1000.0;
+    value_type t_max = 100.0;
     value_type dt = 0.01;
     
     vex::Context ctx( vex::Filter::Env && vex::Filter::DoublePrecision && vex::Filter::Count(1));
