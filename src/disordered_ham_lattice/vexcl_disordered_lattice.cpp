@@ -18,22 +18,14 @@ typedef vex::vector< value_type > state_type;
 
 using namespace std;
 
+extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
+vex::UserFunction<pow3_body, value_type(value_type)> pow3;
+
 struct ham_lattice
 {
-    ham_lattice( const std::vector< cl::CommandQueue > &queue , size_t n1 , size_t n2 , value_type K , std::vector< double > disorder )
-        : m_n1( 0 ) , m_n2( 0 ) , m_N( 0 ) , m_K( 0.0 ) , m_A()
-    {
-        init( queue , n1 , n2 , K , disorder );
-    }
-
-    inline size_t index_modulus( long idx )
-    {
-        if( idx < 0 ) return size_t( idx + m_N );
-        if( idx >= m_N ) return size_t( idx - m_N );
-        return size_t( idx );
-    }
-
-    void init( const std::vector< cl::CommandQueue > &queue , size_t n1 , size_t n2 , value_type K , std::vector< double > disorder )
+    ham_lattice( const std::vector< cl::CommandQueue > &queue ,
+	    size_t n1 , size_t n2 , value_type K , value_type beta, std::vector< double > disorder )
+        : m_n1( 0 ) , m_n2( 0 ) , m_N( 0 ) , m_K( 0.0 ) , m_beta(beta) , m_A()
     {
         m_n1 = n1;
         m_n2 = n2;
@@ -72,13 +64,20 @@ struct ham_lattice
         m_A.reset( new vex::SpMat< double >( queue , m_N , m_N , row.data() , col.data() , val.data() ) );
     }
 
+    inline size_t index_modulus( long idx )
+    {
+        if( idx < 0 ) return size_t( idx + m_N );
+        if( idx >= m_N ) return size_t( idx - m_N );
+        return size_t( idx );
+    }
+
     void operator()( const state_type &q , state_type &dp ) const
     {
-        dp = (*m_A) * q;
+        dp = (-m_beta) * pow3(q) + (*m_A) * q;
     }
 
     size_t m_n1 , m_n2 , m_N ;
-    value_type m_K;
+    value_type m_K, m_beta;
     std::unique_ptr< vex::SpMat< double > > m_A;
 };
 
@@ -90,6 +89,7 @@ int main( int argc , char **argv )
 
     size_t n = n1 * n2;
     value_type K = 0.1;
+    value_type beta = 0.01;
     value_type t_max = 1000.0;
     value_type dt = 0.01;
     
@@ -115,7 +115,7 @@ int main( int argc , char **argv )
         odeint::vector_space_algebra , odeint::default_operations
         > stepper;
 
-    ham_lattice sys( ctx.queue() , n1 , n2 , K , disorder );
+    ham_lattice sys( ctx.queue() , n1 , n2 , K , beta , disorder );
     odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
 
 

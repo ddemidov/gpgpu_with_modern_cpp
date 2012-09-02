@@ -28,9 +28,9 @@ using namespace std;
 template <class matrix_type>
 struct ham_lattice
 {
-    ham_lattice( long n1 , long n2 , value_type K ,
+    ham_lattice( long n1 , long n2 , value_type K , value_type beta ,
 	    const std::vector< value_type > &disorder )
-	: m_N( n1 * n2 ), m_A(m_N, m_N)
+	: m_N( n1 * n2 ), m_beta(beta), m_A(m_N, m_N)
     {
 	if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
 
@@ -52,6 +52,27 @@ struct ham_lattice
 	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
 		    cpu_matrix, m_N, m_N), m_A);
 
+	static const char source[] =
+	    "#if defined(cl_khr_fp64)\n"
+	    "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
+	    "#elif defined(cl_amd_fp64)\n"
+	    "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
+	    "#endif\n"
+	    "kernel void scaled_pow3(\n"
+	    "        uint n,\n"
+	    "        global double *dx,\n"
+	    "        global const double *x,\n"
+	    "        double beta\n"
+	    "        )\n"
+	    "{\n"
+	    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
+	    "        double X = x[i];\n"
+	    "        dx[i] -= beta * X * X * X;\n"
+	    "    }\n"
+	    "}\n";
+
+	viennacl::ocl::current_context().add_program(
+		source, "pow3_program").add_kernel("scaled_pow3");
     }
 
     inline long index_modulus( long idx )
@@ -64,9 +85,16 @@ struct ham_lattice
     void operator()( const state_type &q , state_type &dp ) const
     {
         dp = viennacl::linalg::prod(m_A, q);
+
+	viennacl::ocl::kernel &scaled_pow3 =
+	    viennacl::ocl::current_context().get_program(
+		    "pow3_program").get_kernel("scaled_pow3");
+
+	viennacl::ocl::enqueue( scaled_pow3(cl_uint(q.size()), dp, q, m_beta) );
     }
 
     long m_N ;
+    value_type m_beta;
     matrix_type m_A;
 };
 
@@ -78,6 +106,7 @@ int main( int argc , char **argv )
 
     size_t n = n1 * n2;
     value_type K = 0.1;
+    value_type beta = 0.01;
     value_type t_max = 1000.0;
     value_type dt = 0.01;
     
@@ -107,10 +136,12 @@ int main( int argc , char **argv )
         > stepper;
 
     if (cpu) {
-	ham_lattice< viennacl::compressed_matrix<value_type> > sys( n1 , n2 , K , disorder );
+	ham_lattice< viennacl::compressed_matrix<value_type> > sys(
+		n1 , n2 , K , beta , disorder );
 	odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
     } else {
-	ham_lattice< viennacl::ell_matrix<value_type> > sys( n1 , n2 , K , disorder );
+	ham_lattice< viennacl::ell_matrix<value_type> > sys(
+		n1 , n2 , K , beta , disorder );
 	odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
     }
 
