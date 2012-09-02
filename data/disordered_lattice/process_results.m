@@ -1,13 +1,13 @@
 close all
 clear all
 
-test = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_cpu', ...
+test = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu', 'vexcl_cpu', ...
 	'viennacl_gpu', 'viennacl_cpu'};
 
-lgnd = {'VexCL 1 GPU', 'VexCL 2 GPU', 'VexCL 3 GPU', ...
+lgnd = {'VexCL 1 GPU', 'VexCL 2 GPU', 'VexCL 3 GPU', 'VexCL CPU', ...
 	'ViennaCL GPU', 'ViennaCL CPU'};
 
-style = {'ro-', 'rs-', 'rd-', ...
+style = {'ro-', 'rs-', 'rv-', 'rd-', ...
 	 'bo-', 'bd-'};
 
 figure(1)
@@ -36,16 +36,16 @@ for t = test
     end
 
     subplot(1, 2, 1);
-    loglog(n, avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
+    loglog(n.^2, avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
     hold on
 
     subplot(1, 2, 2);
-    loglog(n, avg ./ ref_avg(1:length(avg)), style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
+    loglog(n.^2, avg ./ ref_avg(1:length(avg)), style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
     hold on
 end
 
 subplot(1, 2, 1);
-xlim([5e0 1e4])
+xlim([1e2 1e7])
 %ylim([1e-1 1e5])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
@@ -55,7 +55,7 @@ legend boxoff
 axis square
 
 subplot(1, 2, 2);
-xlim([5e0 1e4])
+xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T / T(VexCL 1 GPU)');
