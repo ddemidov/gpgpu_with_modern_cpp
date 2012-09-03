@@ -8,9 +8,9 @@
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
-#include "viennacl/compressed_matrix.hpp"
-#include "viennacl/ell_matrix.hpp"
-#include "viennacl/linalg/prod.hpp"
+#include <viennacl/compressed_matrix.hpp>
+#include <viennacl/ell_matrix.hpp>
+#include <viennacl/linalg/prod.hpp>
 #include <viennacl/io/kernel_parameters.hpp>
 
 #include <boost/numeric/odeint.hpp>
