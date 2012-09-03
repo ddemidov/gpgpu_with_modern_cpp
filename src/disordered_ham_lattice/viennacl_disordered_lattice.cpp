@@ -11,6 +11,7 @@
 #include "viennacl/compressed_matrix.hpp"
 #include "viennacl/ell_matrix.hpp"
 #include "viennacl/linalg/prod.hpp"
+#include <viennacl/io/kernel_parameters.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
@@ -115,6 +116,9 @@ int main( int argc , char **argv )
     std::vector<cl_command_queue> queue_id(1, ctx.queue(0)());
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
     std::cout << ctx << std::endl;
+
+    viennacl::io::read_kernel_parameters< viennacl::vector<value_type> >("vector_parameters.xml");
+    viennacl::io::read_kernel_parameters< viennacl::compressed_matrix<value_type> >("sparse_parameters.xml");
 
     bool cpu = ctx.queue(0).getInfo<CL_QUEUE_DEVICE>().getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU;
 
