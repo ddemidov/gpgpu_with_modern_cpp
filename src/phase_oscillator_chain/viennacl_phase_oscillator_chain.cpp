@@ -94,7 +94,7 @@ int main( int argc , char **argv )
 
     odeint::runge_kutta4<
 	    state_type , value_type , state_type , value_type ,
-	    odeint::vector_space_algebra , odeint::default_operations
+	    odeint::vector_space_algebra , odeint::viennacl_operations
 	    > stepper;
 
     sys_func sys(Omega);
