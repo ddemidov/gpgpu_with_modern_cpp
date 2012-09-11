@@ -1,17 +1,23 @@
 close all
 clear all
 
-test = {'thrust_gpu', 'thrust_cpu', ...
-	'viennacl_gpu', 'viennacl_cpu', ...
-	'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu', 'vexcl_cpu'};
+test = {'thrust_gpu',   'thrust_cpu', ...
+	'vexcl_1gpu',   'vexcl_cpu', ...
+	'viennacl_gpu', 'viennacl_cpu'};
 
-lgnd = {'Thrust GPU', 'Thrust CPU', ...
-	'ViennaCL GPU', 'ViennaCL CPU', ...
-	'VexCL 1 GPU', 'VexCL 2 GPU', 'VexCL 3 GPU', 'VexCL CPU'};
+lgnd = {'Thrust GPU',   'Thrust CPU', ...
+	'VexCL GPU',    'VexCL CPU', ...
+	'ViennaCL GPU', 'ViennaCL CPU'};
 
 style = {'ko-', 'kd-', ...
-	 'bo-', 'bd-', ...
-	 'ro-', 'rs-', 'rv-', 'rd-'};
+	 'ko-', 'kd-', ...
+	 'ko--', 'kd--'};
+
+fcolor = {'k', 'k', ...
+          'w', 'w', ...
+	  'w', 'w'};
+
+msize = 3;
 
 figure(1)
 set(gcf, 'position', [50, 50, 1000, 500]);
@@ -30,7 +36,7 @@ for t = test
     n = unique(data(:,1))';
     for i = n
 	I = find(data(:,1) == i);
-	time = sum(data(I,2)) / length(I);
+	time = median(data(I,2));
 	avg = [avg time];
     end
 
@@ -39,17 +45,16 @@ for t = test
     end
 
     subplot(1, 2, 1);
-    loglog(n, avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
+    loglog(n, avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
     hold on
 
     subplot(1, 2, 2);
-    loglog(n, avg ./ ref_avg, style{idx}, 'markersize', 4, 'markerfacecolor', 'w');
+    loglog(n, avg ./ ref_avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
     hold on
 end
 
 subplot(1, 2, 1);
 xlim([1e2 1e7])
-ylim([1e-1 1e5])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T (sec)');
@@ -64,4 +69,4 @@ xlabel('N');
 ylabel('T / T(Thrust GPU)');
 axis square
 
-print('-depsc', 'lorenz_ensemble.eps');
+print('-depsc', 'perfcmp.eps');
