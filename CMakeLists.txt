@@ -8,9 +8,13 @@ if (LATEX_COMPILER)
 
     add_latex_document(ahnert_demidov_2012.tex
 	IMAGES data/lorenz_ensemble/perfcmp.eps
+	       data/lorenz_ensemble/scaling.eps
 	       data/phase_oscillator_chain/perfcmp.eps
+	       data/phase_oscillator_chain/scaling.eps
 	       data/damped_oscillator/perfcmp.eps
+	       data/damped_oscillator/scaling.eps
 	       data/disordered_lattice/perfcmp.eps
+	       data/disordered_lattice/scaling.eps
 	BIBFILES ref.bib
 	DEPENDS elsarticle.cls
 	DEFAULT_PDF
