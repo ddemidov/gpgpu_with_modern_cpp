@@ -9,11 +9,8 @@
 \lstset{
     language=C++,
     basicstyle=\small,
-    %numbers=left,
     columns=flexible,
-    %extendedchars=false,
     showstringspaces=false,
-    %texcl=true,
     frame=shadowbox
     }
 \newcommand{\code}[1]{\lstinline|#1|}
@@ -77,13 +74,24 @@ but it is only supported on NVIDIA hardware. OpenCL is an open standard
 supported on wide range of hardware but it requires much larger amount of
 boilerplate code from a developer.
 
-This paper presents comparison of OpenCL and CUDA performance in the context of
-solving ordinary differential equations. The comparison is based on odeint~---
-modern C++ library for solution of ODEs. Odeint is designed in a very flexible
-way such that the algorithms are completely independent from the underlying
-containers and even from the basic algebraic computations. This allows to
-effectively use libraries implementing basic linear algebra operations with
-either OpenCL or CUDA technologies for solution of ODEs.
+Both technologies are able to provide scientists with vast computational
+resources of modern GPU cards. But the power comes with a price: GPGPU
+programming has a steep learining curve. Programmer needs to familiarize
+himself with (slightly) new programming language and, more importantly, with
+new programming paradigm. However, the entry price may be lowered with help of
+specialized libraries. CUDA provides several such libraries (BLAS
+implementation, Fast Fourier Transform, Thrust and others). But there are many
+third party librares for both CUDA and OpenCL.
+
+This paper presents comparison of several modern C++ libraries aimed at ease of
+GPGPU development. We look at both ease of use and performance of the libraries
+under consideration in the context of solving ordinary differential equations.
+The comparison is based on odeint~--- modern C++ library for solution of ODEs.
+Odeint is designed in a very flexible way such that the algorithms are
+completely independent from the underlying containers and even from the basic
+algebraic computations. This allows to effectively use libraries implementing
+basic linear algebra operations with either OpenCL or CUDA technologies for
+solution of ODEs.
 
 \section{Libraries used in comparison}
 
