@@ -11,7 +11,7 @@
     basicstyle=\small,
     columns=flexible,
     showstringspaces=false,
-    frame=shadowbox
+    frame=single
     }
 \newcommand{\code}[1]{\lstinline|#1|}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
@@ -176,6 +176,56 @@ preconditioner.
 %equations. In this context complex vector expressions are rare and we think
 %that authors of ViennaCL made correct design decision.  However, we think it is
 %interesting to compare approaches of VexCL and ViennaCL.
+
+\section{Adopting odeint}
+
+\begin{figure}
+\begin{lstlisting}
+typedef std::array<double, 3> state_type;
+state_type x1, x2;
+// Initialize x1 and x2.
+
+double dt = 0.1;
+odeint::range_algebra algebra;
+// The following line computes x1 = dt * x2 for all elements of x1 and x2:
+algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
+\end{lstlisting}
+\caption{An example of range algebra in odeint.}
+\label{fig:odeintops}
+\end{figure}
+
+Odeint provides a mechanism which lets the user change the way how the
+elementary numerical computations are performed. This mechanism consists of a
+combination of state type, algebra and operations. State type represents the
+state of the ODE being solved and is usually a vector type like
+\code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
+iterating through all elemnts of the state whereas the operations are
+responsible for the elementary operations. \figref{fig:odeintops} provides an
+example of using range algebra. Here \code{for_each2} is used, which means that
+two state types are iterated. The operation is a \code{scale_sum1} which simply
+calculates \code{x1[i] = dt * x2[i]}. Odeint provides a set of predefined
+algebras, which includes:
+\begin{itemize}
+    \item \code{range_algebra}: default algebra which works on Boost.Ranges
+    \item \code{array_algebra}: specialized algebra for boost::array
+    \item \code{fusion_algebra}: algebra for compile-time sequences like
+	\code{boost::fusion::vector}, \code{std::tuple}, etc.
+    \item \code{vector_space_algebra}: algebra for vector space types which
+	provide overloaded arithmetic operators for elementwise operations.
+\end{itemize}
+
+Many libraries for vector and matrix types provide expression templates for the
+elementary operations. Such libraries do not need an own algebra but can be
+used with the \code{vector_space_algebra} and the \code{default_operations}
+which simply calls the operations directly on the matrix or vector type. In
+this case only odeint resizing mechanism has to be adapted.
+
+In the next subsection we describe odeint adaptation for GPGPU libraries under
+consideration.
+
+\subsection{Thrust}
+\subsection{VexCL}
+\subsection{ViennaCL}
 
 \section{Numerical experiments}
 
