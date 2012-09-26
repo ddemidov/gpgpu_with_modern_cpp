@@ -93,7 +93,7 @@ int main( int argc , char **argv )
     value_type t_max = 100.0;
     value_type dt = 0.01;
     
-    vex::Context ctx( vex::Filter::Env && vex::Filter::DoublePrecision );
+    vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env && vex::Filter::DoublePrecision ) );
     std::cout << ctx << std::endl;
     
 

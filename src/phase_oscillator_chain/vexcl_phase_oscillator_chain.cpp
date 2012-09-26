@@ -46,7 +46,7 @@ int main( int argc , char **argv )
     const value_type epsilon = 6.0 / ( n * n ); // should be < 8/N^2 to see phase locking
     using namespace std;
 
-    vex::Context ctx( vex::Filter::Env );
+    vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env ) );
     std::cout << ctx << std::endl;
 
     // initialize omega and the state of the lattice

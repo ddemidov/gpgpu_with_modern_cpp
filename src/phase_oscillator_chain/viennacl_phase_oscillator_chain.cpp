@@ -70,7 +70,7 @@ int main( int argc , char **argv )
     const value_type epsilon = 6.0 / ( n * n ); // should be < 8/N^2 to see phase locking
     using namespace std;
 
-    vex::Context ctx( vex::Filter::Env && vex::Filter::Count(1));
+    vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env && vex::Filter::Count(1)) );
     std::vector<cl_device_id> dev_id(1, ctx.queue(0).getInfo<CL_QUEUE_DEVICE>()());
     std::vector<cl_command_queue> queue_id(1, ctx.queue(0)());
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
