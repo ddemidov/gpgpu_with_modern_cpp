@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include <vexcl/vexcl.hpp>
+#include <vexcl/exclusive.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>

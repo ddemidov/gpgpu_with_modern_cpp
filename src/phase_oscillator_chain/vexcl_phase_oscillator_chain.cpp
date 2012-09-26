@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include <vexcl/vexcl.hpp>
+#include <vexcl/exclusive.hpp>
 
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <vexcl/vexcl.hpp>
+#include <vexcl/exclusive.hpp>
 #include <viennacl/vector.hpp>
 #include <viennacl/compressed_matrix.hpp>
 #include <viennacl/ell_matrix.hpp>

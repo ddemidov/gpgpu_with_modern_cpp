@@ -8,6 +8,7 @@
 #include <memory>
 
 #include <vexcl/vexcl.hpp>
+#include <vexcl/exclusive.hpp>
 #include <viennacl/vector.hpp>
 
 #include <boost/numeric/odeint.hpp>
