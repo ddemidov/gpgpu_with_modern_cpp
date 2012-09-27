@@ -63,52 +63,35 @@ struct oscillator
     value_type m_offset;
     value_type m_omega_d;
 
-    oscillator(value_type omega, value_type amp, value_type offset, value_type omega_d)
-        : m_omega(omega), m_amp(amp) , m_offset(offset) , m_omega_d(omega_d)
-    {
-	static const char source[] =
-	    "#if defined(cl_khr_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-	    "#elif defined(cl_amd_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
-	    "#endif\n"
-	    "kernel void oscillator(\n"
-	    "        uint n,\n"
-	    "        global double *dx,\n"
-	    "        global double *dy,\n"
-	    "        global const double *x,\n"
-	    "        global const double *y,\n"
-	    "        double omega,\n"
-	    "        double eps\n"
-	    "        )\n"
-	    "{\n"
-	    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-	    "        double X = x[i];\n"
-	    "        double Y = y[i];\n"
-	    "        dx[i] = eps * X + omega * Y;\n"
-	    "        dy[i] = eps * Y - omega * X;\n"
-	    "    }\n"
-	    "}\n";
+    viennacl::generator::symbolic_vector<0, value_type> sym_dx;
+    viennacl::generator::symbolic_vector<1, value_type> sym_dy;
+    viennacl::generator::symbolic_vector<2, value_type> sym_x;
+    viennacl::generator::symbolic_vector<3, value_type> sym_y;
+    viennacl::generator::cpu_symbolic_scalar<4, value_type> sym_eps;
+    viennacl::generator::cpu_symbolic_scalar<5, value_type> sym_omega;
 
-	viennacl::ocl::current_context().add_program(
-		source, "oscillator_program").add_kernel("oscillator");
+    viennacl::generator::custom_operation op;
+
+    oscillator(value_type omega, value_type amp, value_type offset, value_type omega_d)
+        : m_omega(omega), m_amp(amp) , m_offset(offset) , m_omega_d(omega_d),
+	  op(sym_dx = sym_eps * sym_x + sym_omega * sym_y,
+	     sym_dy = sym_eps * sym_y - sym_omega * sym_x,
+	     "oscillator"
+	    )
+    {
     }
 
     void operator()( const state_type &x , state_type &dxdt , value_type t )
     {
-        const viennacl::vector< value_type > &X = fusion::at_c< 0 >( x );
-        const viennacl::vector< value_type > &Y = fusion::at_c< 1 >( x );
+        viennacl::vector< value_type > &X = const_cast<viennacl::vector<value_type>&>(fusion::at_c< 0 >( x ));
+        viennacl::vector< value_type > &Y = const_cast<viennacl::vector<value_type>&>(fusion::at_c< 1 >( x ));
 
         viennacl::vector< value_type > &dX = fusion::at_c< 0 >( dxdt );
         viennacl::vector< value_type > &dY = fusion::at_c< 1 >( dxdt );
 
         value_type eps = m_offset + m_amp * cos( m_omega_d * t );
 
-	viennacl::ocl::kernel &step =
-	    viennacl::ocl::current_context().get_program(
-		    "oscillator_program").get_kernel("oscillator");
-
-	viennacl::ocl::enqueue( step(cl_uint(X.size()), dX, dY, X, Y, m_omega, eps) );
+	viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, m_omega) );
     }
 };
 
@@ -151,8 +134,8 @@ int main( int argc , char **argv )
         odeint::fusion_algebra , odeint::viennacl_operations
         > stepper;
 
-    odeint::integrate_const( stepper , oscillator(1.0, 0.2, 0.0, 1.2),
-	    S , value_type(0.0) , t_max , dt );
+    oscillator sys(1.0, 0.2, 0.0, 1.2);
+    odeint::integrate_const( stepper , std::ref( sys ), S , value_type(0.0) , t_max , dt );
 
     std::vector< value_type > res( N );
     viennacl::copy( X, res );
