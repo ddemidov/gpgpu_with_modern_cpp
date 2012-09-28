@@ -3,12 +3,15 @@ project(vexcl_odeint_paper_sources)
 
 find_package(Boost)
 
-find_package(CUDA)
-set(CUDA_NVCC_FLAGS "-arch=sm_13")
+find_package(CUDA QUIET)
+
+if (CUDA_FOUND)
+    set(CUDA_NVCC_FLAGS "-arch=sm_13")
+endif (CUDA_FOUND)
 
 set(ODEINT_ROOT   "/home/demidov/work/karsten/odeint-v2"     CACHE STRING "odeint root")
 set(VEXCL_ROOT    "/home/demidov/work/vexcl"                 CACHE STRING "VexCL root")
-set(VIENNACL_ROOT "/home/demidov/work/opencl/ViennaCL-1.3.1" CACHE STRING "ViennaCL root")
+set(VIENNACL_ROOT "/home/demidov/work/opencl/ViennaCL-1.4.0-preview" CACHE STRING "ViennaCL root")
 
 include_directories(
     ${BOOST_ROOT}

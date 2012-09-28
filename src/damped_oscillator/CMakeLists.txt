@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(dumped_oscillator)
 
-cuda_add_executable(thrust_oscillator thrust_oscillator.cu)
+if (CUDA_FOUND)
+    cuda_add_executable(thrust_oscillator thrust_oscillator.cu)
 
-cuda_add_executable(thrust_oscillator_openmp thrust_oscillator.cu
-    OPTIONS "-Xcompiler;-fopenmp;-DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP")
-target_link_libraries(thrust_oscillator_openmp gomp)
+    cuda_add_executable(thrust_oscillator_openmp thrust_oscillator.cu
+	OPTIONS "-Xcompiler;-fopenmp;-DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP")
+    target_link_libraries(thrust_oscillator_openmp gomp)
+endif (CUDA_FOUND)
 
 add_executable(vexcl_oscillator vexcl_oscillator.cpp)
 target_link_libraries(vexcl_oscillator OpenCL)
