@@ -11,7 +11,7 @@ rm -f vexcl_2gpu.dat
 rm -f vexcl_3gpu.dat
 rm -f viennacl_gpu.dat
 
-for ((a=256;a<=4194304;a*=2)); do
+for ((a=16;a<=2048;a*=2)); do
     echo "$a "
 
     for ((task=1;task<=10;task++)); do
