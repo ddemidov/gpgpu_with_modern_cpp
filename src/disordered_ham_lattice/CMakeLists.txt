@@ -16,3 +16,9 @@ foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
 	COPYONLY
 	)
 endforeach(script)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/run_on_tahiti.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/run_on_tahiti.sh
+    COPYONLY
+    )

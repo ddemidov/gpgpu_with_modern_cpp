@@ -33,6 +33,12 @@ configure_file(
     )
 
 configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/run_tahiti_tests.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/run_tahiti_tests.sh
+    COPYONLY
+    )
+
+configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/gather_data.sh
     ${CMAKE_CURRENT_BINARY_DIR}/gather_data.sh
     COPYONLY
