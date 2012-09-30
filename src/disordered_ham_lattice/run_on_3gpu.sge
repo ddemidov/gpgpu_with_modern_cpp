@@ -6,10 +6,6 @@
 #$ -l cores=4,tesla_2070=3
 #$ -t 1:10
 
-# Speed up cuda initialization on headless nodes.
-nvidia-smi -l 2>&1 > /dev/null &
-NVSMI_PID=$!
-
 export OCL_PLATFORM=NVIDIA
 export OCL_DEVICE=2070
 export OCL_MAX_DEVICES=3
@@ -27,5 +23,3 @@ for ((a=16;a<=2048;a*=2)); do
 
     echo ""
 done
-
-kill $NVSMI_PID
