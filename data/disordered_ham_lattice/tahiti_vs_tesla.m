@@ -41,11 +41,11 @@ for t = test
     end
 
     subplot(1, 2, 1);
-    loglog(n, avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
+    loglog(n.^2, avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
     hold on
 
     subplot(1, 2, 2);
-    semilogx(n, ref_avg ./ avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
+    semilogx(n.^2, ref_avg ./ avg, style{idx}, 'markersize', msize, 'markerfacecolor', fcolor{idx});
     hold on
 end
 
