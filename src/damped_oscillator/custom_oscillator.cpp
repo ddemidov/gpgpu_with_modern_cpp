@@ -100,15 +100,13 @@ int main( int argc , char **argv ) {
 	vex::copy( x.begin() + n, x.end() , X(1).begin() );
 
 	for(uint d = 0; d < ctx.size(); d++) {
-	    if (size_t psize = static_cast<cl_ulong>(X(0).part_size(d))) {
+	    if (size_t psize = X(0).part_size(d)) {
 		cl::Program program = vex::build_sources(ctx.context(d), source);
 		cl::Kernel kernel(program, "dumped_oscillator");
 		cl::Device device = ctx.device(d);
 
 		size_t wgsize = vex::kernel_workgroup_size(kernel, device);
-		size_t g_size = device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU ?
-		    vex::alignup(psize, wgsize) :
-		    device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * wgsize * 4;
+		size_t g_size = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * wgsize * 4;
 
 		uint pos = 0;
 		kernel.setArg(pos++, psize);

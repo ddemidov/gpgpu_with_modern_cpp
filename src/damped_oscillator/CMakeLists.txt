@@ -21,7 +21,7 @@ add_executable(custom_oscillator custom_oscillator.cpp)
 target_link_libraries(custom_oscillator OpenCL)
 set_target_properties(custom_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
+foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu run_custom_kernel)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
 	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge
