@@ -41,6 +41,11 @@ struct oscillator
     void operator()( const sym_state &x , sym_state &dxdt , value_type t )
     {
         sym_value eps;
+	// This function would be run for the first iteration only.
+	// Integrattion step there begins at time=0, so value of parameter t
+	// may be considered as relative to current time. We use this fact to
+	// link this time shift with symbolic time that would later come as
+	// kernel parameter.
 	eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
 
 	dxdt[0] = eps * x[0] + m_omega * x[1];
@@ -86,6 +91,7 @@ int main( int argc , char **argv )
 	    sym_S[0], sym_S[1], sym_time
 	    );
 
+    // Actual data.
     std::vector<value_type> x( 2 * n );
     std::generate( x.begin() , x.end() , drand48 );
 
