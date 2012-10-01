@@ -322,9 +322,34 @@ $i$-th phase in the chain.
 
 \section{Conclusion}
 
+Performance-wise, there is almost no difference between various platforms and
+libraries when those are run on the same hardware. As we have shown, various
+computational problems may be solved effectively in terms of both human and
+machine time with help of modern high level libraries.  There are some
+differences in the programming interfaces of the libraries which may be crucial
+for ones specific application. 
+
+Thrust is more low level and its interface is very close to C++ STL library.
+OpenCL libraries that we looked at provide more convenient interface for a
+scientific programmer. VexCL has richer set of elementwise vector operations,
+but ViennaCL has extensive set of sparse linear systems solvers (very important
+feature which we did not discuss in this paper).
+
+Regarding CUDA vs OpenCL comparison, we believe that OpenCL has two major
+advantages w.r.t. CUDA: first, it has much wider range of supported hardware
+which is only going to widen with time, since OpenCL is open standard supported
+by major hardware producers. Second advantage of OpenCL is at the same time its
+drawback: one has to (or may to) compile his kernels at compile time. This adds
+overhead notable for smaller workloads but at the same time it allows one to
+transparently build much more effective kernels, as it has been shown in this
+paper. 
+
 \section{Acknowledgments}
 
-This work has been partially supported by RFBR grant No 12-07-0007.
+This work has been partially supported by RFBR grant No 12-07-0007. We also
+would like to thank Gradient
+JSC\footnote{\href{http://www.gradient-geo.com/en}{http://www.gradient-geo.com/en}}
+for kindly provided hardware.
 
 \nocite{*}
 \bibliographystyle{model1-num-names}
