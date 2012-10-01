@@ -71,10 +71,10 @@ int main( int argc , char **argv )
     vex::generator::set_recorder(body);
 
     // State types that would become kernel parameters:
-    sym_state  sym_S = {
+    sym_state  sym_S = {{
 	sym_value::Parameter,
 	sym_value::Parameter
-    };
+    }};
     sym_value sym_time(sym_value::Parameter, sym_value::Scalar);
 
     // Symbolic stepper:
