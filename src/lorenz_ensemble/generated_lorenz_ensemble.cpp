@@ -58,12 +58,12 @@ int main( int argc , char **argv )
 
     // State types that would become kernel parameters:
     sym_state  sym_S = {{
-	sym_vector::Parameter,
-	sym_vector::Parameter,
-	sym_vector::Parameter
+	sym_vector::VectorParameter,
+	sym_vector::VectorParameter,
+	sym_vector::VectorParameter
     }};
 
-    sym_vector sym_R(sym_vector::Parameter, sym_vector::Vector, sym_vector::Const);
+    sym_vector sym_R(sym_vector::VectorParameter, sym_vector::Const);
 
     // Symbolic stepper:
     odeint::runge_kutta4<
