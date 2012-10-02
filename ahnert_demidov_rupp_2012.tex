@@ -322,13 +322,148 @@ $i$-th phase in the chain.
 \section{Further optimizations}
 
 It may be said that performance we got so far is not optimal. Indeed, generic
-odeint algorithms use temporary vector variables. For example, fourth-order
+odeint algorithms uses temporary vector variables. For example, fourth-order
 Runge-Kutta method used in our examples uses at least four temporary state
 variables on each integration step. All of those temporaries are full-blown
 vectors that waste global memory reads and writes. 
 
+\begin{figure}
+\begin{lstlisting}
+double2 system_function(
+    double omega, double amp, double offset, double omega_d,
+    double dt, double t, double2 s
+    )
+{
+    double eps = offset + amp * cos(omega_d * t);
+    double2 dsdt;
+    dsdt.x = dt * (eps * s.x + omega * s.y);
+    dsdt.y = dt * (eps * s.y - omega * s.x);
+    return dsdt;
+}
+kernel void dumped_oscillator(
+    ulong  n, global double *X, global double *Y,
+    double omega, double amp, double offset, double omega_d,
+    double dt, double t
+    )
+{
+    double2 s, dsdt, k1, k2, k3, k4;
+    for(size_t gid       = get_global_id(0),
+               grid_size = get_global_size(0);
+        gid < n; gid += grid_size)
+    {
+        s.x = X[gid];
+        s.y = Y[gid];
+        k1 = system_function(omega, amp, offset, omega_d, dt, t, s);
+        k2 = system_function(omega, amp, offset, omega_d, dt,
+                t + 0.5 * dt, s + 0.5 * k1);
+        k3 = system_function(omega, amp, offset, omega_d, dt,
+                t + 0.5 * dt, s + 0.5 * k2);
+        k4 = system_function(omega, amp, offset, omega_d, dt,
+                t + dt, s + k3);
+        s += (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+        X[gid] = s.x;
+        Y[gid] = s.y;
+    }
+};
+
+\end{lstlisting}
+\caption{Hand-coded kernel implementing single iteration of 4th order
+Runge-Kutta method.}
+\label{fig:code:customkrn}
+\end{figure}
+
 It is of course possible to manually create computational kernel corresponding
-to the full integration step.
+to the full integration step. \figref{fig:code:customkrn} shows just this
+kernel. Unfortunately, by choosing this path we lost generality that odeint
+provides.
+
+\begin{figure}
+\begin{lstlisting}
+struct oscillator {
+    value_type omega, amp, offset, omega_d;
+    sym_value &sym_time;
+
+    oscillator(value_type omega, value_type amp, value_type offset,
+               value_type omega_d, sym_value &sym_time)
+        : omega(omega), amp(amp) , offset(offset) , omega_d(omega_d),
+          sym_time(sym_time)
+    {}
+
+    void operator()( const sym_state &x , sym_state &dxdt , value_type t ) {
+        sym_value eps;
+        eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
+        dxdt[0] = eps * x[0] + m_omega * x[1];
+        dxdt[1] = eps * x[1] - m_omega * x[0];
+    }
+};
+\end{lstlisting}
+\caption{System function used in automatic kernel generation.}
+\label{fig:code:symsysfunc}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}
+typedef double value_type;
+typedef vex::generator::symbolic<value_type> sym_value;
+typedef std::array<sym_value,2> sym_state;
+
+// Custom kernel body will be recorded here:
+std::ostringstream body;
+vex::generator::set_recorder(body);
+
+// State types that would become kernel parameters:
+sym_state sym_S = {sym_value::VectorParameter, sym_value::VectorParameter};
+sym_value sym_time(sym_value::ScalarParameter);
+
+// Symbolic stepper:
+odeint::runge_kutta4<
+        sym_state, value_type, sym_state, value_type,
+        odeint::range_algebra, odeint::default_operations
+        > sym_stepper;
+
+oscillator sys(1.0, 0.2, 0.0, 1.2, sym_time);
+sym_stepper.do_step(std::ref(sys), sym_S, 0, dt);
+
+// Now that expression sequence is recorded, we build OpenCL kernel:
+auto kernel = vex::generator::build_kernel(ctx.queue(),
+        "damped_oscillator", body.str(), sym_S[0], sym_S[1], sym_time
+        );
+
+// Actual data (initialization skipped).
+vex::vector<value_type> X(ctx.queue(), n);
+vex::vector<value_type> Y(ctx.queue(), n);
+
+// Integration loop:
+for(value_type t = 0; t < t_max; t += dt) kernel(X, Y, t);
+\end{lstlisting}
+\caption{Automatic generation of OpenCL kernel corresponding to 4th order
+Runge-Kutta method}
+\label{fig:code:krnbuilder}
+\end{figure}
+
+VexCL library provides kernel generation mechanism that is able to solve this
+problem. It allows transparent conversion of generic CPU algorithms to OpenCL
+kernels. In order to do this conversion one needs to record sequence of
+arithmetic expressions made by an algorithm.  The recording is done with help
+of \code{vex::generator::symbolic<T>} class. The class supports arithmetic
+expression templates and simply outputs to provided stream any expressions it
+is being subjected to. This technique is demonstrated on
+\figref{fig:code:symsysfunc} and~\ref{fig:code:krnbuilder}. Its advantage is
+that we are able to select any stepper from odeint library (or any other
+algorithm) for the generated kernel. \figref{fig:genkernel} presents
+performance comparison of Thrust-based odeint solution with hand-coded and
+generated OpenCL kernels. Both hand-coded and generated kernels show very
+similar performance and outperform Thrust-based odeint solution by a factor of
+5 for large problem sizes.
+
+\begin{figure}
+    \begin{center}
+	\includegraphics[width=\textwidth]{data/damped_oscillator/genkernel}
+    \end{center}
+    \caption{Performance of damped oscillator example with hand-coded and
+    generated OpenCL kernels compared with Thrust-based odeint solution.}
+    \label{fig:genkernel}
+\end{figure}
 
 \section{Conclusion}
 

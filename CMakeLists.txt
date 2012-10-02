@@ -13,6 +13,7 @@ if (LATEX_COMPILER)
 	       data/phase_oscillator_chain/scaling.eps
 	       data/damped_oscillator/perfcmp.eps
 	       data/damped_oscillator/scaling.eps
+	       data/damped_oscillator/genkernel.eps
 	       data/disordered_ham_lattice/perfcmp.eps
 	       data/disordered_ham_lattice/scaling.eps
 	BIBFILES ref.bib
