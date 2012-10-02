@@ -454,7 +454,10 @@ algorithm) for the generated kernel. \figref{fig:genkernel} presents
 performance comparison of Thrust-based odeint solution with hand-coded and
 generated OpenCL kernels. Both hand-coded and generated kernels show very
 similar performance and outperform Thrust-based odeint solution by a factor of
-5 for large problem sizes.
+5 for large problem sizes. Moreover, generated kernel outperforms hand-coded
+kernel by a small margin. We beleive this is due to the fact that VexCL kernel
+generator unrolls all operations in the kernel and hard-codes any constants it
+encounters in expression sequence.
 
 \begin{figure}
     \begin{center}
