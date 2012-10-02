@@ -1,7 +1,7 @@
 close all
 clear all
 
-test = {'thrust_gpu', 'custom_1gpu', 'custom_1gpu'};
+test = {'thrust_gpu', 'custom_1gpu', 'generated_1gpu'};
 lgnd = {'Thrust GPU', 'Hand-coded kernel', 'Generated kernel'};
 style = {'ko-', 'kd-', 'kd-'};
 fcolor = {'w', 'w', 'k'};
