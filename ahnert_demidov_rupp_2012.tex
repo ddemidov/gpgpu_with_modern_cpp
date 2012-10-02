@@ -39,6 +39,13 @@ Russian Academy of Sciences,\\
 Lobachevsky st. 2/31, 420008 Kazan, Russia
 }
 
+\author{Karl Rupp}
+\ead{rupp@iue.tuwien.ac.at}
+\address{
+Institute for Microelectronics, TU Wien,\\
+Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
+}
+
 \begin{abstract}
     We present comparison of several modern C++ libraries intended for OpenCL
     and CUDA programming. The comparison is based on odeint~--- framework for
@@ -93,53 +100,43 @@ algebraic computations. This allows to effectively use libraries implementing
 basic linear algebra operations with either OpenCL or CUDA technologies for
 solution of ODEs.
 
-\section{Libraries used in comparison}
 
-\subsection{Odeint}
 
-Odeint\footnote{\href{http://odeint.com}{http://odeint.com}}
-is a modern C++ library for numerically solving Ordinary Differential
-Equations. It is developed in a generic way using Template Metaprogramming
-which leads to extraordinary high flexibility at top performance. The numerical
-algorithms are implemented independently of the underlying arithmetics. This
-results in an incredible applicability of the library, especially in
-non-standard environments. For example, odeint supports matrix types, arbitrary
-precision arithmetics and can be easily adopted to use either CUDA or OpenCL
-frameworks.
-
-In this work odeint is used as a basis for comparison of CUDA and OpenCL
-libraries.
-
-\subsection{Thrust}
-
-Thrust%
-\footnote{\href{http://thrust.github.com}{http://thrust.github.com}}
-is a parallel algorithms library which resembles the C++ Standard Template
-Library. Thrust's high-level interface greatly enhances developer
-productivity while enabling performance portability between GPUs and multicore
-CPUs. Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
-
-\subsection{VexCL}
-
-VexCL%
-\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
-is vector expression template library for OpenCL. It has been created for ease
-of OpenCL developement with C++.  VexCL strives to reduce amount of boilerplate
-code needed to develop OpenCL applications. The library provides convenient and
-intuitive notation for vector arithmetic, reduction, and sparse matrix-vector
-multiplication. Multi-device and even multi-platform computations are
-supported. 
-
-\subsection{ViennaCL}
-
-The Vienna Computing Library%
-\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
-(ViennaCL) is a scientific computing library written in C++ and based on
-OpenCL. It allows simple, high-level access to the vast computing resources
-available on parallel architectures such as GPUs and is primarily focused on
-common linear algebra operations (BLAS levels 1, 2 and 3) and the solution of
-large systems of equations by means of iterative methods with optional
-preconditioner.
+\begin{description}
+    \item[Odeint] is a modern C++
+	library\footnote{\href{http://odeint.com}{http://odeint.com}} for
+	numerically solving Ordinary Differential Equations. It is developed in
+	a generic way using Template Metaprogramming which leads to
+	extraordinary high flexibility at top performance. The numerical
+	algorithms are implemented independently of the underlying arithmetics.
+	This results in an incredible applicability of the library, especially
+	in non-standard environments. For example, odeint supports matrix
+	types, arbitrary precision arithmetics and can be easily adopted to use
+	either CUDA or OpenCL frameworks.  Odeint is used in this work as a
+	framework for comparison of other libraries.
+    \item[Thrust] is a parallel algorithms
+	library\footnote{\href{http://thrust.github.com}{http://thrust.github.com}}
+	which resembles the C++ Standard Template Library. Thrust's high-level
+	interface greatly enhances developer productivity while enabling
+	performance portability between GPUs and multicore CPUs. Thrust is
+	distributed with NVIDIA CUDA Toolkit since version 4.1.
+    \item[VexCL] is vector expression template
+	library\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
+	for OpenCL. It has been created for ease of OpenCL developement with
+	C++.  VexCL strives to reduce amount of boilerplate code needed to
+	develop OpenCL applications. The library provides convenient and
+	intuitive notation for vector arithmetic, reduction, and sparse
+	matrix-vector multiplication.  Multi-device and even multi-platform
+	computations are supported. 
+    \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
+	library\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
+	written in C++ and based on OpenCL. It allows simple, high-level access
+	to the vast computing resources available on parallel architectures
+	such as GPUs and is primarily focused on common linear algebra
+	operations (BLAS levels 1, 2 and 3) and the solution of large systems
+	of equations by means of iterative methods with optional
+	preconditioner.
+\end{description}
 
 %Odeint supports Thrust and VexCL natively, but for ViennaCL we needed to
 %provide adaptation code. Since ViennaCL already supports expression templates
@@ -290,7 +287,7 @@ $i$-th phase in the chain.
 	\includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
     \end{center}
     \caption{Damped oscillator ensemble results}
-    \label{fig:phase:perf}
+    \label{fig:damped:perf}
 \end{figure}
 
 \begin{figure}
@@ -298,7 +295,7 @@ $i$-th phase in the chain.
 	\includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
     \end{center}
     \caption{Disordered Ham lattice results}
-    \label{fig:phase:perf}
+    \label{fig:lattice:perf}
 \end{figure}
 
 \begin{figure}

@@ -6,7 +6,7 @@ find_package(LATEX)
 if (LATEX_COMPILER)
     include(UseLATEX.cmake)
 
-    add_latex_document(ahnert_demidov_2012.tex
+    add_latex_document(ahnert_demidov_rupp_2012.tex
 	IMAGES data/lorenz_ensemble/perfcmp.eps
 	       data/lorenz_ensemble/scaling.eps
 	       data/phase_oscillator_chain/perfcmp.eps
