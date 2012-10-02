@@ -319,6 +319,17 @@ $i$-th phase in the chain.
     \label{fig:scaling}
 \end{figure}
 
+\section{Further optimizations}
+
+It may be said that performance we got so far is not optimal. Indeed, generic
+odeint algorithms use temporary vector variables. For example, fourth-order
+Runge-Kutta method used in our examples uses at least four temporary state
+variables on each integration step. All of those temporaries are full-blown
+vectors that waste global memory reads and writes. 
+
+It is of course possible to manually create computational kernel corresponding
+to the full integration step.
+
 \section{Conclusion}
 
 Performance-wise, there is almost no difference between various platforms and
