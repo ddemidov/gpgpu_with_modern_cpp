@@ -16,6 +16,25 @@
 \newcommand{\code}[1]{\lstinline|#1|}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
 
+%
+% mathematical commands
+%
+\newcommand {\re} {\text{Re}}
+\newcommand {\im} {\text{Im}}
+\newcommand {\de} {\mbox{d}}
+\newcommand {\ii} {\text{i}}
+\newcommand {\ee} {\text{e}}
+\newcommand {\mathbi}[1] {\textbf{\em #1}}
+\newcommand {\sign} {\text{sign}}
+\newcommand {\bra}[1] {\langle #1 \mid}
+\newcommand {\ket}[1] {\mid #1 \rangle}
+\newcommand {\braket}[2] {\langle #1 \mid #2 \rangle}
+\newcommand {\mean}[1] {\langle #1 \rangle}
+\newcommand {\sech} {\text{sech}}
+\newcommand {\conj} {\ast}
+
+
+
 \journal{Journal of Parallel and Distributed Computing}
 
 \begin{document}
@@ -25,7 +44,7 @@
 \title{Programming OpenCL and CUDA:\\a Case Study Using Modern C++ Libraries}
 
 \author{Karsten Ahnert}
-\ead{kahnert@uni-potsdam.de}
+\ead{karsten.ahnert@gmx.de}
 \address{
 Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,\\
 Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany
@@ -40,16 +59,17 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 }
 
 \begin{abstract}
-    We present comparison of several modern C++ libraries intended for OpenCL
-    and CUDA programming. The comparison is based on odeint~--- framework for
-    solution of ordinary differential equations. Odeint is designed in a very
-    flexible way such that the algorithms are completely independent from the
-    underlying containers and even from the basic algebraic computations. This
-    allows to effectively use such libraries as VexCL, ViennaCL or Thrust to
-    solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
-    and CUDA work equally well for problems of large sizes, although OpenCL is
-    not well suited for smaller problems due to its higher initialization
-    overhead.
+    We present comparison of several modern C++ libraries intended for
+    OpenCL and CUDA programming. The comparison is based on odeint~---
+    a framework for solution of ordinary differential
+    equations. Odeint is designed in a very flexible way such that the
+    algorithms are completely independent from the underlying
+    containers and even from the basic algebraic computations. This
+    allows one to effectively use such libraries as VexCL, ViennaCL or
+    Thrust to solve ODEs with either OpenCL or CUDA technologies. We
+    found that OpenCL and CUDA work equally well for problems of large
+    sizes, although OpenCL is not well suited for smaller problems due
+    to its higher initialization overhead.
 \end{abstract}
 
 \begin{keyword}
@@ -62,17 +82,20 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 
 Recently, GPGPU based computing has acquired considerable momentum in
 scientific community. This is confirmed both by increasing numbers of
-GPGPU-related publications and GPU based supercomputers in
-top500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
-programming frameworks are NVIDIA CUDA and OpenCL.  The former is proprietary
-parallel computing architecture developed by Nvidia for general purpose
-computing on Nvidia graphics cards, and the latter is open, royalty-free
-standard for cross-platform, parallel programming of modern processors backed
-by Khronos group. The frameworks have their distinctive pros and cons. CUDA has
-more mature programming environment with larger set of scientific libraries;
-but it is only supported on NVIDIA hardware. OpenCL is an open standard
-supported on wide range of hardware but it requires much larger amount of
-boilerplate code from a developer.
+GPGPU-related publications and GPU based supercomputers in Top
+500\footnote{\href{http://top500.org/}{http://top500.org/}}
+list. Furthermore, GPUs based hardware is usually much cheaper then
+comparable CPU based computers. Major programming frameworks are
+NVIDIA CUDA and OpenCL.  The former is proprietary parallel computing
+architecture developed by Nvidia for general purpose computing on
+Nvidia graphics cards, and the latter is open, royalty-free standard
+for cross-platform, parallel programming of modern processors backed
+by Khronos group. The frameworks have their distinctive pros and
+cons. CUDA has more a mature programming environment with larger set of
+scientific libraries; but it is only supported on NVIDIA
+hardware. OpenCL is an open standard supported on wide range of
+hardware but it requires much larger amount of boilerplate code from the
+developer.
 
 Both technologies are able to provide scientists with vast computational
 resources of modern GPU cards. But the power comes with a price: GPGPU
@@ -80,13 +103,13 @@ programming has a steep learining curve. Programmer needs to familiarize
 himself with (slightly) new programming language and, more importantly, with
 new programming paradigm. However, the entry price may be lowered with help of
 specialized libraries. CUDA provides several such libraries (BLAS
-implementation, Fast Fourier Transform, Thrust and others). But there are many
+implementation, Fast Fourier Transform, Thrust and others). And there are many
 third party librares for both CUDA and OpenCL.
 
-This paper presents comparison of several modern C++ libraries aimed at ease of
+This paper presents a comparison of several modern C++ libraries aimed at ease of
 GPGPU development. We look at both ease of use and performance of the libraries
-under consideration in the context of solving ordinary differential equations.
-The comparison is based on odeint~--- modern C++ library for solution of ODEs.
+under consideration in the context of solving ordinary differential equations (ODEs).
+The comparison is based on odeint~--- modern C++ library for solving the initial value problem of ODEs.
 Odeint is designed in a very flexible way such that the algorithms are
 completely independent from the underlying containers and even from the basic
 algebraic computations. This allows to effectively use libraries implementing
@@ -117,14 +140,14 @@ Thrust%
 is a parallel algorithms library which resembles the C++ Standard Template
 Library. Thrust's high-level interface greatly enhances developer
 productivity while enabling performance portability between GPUs and multicore
-CPUs. Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
+CPUs. Thrust is distributed with the NVIDIA CUDA Toolkit since version 4.1.
 
 \subsection{VexCL}
 
 VexCL%
 \footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
-is vector expression template library for OpenCL. It has been created for ease
-of OpenCL developement with C++.  VexCL strives to reduce amount of boilerplate
+is a vector expression template library for OpenCL. It has been created for ease
+of OpenCL developement with C++.  VexCL strives to reduce the amount of boilerplate
 code needed to develop OpenCL applications. The library provides convenient and
 intuitive notation for vector arithmetic, reduction, and sparse matrix-vector
 multiplication. Multi-device and even multi-platform computations are
@@ -182,13 +205,13 @@ preconditioner.
 \begin{figure}
 \begin{lstlisting}
 typedef std::array<double, 3> state_type;
-state_type x1, x2;
+state_type x1, x2, x3
 // Initialize x1 and x2.
 
 double dt = 0.1;
 odeint::range_algebra algebra;
-// The following line computes x1 = dt * x2 for all elements of x1 and x2:
-algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
+// The following line computes x1 = x2 + dt * x3 for all elements of x1 and x2:
+algebra.for_each2(x1, x2, x2, default_operations::scale_sum1(1.0,dt));
 \end{lstlisting}
 \caption{An example of range algebra in odeint.}
 \label{fig:odeintops}
@@ -196,15 +219,19 @@ algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
 
 Odeint provides a mechanism which lets the user change the way how the
 elementary numerical computations are performed. This mechanism consists of a
-combination of state type, algebra and operations. State type represents the
-state of the ODE being solved and is usually a vector type like
-\code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
-iterating through all elemnts of the state whereas the operations are
-responsible for the elementary operations. \figref{fig:odeintops} provides an
-example of using range algebra. Here \code{for_each2} is used, which means that
-two state types are iterated. The operation is a \code{scale_sum1} which simply
-calculates \code{x1[i] = dt * x2[i]}. Odeint provides a set of predefined
-algebras, which includes:
+combination of a state type, the algebra and the operations. The state type represents the
+phase space of the ODE. It is usually a vector type like
+\code{std::vector<>} or \code{std::array<>}, but if can a more advance container like compile-time sequences from Boost.Fusion or vectors living on the GPU. The algebra is responsible for
+iterating through all elements of the state whereas the operations are
+performing the elementary operations. \figref{fig:odeintops} provides an
+example of using odeint's range algebra. The range algebra is devoted to iterate through state types fullfilling the concepts of Boost.Range. In the example, a \code{for_each3} is used, which means that
+three state types are iterated. The operation is a \code{scale_sum2} which simply
+calculates \code{x1[i] = 1 * x2[i] + dt * x3[i]}. Note, that this is already the (out-of-place) formula for the Euler method.
+
+class template steppers, with parameter, state, algebra, operations
+
+
+Odeint provides a set of predefined algebras, which includes:
 \begin{itemize}
     \item \code{range_algebra}: default algebra which works on Boost.Ranges
     \item \code{array_algebra}: specialized algebra for boost::array
@@ -220,7 +247,7 @@ used with the \code{vector_space_algebra} and the \code{default_operations}
 which simply calls the operations directly on the matrix or vector type. In
 this case only odeint resizing mechanism has to be adapted.
 
-In the following subsections we describe odeint adaptation for GPGPU libraries
+In the following subsections we describe the odeint adaptation for GPGPU libraries
 under consideration. We should mention that odeint now supports all of the
 mentioned libraries natively. However, providing adaptation examples serves our
 goal of comparing ease of use of the libraries.
@@ -231,41 +258,61 @@ goal of comparing ease of use of the libraries.
 
 \section{Numerical experiments}
 
+typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
+
 \subsection{Lorenz Attractor Ensemble}
 
-In the first example we will use the Lorenz system and study its dependence on
-one of the parameters. The Lorenz system is a system of three coupled ODEs
-which shows chaotic behavior for a large range of parameters. The ODE reads
+In the first example we will use the Lorenz system \cite{Lorenz}. The Lorenz system is a system of three coupled ODEs
+which shows chaotic behavior for a large range of parameters. It is one of the most used toying ODE in the nonlinear dynamics community. The ODE of the Lorenz system reads
 \begin{align}
-    \frac{dx}{dt} &= -\sigma \left( x - y \right), \\
-    \frac{dy}{dt} &= R x - y - xz, \\
-    \frac{dz}{dt} &= -bz + xy.
+    \frac{\de x}{\de t} &= -\sigma \left( x - y \right), \\
+    \frac{\de y}{\de t} &= R x - y - xz, \\
+    \frac{\de z}{\de t} &= -bz + xy.
 \end{align}
 
-We will study the dependence on the parameter $R$. Therefore, we create a large
-set of these systems (each with a different parameter $R$), pack them all into
-one system and solve them simultaneously on the GPU.
+Interesting question around the Lorenz system usually arise with dependence on one of its parameters. For example one might want to study the dependence on the Lyapunov exponents -- a measure for chaoticity -- on the parameter $R$. Therefore, one would create a large set of Lorenz systems (each with a different parameter $R$), pack them all into one system and solve them simultaneously. To show how this can be done we have omitted the step of solving the Lyapunov exponent, but solve only the ensemble Lorenz system for demonstration purpose and performance comparision. The full problem of computing the Lyapunov exponent would also require to solve the evolution of perturbations and some kind of renormalization. 
+
+introduce the termini ensemble here?
 
 \subsection{Chain of Coupled Phase Oscillators}
 
-As a second example we choose a chain of coupled phase oscillators. Phase
-oscillators are a very simplified version of usual oscillator where the state
-is described by a $2\pi$ periodic variable. If a single phase oscillator is
-uncoupled its phase $\phi$ is described by a linear growth $d\phi/dt = \omega$
-where $\omega$ is the phase velocity. Therefore, interesting behavior can only
+a phase oscillator is not reduced...
+
+As a second example we choose a chain of coupled phase oscillators, consisting of a very large number of individual phase oscillators. A phase oscillator is reduced version of a autonomous oscillator where the state
+is described by a $2\pi$ periodic variable \cite{Pikovsky-Rosenblum,Kuramoto,scholarpedia articles} which grows linear in time $\de \phi/dt = \omega$. $\omega$ is here the phase velocity. 
+
+Therefore, interesting behavior can only
 be observed if two or more oscillators are coupled. In fact, a system of
 coupled phase oscillators is a prominent example of an emergent system where
 the coupled system shows a more complex behavior than its constitutes.
 
+synchronization, traveling waves, phase chaos, amplitude death
+
+
 The concrete example we analyze here is:
 \begin{equation}
-    \frac{d\phi_i}{dt} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
+    \frac{\de \phi_i}{\de t} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
     - \phi_{i-1}).
 \end{equation}
-Note that $\phi_i$ is a function of the time, the index $i$ denotes here the
-$i$-th phase in the chain.
+The index $i$ denotes here the $i$-th phase in the chain.
+
+
 
 \subsection{Damped Harmonic Oscillator Ensemble}
+
+dependence on an external parameter (the time)
+include $x^3$?
+
+\subsection{Disordered Hamiltonian lattice}
+
+equation, Hamiltonian system, energy conservation, phase volume conservation
+
+symplectic steppers must be used
+
+cite Mario, localization, thermalization
+
+usage of dense matrix types for demonstration purposes
+
 
 \section{Results}
 
