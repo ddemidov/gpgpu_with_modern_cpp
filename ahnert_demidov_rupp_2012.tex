@@ -622,7 +622,7 @@ device.  The timings we provide here were obtained for Nvidia Tesla C2070 GPUs
 and for Intel Core i7 930 CPU. For each of the experiments, 10 runs were made
 and median time was selected as a representative value.
 
-Figures \ref{fig:phase:perf} through \ref{fig:lorenz:perf} show performance
+Figures \ref{fig:damped:perf} through \ref{fig:lorenz:perf} show performance
 data for the four numerical experiments. Left plots shows absolute time with
 against the size of the solved problem, while right plots show relative
 performance with respect to Thrust GPU version.
@@ -643,18 +643,18 @@ be processed.
 
 \begin{figure}[p]
     \begin{center}
-        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
-    \end{center}
-    \caption{Phase oscillator chain results}
-    \label{fig:phase:perf}
-\end{figure}
-
-\begin{figure}[p]
-    \begin{center}
         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
     \end{center}
     \caption{Damped oscillator ensemble results}
     \label{fig:damped:perf}
+\end{figure}
+
+\begin{figure}[p]
+    \begin{center}
+        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
+    \end{center}
+    \caption{Phase oscillator chain results}
+    \label{fig:phase:perf}
 \end{figure}
 
 \begin{figure}[p]
