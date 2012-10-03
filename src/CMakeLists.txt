@@ -9,9 +9,17 @@ if (CUDA_FOUND)
     set(CUDA_NVCC_FLAGS "-arch=sm_13")
 endif (CUDA_FOUND)
 
-set(ODEINT_ROOT   "/home/demidov/work/karsten/odeint-v2"     CACHE STRING "odeint root")
-set(VEXCL_ROOT    "/home/demidov/work/vexcl"                 CACHE STRING "VexCL root")
-set(VIENNACL_ROOT "/home/demidov/work/opencl/ViennaCL-1.4.0-preview" CACHE STRING "ViennaCL root")
+# set(ODEINT_ROOT   "/home/demidov/work/karsten/odeint-v2"     CACHE STRING "odeint root")
+# set(VEXCL_ROOT    "/home/demidov/work/vexcl"                 CACHE STRING "VexCL root")
+# set(VIENNACL_ROOT "/home/demidov/work/opencl/ViennaCL-1.4.0-preview" CACHE STRING "ViennaCL root")
+
+set(ODEINT_ROOT    $ENV{ODEINT_ROOT}   CACHE STRING "odeint root")
+set(VEXCL_ROOT     $ENV{VEXCL_ROOT}    CACHE STRING "VexCL root")
+set(VIENNACL_ROOT  $ENV{VIENNACL_ROOT} CACHE STRING "ViennaCL root")
+
+MESSAGE(STATUS "odeint found in ${ODEINT_ROOT}")
+MESSAGE(STATUS "VexCL found in ${VEXCL_ROOT}")
+MESSAGE(STATUS "ViennaCL found in ${VIENNACL_ROOT}")
 
 include_directories(
     ${BOOST_ROOT}
