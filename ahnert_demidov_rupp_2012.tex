@@ -262,8 +262,8 @@ struct oscillator {
     struct oscillator_functor {
         double eps, omega;
 
-        oscillator_functor(double omega , double eps)
-            : omega(omega) , eps(eps) {}
+        oscillator_functor(double omega, double eps)
+            : omega(omega), eps(eps) {}
 
         template< class T >
         __host__ __device__ void operator()(T t) const {
@@ -274,23 +274,23 @@ struct oscillator {
         }
     };
 
-    void operator()(const state_type &x, state_type &dxdt , double t) const {
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
         double eps = offset + amp * cos(omega_d * t);
         thrust::for_each(
             thrust::make_zip_iterator(
                 thrust::make_tuple(
-                    boost::begin(x) ,
-                    boost::begin(x) + N ,
-                    boost::begin(dxdt) ,
+                    boost::begin(x),
+                    boost::begin(x) + N,
+                    boost::begin(dxdt),
                     boost::begin(dxdt) + N 
-                    ) ) ,
+                    ) ),
             thrust::make_zip_iterator(
                 thrust::make_tuple(
-                    boost::begin(x) + N ,
-                    boost::begin(x) + 2 * N ,
-                    boost::begin(dxdt) + N ,
+                    boost::begin(x) + N,
+                    boost::begin(x) + 2 * N,
+                    boost::begin(dxdt) + N,
                     boost::begin(dxdt) + 2 * N
-                    ) ) ,
+                    ) ),
             oscillator_functor(omega, eps) );
     }
 };
@@ -360,10 +360,10 @@ struct phase_oscillators {
     const state_type &omega;
     vex::StencilOperator< double, 3, 1, oscillator_body > S;
 
-    sys_func(const state_type &omega) : omega(omega) , S(omega.queue_list())
+    sys_func(const state_type &omega) : omega(omega), S(omega.queue_list())
     { }
 
-    void operator()(const state_type &x , state_type &dxdt , double t) const {
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
         dxdt = omega + S( x );
     }
 };
@@ -407,13 +407,13 @@ struct oscillator {
     viennacl::generator::custom_operation op;
 
     oscillator(double omega, double amp, double offset, double omega_d)
-        : omega(omega), amp(amp) , offset(offset) , omega_d(omega_d),
+        : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
           op(sym_dx = sym_eps * sym_x + sym_omega * sym_y,
              sym_dy = sym_eps * sym_y - sym_omega * sym_x,
              "oscillator")
     { }
 
-    void operator()( const state_type &x , state_type &dxdt , double t ) {
+    void operator()( const state_type &x, state_type &dxdt, double t ) {
         vector_type &X = const_cast<vector_type&>( fusion::at_c<0>(x) );
         vector_type &Y = const_cast<vector_type&>( fusion::at_c<1>(x) );
 
@@ -468,7 +468,7 @@ thrust::for_each(
             dxdt.begin() ) ),
     thrust::make_zip_iterator(
         thrust::make_tuple(
-            x.end() ,
+            x.end(),
             thrust::make_permutation_iterator( x.begin(), prev.end() ),
             thrust::make_permutation_iterator( x.begin(), next.end() ),
             omega.end(),
@@ -481,7 +481,7 @@ thrust::for_each(
 elements and initialized as
 \begin{lstlisting}[frame=leftline]
 thrust::counting_iterator<size_t> c(0);
-thrust::copy(c , c + N - 1 , prev.begin() + 1);
+thrust::copy(c, c + N - 1, prev.begin() + 1);
 prev[0] = 0;     // prev = { 0, 0, 1, 2, 3, ..., N-1 }
 thrust::copy(c + 1, c + N, next.begin());
 next[N-1] = N-1; // next = { 1, 2, 3, ..., N-1, N-1 }
@@ -774,11 +774,11 @@ struct oscillator {
 
     oscillator(double omega, double amp, double offset,
                double omega_d, sym_value &sym_time)
-        : omega(omega), amp(amp) , offset(offset) , omega_d(omega_d),
+        : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
           sym_time(sym_time)
     {}
 
-    void operator()( const sym_state &x , sym_state &dxdt , double t ) {
+    void operator()(const sym_state &x, sym_state &dxdt, double t) {
         sym_value eps;
         eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
         dxdt[0] = eps * x[0] + m_omega * x[1];
