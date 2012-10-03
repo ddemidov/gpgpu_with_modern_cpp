@@ -35,6 +35,8 @@
 \newcommand {\sech} {\text{sech}}
 \newcommand {\conj} {\ast}
 
+\newcommand {\rem}[1]{}
+
 
 \journal{Journal of Parallel and Distributed Computing}
 
@@ -45,7 +47,7 @@
 \title{Programming OpenCL and CUDA:\\a Case Study Using Modern C++ Libraries}
 
 \author{Karsten Ahnert}
-\ead{kahnert@uni-potsdam.de}
+\ead{karsten.ahnert@gmx.de}
 \address{
 Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,\\
 Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany
@@ -67,16 +69,17 @@ Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
 }
 
 \begin{abstract}
-    We present comparison of several modern C++ libraries intended for OpenCL
-    and CUDA programming. The comparison is based on odeint~--- framework for
-    solution of ordinary differential equations. Odeint is designed in a very
-    flexible way such that the algorithms are completely independent from the
-    underlying containers and even from the basic algebraic computations. This
-    allows to effectively use such libraries as VexCL, ViennaCL or Thrust to
-    solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
-    and CUDA work equally well for problems of large sizes. OpenCL has higher
-    overhead for smaller problems, but allows on the fly generation of more
-    effectice kernels.
+    We present comparison of several modern C++ libraries intended for
+    OpenCL and CUDA programming. The comparison is based on odeint~---
+    a framework for solution of ordinary differential
+    equations. Odeint is designed in a very flexible way such that the
+    algorithms are completely independent from the underlying
+    containers and even from the basic algebraic computations. This
+    allows to effectively use such libraries as VexCL, ViennaCL or
+    Thrust to solve ODEs with either OpenCL or CUDA technologies. We
+    found that OpenCL and CUDA work equally well for problems of large
+    sizes. OpenCL has higher overhead for smaller problems, but allows
+    on the fly generation of more effectice kernels.
 \end{abstract}
 
 \begin{keyword}
@@ -90,7 +93,7 @@ Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
 Recently, GPGPU based computing has acquired considerable momentum in
 scientific community. This is confirmed both by increasing numbers of
 GPGPU-related publications and GPU based supercomputers in
-top500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
+the Top 500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
 programming frameworks are NVIDIA CUDA and OpenCL.  The former is proprietary
 parallel computing architecture developed by Nvidia for general purpose
 computing on Nvidia graphics cards, and the latter is open, royalty-free
@@ -249,12 +252,25 @@ goal of comparing ease of use of the libraries.
 
 \section{Numerical experiments}
 
+typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
+
+
 \subsection{Damped Harmonic Oscillator Ensemble}
 
+dependence on an external parameter (the time)
+include $x^3$?
+
+The first example is a set of damped driven oscillators 
+
 \begin{equation} \label{eq:dampedsystem}
-    \frac{dx}{dt} = \omega y + \varepsilon x, \quad 
-    \frac{dy}{dt} = -\omega x + \varepsilon y.
+    \frac{\de x}{\de t} = \omega y + \varepsilon x, \quad 
+    \frac{\de y}{\de t} = -\omega x + \varepsilon y.
 \end{equation}
+
+with $\varepsilon = \varepsilon_0 + \varepsilon_a \cos \left( \omega_d
+t \right)$. $\omega$ is the natural frequency of the oscialltor and $\varepsilon$ is the time dependent daming constant. 
+Note, that this form is not the classical form of a damped oscillator, but can be derived easily from $\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ with $\Psi = x + \ii y$.
+
 
 \figref{code:thrust:damped} shows Thrust version of the system functor for the
 damped harmonic oscillator ensemble experiment. The functor holds model
@@ -447,6 +463,31 @@ ensemble example.}
 
 \subsection{Chain of Coupled Phase Oscillators}
 
+\rem{As a second example we choose a chain of coupled phase oscillators. A
+phase oscillator describes the dynamics of an autonomous oscillator
+\cite{Pikovsky-Rosenblum,Kuramoto,scholarpedia articles}. Its
+evolutions is governed by the phase, a $2\pi$ periodic variable which
+grows linearily in time $\de \phi / \de t = \omega$. $\omega$ is here
+the phase velocity. Since the absence of any information about the
+amplitude of the oscillator interesting behaviour can only be observed
+if many of such oscillators are coupled. In fact such system can be
+used to study such divergent phenomena like synchronization, wave and
+pattern formation, phase chaos, or oscillation death \cite{}. It is a
+prominent example of an emergent system where the coupled system shows
+more complex behaviour than its constitutes.
+
+The concrete example we analyze here is a chain of nearest-neighbor
+coupled phase oscillators:
+\begin{equation}
+    \frac{\de \phi_i}{\de t} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
+    - \phi_{i-1}).
+\end{equation}
+The index $i$ denotes here the $i$-th phase in the chain. Note, that
+the phase velocity might be heterogenous.
+}
+
+
+
 As a second example we choose a chain of coupled phase oscillators. Phase
 oscillators are a very simplified version of usual oscillator where the state
 is described by a $2\pi$ periodic variable. If a single phase oscillator is
@@ -562,6 +603,28 @@ example}
 
 \subsection{Disordered Ham Lattice}
 
+\rem{
+Another example for our performance and usage study is a strongly
+nonlinear disordered Hamiltonian lattice. Its equations of motion are
+governed by
+\begin{equation}
+\frac{\de q_{i,j}}{\de t} = p_{i,j} \quad \text{,} \quad \quad \frac{\de p_{i,j}}{\de t} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j} \,\,\text{.}
+\label{eq:disordered_ham}
+\end{equation}
+Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discret Laplacian
+$\Delta_d
+q_{i,j}=q_{i+1,j}+q_{i-1,j}+q_{i,j+1}+q_{i,j-1}-4q_{i,j}$. Such
+systems are widely used in theoretical physics to study phenomena
+like Anderson localization or thermalization.
+
+An important property of \eqref{eq:disordered_ham} is its Hamiltonian
+nature. It can be obtained from a Hamiltonian and the energy and phase
+volume is conserved during its evolution. To account for this
+properties a special class of solvers exists -- symplectic
+solvers. Odeint implements three different variants of such solvers,
+all are of the Runge-Kutta-Nystrom type.
+}
+
 \begin{equation} \label{eq:latticesystem}
     \frac{dp}{dt} = -\Delta Kq + Dq - \beta q^3.
 \end{equation}
@@ -612,6 +675,27 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 \end{lstlisting}
 
 \subsection{Lorenz Attractor Ensemble}
+
+In the first example we will use the Lorenz system \cite{Lorenz}. The
+Lorenz system is a system of three coupled ODEs which shows chaotic
+behavior for a large range of parameters. It is one of the most used
+toying ODE in the nonlinear dynamics community. The ODE of the Lorenz
+system reads
+\begin{align}
+    \frac{\de x}{\de t} &= -\sigma \left( x - y \right), \\
+    \frac{\de y}{\de t} &= R x - y - xz, \\
+    \frac{\de z}{\de t} &= -bz + xy.
+\end{align}
+
+Interesting question around the Lorenz system usually arise with
+dependence on one of its parameters. For example one might want to
+study the dependence on the chaoticity on the parameter
+$R$. Therefore, one would create a large set of Lorenz systems (each
+with a different parameter $R$), pack them all into one system and
+solve them simultaneously. (In a real study of chaoticity one would
+usually calculate the Lyapunov exponents \cite{Benettin}, which
+require to solve the system of Lorenz and their linear perturbations.)
+
 
 In the first example we will use the Lorenz system and study its dependence on
 one of the parameters. The Lorenz system is a system of three coupled ODEs
