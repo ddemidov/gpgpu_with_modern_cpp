@@ -308,7 +308,7 @@ The Thrust version of the system functor for the damped harmonic oscillator
 ensemble example is presented on \figref{code:thrust:damped}. The functor holds model
 parameters and provides \code{operator()} with signature required by odeint
 library. The state type is represented by \code{thrust::device_vector<double>}.
-$X$ and $Y$ components of the state are held in first and second parts of the
+$X$ and $Y$ components of the state are held in first and second halves of the
 vector correspondingly.  \code{operator()} packs the state components into a
 zip iterator and passes them to \code{thrust::for_each} algorithm together with
 provided device functor. There individual components are unpacked again and the
