@@ -108,37 +108,38 @@ solution of ODEs.
 \begin{description}
     \item[Odeint] is a modern C++
         library\footnote{\href{http://odeint.com}{http://odeint.com}} for
-        numerically solving Ordinary Differential Equations. It is developed in
-        a generic way using Template Metaprogramming which leads to
-        extraordinary high flexibility at top performance. The numerical
-        algorithms are implemented independently of the underlying arithmetics.
-        This results in an incredible applicability of the library, especially
-        in non-standard environments. For example, odeint supports matrix
-        types, arbitrary precision arithmetics and can be easily adopted to use
-        either CUDA or OpenCL frameworks.  Odeint is used in this work as a
-        framework for comparison of other libraries.
+	numerically solving Ordinary Differential Equations \cite{OdeintRef1,
+	OdeintRef2}. It is developed in a generic way using Template
+	Metaprogramming which leads to extraordinary high flexibility at top
+	performance. The numerical algorithms are implemented independently of
+	the underlying arithmetics.  This results in an incredible
+	applicability of the library, especially in non-standard environments.
+	For example, odeint supports matrix types, arbitrary precision
+	arithmetics and can be easily adopted to use either CUDA or OpenCL
+	frameworks.  Odeint is used in this work as a framework for comparison
+	of other libraries.
     \item[Thrust] is a parallel algorithms
         library\footnote{\href{http://thrust.github.com}{http://thrust.github.com}}
-        which resembles the C++ Standard Template Library. Thrust's high-level
-        interface greatly enhances developer productivity while enabling
-        performance portability between GPUs and multicore CPUs. Thrust is
-        distributed with NVIDIA CUDA Toolkit since version 4.1.
+	which resembles the C++ Standard Template Library \cite{ThrustRef}.
+	Thrust's high-level interface greatly enhances developer productivity
+	while enabling performance portability between GPUs and multicore CPUs.
+	Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
     \item[VexCL] is vector expression template
         library\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
-        for OpenCL. It has been created for ease of OpenCL development with
-        C++.  VexCL strives to reduce amount of boilerplate code needed to
-        develop OpenCL applications. The library provides convenient and
-        intuitive notation for vector arithmetic, reduction, and sparse
-        matrix-vector multiplication.  Multi-device and even multi-platform
-        computations are supported. 
+	for OpenCL \cite{VexCLRef}. It has been created for ease of OpenCL
+	development with C++.  VexCL strives to reduce amount of boilerplate
+	code needed to develop OpenCL applications. The library provides
+	convenient and intuitive notation for vector arithmetic, reduction, and
+	sparse matrix-vector multiplication.  Multi-device and even
+	multi-platform computations are supported. 
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
         library\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
-        written in C++ and based on OpenCL. It allows simple, high-level access
-        to the vast computing resources available on parallel architectures
-        such as GPUs and is primarily focused on common linear algebra
-        operations (BLAS levels 1, 2 and 3) and the solution of large systems
-        of equations by means of iterative methods with optional
-        preconditioner.
+	written in C++ and based on OpenCL \cite{ViennaCLRef}. It allows
+	simple, high-level access to the vast computing resources available on
+	parallel architectures such as GPUs and is primarily focused on common
+	linear algebra operations (BLAS levels 1, 2 and 3) and the solution of
+	large systems of equations by means of iterative methods with optional
+	preconditioner.
 \end{description}
 
 %Odeint supports Thrust and VexCL natively, but for ViennaCL we needed to
@@ -550,12 +551,39 @@ example}
 
 Natural choice for the implementation of \eqref{eq:latticesystem} is sparse
 matrix vector product. Unfortunately, Thrust provides neither sparse matrix
-type, nor sparse matrix~-- vector product operation.  We had to omit the
-library from disordered ham lattice experiment due to this limitation.
+type, nor sparse matrix~-- vector product operation.  We had to combine Thrust
+with CUSPARSE library in order to implement this example. CUSPARSE library
+contains a set of basic linear algebra subroutines used for handling sparse
+matrices and is included in CUDA Toolkit distribution as well as Thrust
+library.
+
+All of the libraries we compared hold sparse matrix  representation in hybrid
+ELL format. This is one of the most effective formats for sparse matrices on
+GPUs~\cite{BellGarland2008}.
 
 Linear operator $-\Delta Kx-Dx$ may be represented as a single sparse matrix.
 The construction of the matrix is not very interesting in the context of this
 paper, so we only provide code for the system functor's \code{operator()}.
+
+Thrust version of the system functor looks like this:
+\begin{lstlisting}[frame=leftline]
+typedef thrust::device_vector<double> state_type;
+
+void operator()(const state_type &q , state_type &dp) const {
+    static value_type one = 1;
+    thrust::transform(q.begin(), q.end(), dp.begin(),
+	    scaled_pow3_functor(-beta) );
+    cusparseDhybmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, &one, descr, A,
+	    thrust::raw_pointer_cast(&q[0]), &one,
+	    thrust::raw_pointer_cast(&dp[0]) );
+}
+\end{lstlisting}
+Here \code{handle}, \code{descr}, and \code{A} are CUSPARSE data structures
+holding CUSPARSE context and sparse matrix data. In lines 5 and 6
+\code{thrust::transform()} algorithm is used to compute scaled cube of input
+vector \code{q}. Lines 7--9 call procedure for sparse matrix~-- vector product.
+Function \code{thrust::raw_pointer_cast()} is used to convert thrust device
+vector iterator to raw device pointer.
 
 VexCL version looks very simple:
 \begin{lstlisting}[frame=leftline]
@@ -861,7 +889,6 @@ would like to thank Gradient
 JSC\footnote{\href{http://www.gradient-geo.com/en}{http://www.gradient-geo.com/en}}
 for the kindly provided AMD hardware.
 
-\nocite{*}
 \bibliographystyle{model1-num-names}
 \bibliography{ref}
 
