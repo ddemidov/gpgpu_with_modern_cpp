@@ -727,10 +727,7 @@ kernel void dumped_oscillator(
     )
 {
     double2 s, dsdt, k1, k2, k3, k4;
-    for(size_t gid       = get_global_id(0),
-               grid_size = get_global_size(0);
-        gid < n; gid += grid_size)
-    {
+    for(size_t gid = get_global_id(0); gid < n; gid += get_global_size(0)) {
         s.x = X[gid];
         s.y = Y[gid];
         k1 = system_function(omega, amp, offset, omega_d, dt, t, s);
