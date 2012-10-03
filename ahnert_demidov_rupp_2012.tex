@@ -56,9 +56,9 @@ Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
     underlying containers and even from the basic algebraic computations. This
     allows to effectively use such libraries as VexCL, ViennaCL or Thrust to
     solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
-    and CUDA work equally well for problems of large sizes, although OpenCL is
-    not well suited for smaller problems due to its higher initialization
-    overhead.
+    and CUDA work equally well for problems of large sizes. OpenCL has higher
+    overhead for smaller problems, but allows on the fly generation of more
+    effectice kernels.
 \end{abstract}
 
 \begin{keyword}
@@ -80,12 +80,12 @@ standard for cross-platform, parallel programming of modern processors backed
 by Khronos group. The frameworks have their distinctive pros and cons. CUDA has
 more mature programming environment with larger set of scientific libraries;
 but it is only supported on NVIDIA hardware. OpenCL is an open standard
-supported on wide range of hardware but it requires much larger amount of
-boilerplate code from a developer.
+supported on wide range of hardware but its native API requires much larger
+amount of boilerplate code from a developer.
 
 Both technologies are able to provide scientists with vast computational
 resources of modern GPU cards. But the power comes with a price: GPGPU
-programming has a steep learining curve. Programmer needs to familiarize
+programming has a steep learning curve. Programmer needs to familiarize
 himself with (slightly) new programming language and, more importantly, with
 new programming paradigm. However, the entry price may be lowered with help of
 specialized libraries. CUDA Toolkit includes several such libraries (BLAS
@@ -125,7 +125,7 @@ solution of ODEs.
         distributed with NVIDIA CUDA Toolkit since version 4.1.
     \item[VexCL] is vector expression template
         library\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
-        for OpenCL. It has been created for ease of OpenCL developement with
+        for OpenCL. It has been created for ease of OpenCL development with
         C++.  VexCL strives to reduce amount of boilerplate code needed to
         develop OpenCL applications. The library provides convenient and
         intuitive notation for vector arithmetic, reduction, and sparse
@@ -199,7 +199,7 @@ elementary numerical computations are performed. This mechanism consists of a
 combination of state type, algebra and operations. State type represents the
 state of the ODE being solved and is usually a vector type like
 \code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
-iterating through all elemnts of the state whereas the operations are
+iterating through all elements of the state whereas the operations are
 responsible for the elementary operations. \figref{fig:odeintops} provides an
 example of using range algebra. Here \code{for_each2} is used, which means that
 two state types are iterated. The operation is a \code{scale_sum1} which simply
@@ -284,15 +284,13 @@ struct oscillator {
                     boost::begin(x),
                     boost::begin(x) + N,
                     boost::begin(dxdt),
-                    boost::begin(dxdt) + N 
-                    ) ),
+                    boost::begin(dxdt) + N ) ),
             thrust::make_zip_iterator(
                 thrust::make_tuple(
                     boost::begin(x) + N,
                     boost::begin(x) + 2 * N,
                     boost::begin(dxdt) + N,
-                    boost::begin(dxdt) + 2 * N
-                    ) ),
+                    boost::begin(dxdt) + 2 * N ) ),
             oscillator_functor(omega, eps) );
     }
 };
@@ -326,7 +324,7 @@ variant.
 
 \begin{figure}[p]
 \begin{lstlisting}
-typedef vex::vector<double>         vector_type;
+typedef vex::vector<double> vector_type;
 typedef vex::multivector<double, 2> state_type;
 
 struct oscillator {
@@ -380,17 +378,17 @@ The ViennCL version of the damped harmonic oscillator example is presented on
 coordinate components of the state type (represented by
 \code{viennacl::vector<double>} instances) into a single structure. We also had
 to adapt odeint resizing mechanism to the resulting structure. Its
-implementation is straightforward and omitted here for the sake of concisness.
+implementation is straightforward and omitted here for the sake of conciseness.
 
 ViennaCL, as well as VexCL, supports expression templates for a limited set of
 vector operations (closely corresponding to Level 1 BLAS routines). More
 complex expressions may be built with help of ViennaCL kernel generator
-inteface, which supports single- or multiple-operations kernels. The required
+interface, which supports single- or multiple-operations kernels. The required
 notation is a bit more cumbersome than that of VexCL library. OpenCL kernels
 here are generated from symbolic expressions involving explicit symbolic types.
 This requires more of boilerplate code but the resulting expression tree
 carries information of whether two terminals represent the same vector
-instance. This in principle may allow generation of more effective code.
+instance. This in principle allows generation of more effective code.
 
 \begin{figure}[p]
 \begin{lstlisting}
@@ -494,7 +492,7 @@ it is the most concise variant since VexCL provide native support for the
 user-defined stencils operations. The sum of sines in \eqref{eq:phasesystem} is
 encoded in \code{StencilOperator} class template. Template parameters are
 string for body of the generated OpenCL function encoding required operation;
-width and center point of the stencil and its return type. Once the stancil
+width and center point of the stencil and its return type. Once the stencil
 operator is defined, the functor's \code{operator()} is programmed with a
 single of code.
 
@@ -619,13 +617,36 @@ one system and solve them simultaneously on the GPU.
 
 \section{Results}
 
-\begin{figure}[p]
-    \begin{center}
-        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
-    \end{center}
-    \caption{Lorenz attractor ensemble results}
-    \label{fig:lorenz:perf}
-\end{figure}
+We present results for the numerical experiments in this section. The complete
+source code for the experiments and the full set of results may be found at
+GitHub
+repository\footnote{\href{https://github.com/ddemidov/vexcl_odeint_paper}{https://github.com/ddemidov/vexcl\_odeint\_paper}}.
+
+All of the libraries we tested in this paper allow use of both CPU and GPU
+compute paths. Thrust supports OpenMP based CPU path that is enabled by
+compilation switch and OpenCL libraries natively support CPU as a compute
+device.  The timings we provide here were obtained for Nvidia Tesla C2070 GPUs
+and for Intel Core i7 930 CPU. For each of the experiments, 10 runs were made
+and median time was selected as a representative value.
+
+Figures \ref{fig:phase:perf} through \ref{fig:lorenz:perf} show performance
+data for the four numerical experiments. Left plots shows absolute time with
+against the size of the solved problem, while right plots show relative
+performance with respect to Thrust GPU version.
+
+In general all of the experiments show 10x to 20x acceleration when run on GPU
+with respect to the CPU path. Both CUDA and OpenCL programs show considerable
+overhead for the smaller sized problems. Due to this overhead we needed
+problems of size $10^3-10^4$ to see any acceleration on GPU. The overhead for
+OpenCL libraries is larger than that of CUDA programs. This is explained by the
+fact that OpenCL program compiles its computational kernels at runtime.
+
+VexCL library allows transparent use of several GPUs. \figref{fig:scaling}
+shows scaling results for up to three Tesla GPUs. It is clear from the plots
+that it does make sense to use several GPUs only for problems of size larger
+than $10^5-10^6$. Additional advantage of multi-GPU programming model is that
+memory resources are split between all of the GPUs so that larger problems may
+be processed.
 
 \begin{figure}[p]
     \begin{center}
@@ -653,6 +674,14 @@ one system and solve them simultaneously on the GPU.
 
 \begin{figure}[p]
     \begin{center}
+        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
+    \end{center}
+    \caption{Lorenz attractor ensemble results}
+    \label{fig:lorenz:perf}
+\end{figure}
+
+\begin{figure}[p]
+    \begin{center}
         \subfigure[
         Damped oscillator ensemble
         ]{\includegraphics[width=0.45\textwidth]{data/damped_oscillator/scaling}}\quad
@@ -673,7 +702,7 @@ one system and solve them simultaneously on the GPU.
 \section{Further optimizations}
 
 It may be said that performance we got so far is not optimal. Indeed, generic
-odeint algorithms uses temporary vector variables. For example, fourth-order
+odeint algorithms use temporary vector variables. For example, fourth-order
 Runge-Kutta method used in our examples uses at least four temporary state
 variables on each integration step. All of those temporaries are full-blown
 vectors that waste global memory reads and writes. 
@@ -782,9 +811,9 @@ struct oscillator {
 
     void operator()(const sym_state &x, sym_state &dxdt, double t) {
         sym_value eps;
-        eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
-        dxdt[0] = eps * x[0] + m_omega * x[1];
-        dxdt[1] = eps * x[1] - m_omega * x[0];
+        eps = offset + amp * cos( omega_d * (sym_time + t) );
+        dxdt[0] = eps * x[0] + omega * x[1];
+        dxdt[1] = eps * x[1] - omega * x[0];
     }
 };
 \end{lstlisting}
@@ -793,20 +822,20 @@ struct oscillator {
 \end{figure}
 
 VexCL library provides kernel generation mechanism that is able to solve this
-problem. It allows transparent conversion of generic CPU algorithms to OpenCL
-kernels. In order to do this conversion one needs to record sequence of
-arithmetic expressions made by an algorithm.  The recording is done with help
-of \code{vex::generator::symbolic<T>} class. The class supports arithmetic
-expression templates and simply outputs to provided stream any expressions it
-is being subjected to. This technique is demonstrated on
-\figref{code:symsysfunc} and~\ref{code:krnbuilder}. Its advantage is
-that we are able to select any stepper from odeint library (or any other
+problem. It allows transparent conversion of generic CPU algorithms
+(restrictions applied) to OpenCL kernels. In order to do this conversion one
+needs to record sequence of arithmetic expressions made by an algorithm.  The
+recording is done with help of \code{vex::generator::symbolic<T>} class. The
+class supports arithmetic expression templates and simply outputs to provided
+stream any expressions it is being subjected to. This technique is demonstrated
+on \figref{code:krnbuilder} and~\ref{code:symsysfunc}. Its advantage is that we
+are able to select any stepper from odeint library (or any other generic
 algorithm) for the generated kernel. \figref{fig:genkernel} presents
 performance comparison of Thrust-based odeint solution with hand-coded and
 generated OpenCL kernels. Both hand-coded and generated kernels show very
 similar performance and outperform Thrust-based odeint solution by a factor of
-5 for large problem sizes. Moreover, generated kernel outperforms hand-coded
-kernel by a small margin. We beleive this is due to the fact that VexCL kernel
+5 for large problem sizes. Moreover, generated kernel is slightly faster than
+hand-coded kernel. We believe this is due to the fact that VexCL kernel
 generator unrolls all operations in the kernel and hard-codes any constants it
 encounters in expression sequence.
 
@@ -835,20 +864,20 @@ but ViennaCL has extensive set of sparse linear systems solvers (very important
 feature which we did not discuss in this paper).
 
 Regarding CUDA vs OpenCL comparison, we believe that OpenCL has two major
-advantages w.r.t. CUDA: first, it has much wider range of supported hardware
-which is only going to widen with time, since OpenCL is open standard supported
-by major hardware producers. Second advantage of OpenCL is at the same time its
-drawback: one has to (or may to) compile his kernels at compile time. This adds
-overhead notable for smaller workloads but at the same time it allows one to
-transparently build much more effective kernels, as it has been shown in this
-paper. 
+advantages with respect to CUDA. First, it has much wider range of supported
+hardware which is only going to widen with time, since OpenCL is open standard
+supported by major hardware producers. Second advantage of OpenCL is at the
+same time its drawback: one has to (or may to) compile his kernels at compile
+time. This adds overhead notable for smaller workloads but at the same time it
+allows one to transparently build much more effective kernels, as it has been
+shown in this paper. 
 
 \section{Acknowledgments}
 
 This work has been partially supported by RFBR grant No 12-07-0007. We also
 would like to thank Gradient
 JSC\footnote{\href{http://www.gradient-geo.com/en}{http://www.gradient-geo.com/en}}
-for kindly provided hardware.
+for the kindly provided AMD hardware.
 
 \nocite{*}
 \bibliographystyle{model1-num-names}
