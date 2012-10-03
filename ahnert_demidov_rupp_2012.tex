@@ -570,7 +570,7 @@ Thrust version of the system functor looks like this:
 typedef thrust::device_vector<double> state_type;
 
 void operator()(const state_type &q , state_type &dp) const {
-    static value_type one = 1;
+    static double one = 1;
     thrust::transform(q.begin(), q.end(), dp.begin(),
 	    scaled_pow3_functor(-beta) );
     cusparseDhybmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, &one, descr, A,
