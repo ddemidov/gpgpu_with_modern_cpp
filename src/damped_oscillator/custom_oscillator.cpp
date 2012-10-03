@@ -44,10 +44,9 @@ static const char source[] =
     "    double offset,\n"
     "    double omega_d,\n"
     "    double dt,\n"
-    "    double t_max\n"
+    "    double t\n"
     "    )\n"
     "{\n"
-    "    double t;\n"
     "    double2 s;\n"
     "    double2 dsdt;\n"
     "    double2 k1, k2, k3, k4;\n"
@@ -58,21 +57,19 @@ static const char source[] =
     "        s.x = X[gid];\n"
     "        s.y = Y[gid];\n"
     "\n"
-    "        for(t = 0; t < t_max; t += dt) {\n"
-    "            k1 = system_function(omega, amp, offset, omega_d, dt,\n"
-    "                    t, s);\n"
+    "        k1 = system_function(omega, amp, offset, omega_d, dt,\n"
+    "                t, s);\n"
     "\n"
-    "            k2 = system_function(omega, amp, offset, omega_d, dt,\n"
-    "                    t + 0.5 * dt, s + 0.5 * k1);\n"
+    "        k2 = system_function(omega, amp, offset, omega_d, dt,\n"
+    "                t + 0.5 * dt, s + 0.5 * k1);\n"
     "\n"
-    "            k3 = system_function(omega, amp, offset, omega_d, dt,\n"
-    "                    t + 0.5 * dt, s + 0.5 * k2);\n"
+    "        k3 = system_function(omega, amp, offset, omega_d, dt,\n"
+    "                t + 0.5 * dt, s + 0.5 * k2);\n"
     "\n"
-    "            k4 = system_function(omega, amp, offset, omega_d, dt,\n"
-    "                    t + dt, s + k3);\n"
+    "        k4 = system_function(omega, amp, offset, omega_d, dt,\n"
+    "                t + dt, s + k3);\n"
     "\n"
-    "            s += (k1 + 2 * k2 + 2 * k3 + k4) / 6;\n"
-    "        }\n"
+    "        s += (k1 + 2 * k2 + 2 * k3 + k4) / 6;\n"
     "\n"
     "        X[gid] = s.x;\n"
     "        Y[gid] = s.y;\n"
@@ -99,29 +96,39 @@ int main( int argc , char **argv ) {
 	vex::copy( x.begin() , x.begin() + n, X(0).begin() );
 	vex::copy( x.begin() + n, x.end() , X(1).begin() );
 
+	std::vector<cl::Kernel> kernel(ctx.size());
+	std::vector<size_t> wgsize(ctx.size());
+	std::vector<size_t> g_size(ctx.size());
+
 	for(uint d = 0; d < ctx.size(); d++) {
 	    if (size_t psize = X(0).part_size(d)) {
 		cl::Program program = vex::build_sources(ctx.context(d), source);
-		cl::Kernel kernel(program, "dumped_oscillator");
+		kernel[d] = cl::Kernel(program, "dumped_oscillator");
+
 		cl::Device device = ctx.device(d);
+		wgsize[d] = vex::kernel_workgroup_size(kernel[d], device);
+		g_size[d] = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * wgsize[d] * 4;
+	    }
+	}
 
-		size_t wgsize = vex::kernel_workgroup_size(kernel, device);
-		size_t g_size = device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * wgsize * 4;
+	for(value_type t = 0; t < t_max; t += dt) {
+	    for(uint d = 0; d < ctx.size(); d++) {
+		if (size_t psize = X(0).part_size(d)) {
+		    uint pos = 0;
+		    kernel[d].setArg(pos++, psize);
+		    kernel[d].setArg(pos++, X(0)(d));
+		    kernel[d].setArg(pos++, X(1)(d));
+		    kernel[d].setArg(pos++, 1.0);
+		    kernel[d].setArg(pos++, 0.2);
+		    kernel[d].setArg(pos++, 0.0);
+		    kernel[d].setArg(pos++, 1.2);
+		    kernel[d].setArg(pos++, dt);
+		    kernel[d].setArg(pos++, t);
 
-		uint pos = 0;
-		kernel.setArg(pos++, psize);
-		kernel.setArg(pos++, X(0)(d));
-		kernel.setArg(pos++, X(1)(d));
-		kernel.setArg(pos++, 1.0);
-		kernel.setArg(pos++, 0.2);
-		kernel.setArg(pos++, 0.0);
-		kernel.setArg(pos++, 1.2);
-		kernel.setArg(pos++, dt);
-		kernel.setArg(pos++, t_max);
-
-		ctx.queue(d).enqueueNDRangeKernel(
-			kernel, cl::NullRange, g_size, wgsize
-			);
+		    ctx.queue(d).enqueueNDRangeKernel(
+			    kernel[d], cl::NullRange, g_size[d], wgsize[d]
+			    );
+		}
 	    }
 	}
 

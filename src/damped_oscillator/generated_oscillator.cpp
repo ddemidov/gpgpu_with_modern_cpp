@@ -72,10 +72,10 @@ int main( int argc , char **argv )
 
     // State types that would become kernel parameters:
     sym_state  sym_S = {{
-	sym_value::Parameter,
-	sym_value::Parameter
+	sym_value::VectorParameter,
+	sym_value::VectorParameter
     }};
-    sym_value sym_time(sym_value::Parameter, sym_value::Scalar);
+    sym_value sym_time(sym_value::ScalarParameter);
 
     // Symbolic stepper:
     odeint::runge_kutta4<
