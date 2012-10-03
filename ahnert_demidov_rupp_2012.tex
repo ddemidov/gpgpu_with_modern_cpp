@@ -756,59 +756,19 @@ provides.
 
 \begin{figure}[p]
 \begin{lstlisting}
-typedef double double;
 typedef vex::generator::symbolic<double> sym_value;
 typedef std::array<sym_value,2> sym_state;
 
-// Custom kernel body will be recorded here:
-std::ostringstream body;
-vex::generator::set_recorder(body);
-
-// State types that would become kernel parameters:
-sym_state sym_S = {sym_value::VectorParameter, sym_value::VectorParameter};
-sym_value sym_time(sym_value::ScalarParameter);
-
-// Symbolic stepper:
-odeint::runge_kutta4<
-        sym_state, double, sym_state, double,
-        odeint::range_algebra, odeint::default_operations
-        > sym_stepper;
-
-oscillator sys(1.0, 0.2, 0.0, 1.2, sym_time);
-sym_stepper.do_step(std::ref(sys), sym_S, 0, dt);
-
-// Now that expression sequence is recorded, we build OpenCL kernel:
-auto kernel = vex::generator::build_kernel(ctx.queue(),
-        "damped_oscillator", body.str(), sym_S[0], sym_S[1], sym_time
-        );
-
-// Actual data (initialization skipped).
-vex::vector<double> X(ctx.queue(), n);
-vex::vector<double> Y(ctx.queue(), n);
-
-// Integration loop:
-for(double t = 0; t < t_max; t += dt) kernel(X, Y, t);
-\end{lstlisting}
-\caption{Automatic generation of OpenCL kernel corresponding to 4th order
-Runge-Kutta method}
-\label{code:krnbuilder}
-\end{figure}
-
-\begin{figure}[p]
-\begin{lstlisting}
 struct oscillator {
     double omega, amp, offset, omega_d;
     sym_value &sym_time;
-
     oscillator(double omega, double amp, double offset,
                double omega_d, sym_value &sym_time)
         : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
           sym_time(sym_time)
     {}
-
     void operator()(const sym_state &x, sym_state &dxdt, double t) {
-        sym_value eps;
-        eps = offset + amp * cos( omega_d * (sym_time + t) );
+        sym_value eps = offset + amp * cos( omega_d * (sym_time + t) );
         dxdt[0] = eps * x[0] + omega * x[1];
         dxdt[1] = eps * x[1] - omega * x[0];
     }
@@ -818,6 +778,38 @@ struct oscillator {
 \label{code:symsysfunc}
 \end{figure}
 
+\begin{figure}[p]
+\begin{lstlisting}
+// Custom kernel body will be recorded here:
+std::ostringstream body;
+vex::generator::set_recorder(body);
+
+// State types that would become kernel parameters:
+sym_state sym_S = {sym_value::VectorParameter, sym_value::VectorParameter};
+sym_value sym_time(sym_value::ScalarParameter);
+
+// Symbolic stepper:
+odeint::runge_kutta4<sym_state, double, sym_state, double,
+        odeint::range_algebra, odeint::default_operations
+        > sym_stepper;
+oscillator sys(1.0, 0.2, 0.0, 1.2, sym_time);
+sym_stepper.do_step(std::ref(sys), sym_S, 0, dt);
+
+// Now that expression sequence is recorded, we build OpenCL kernel:
+auto kernel = vex::generator::build_kernel(ctx.queue(),
+        "damped_oscillator", body.str(), sym_S[0], sym_S[1], sym_time);
+
+// Actual data (initialization skipped).
+vex::vector<double> X(ctx.queue(), n), Y(ctx.queue(), n);
+
+// Integration loop:
+for(double t = 0; t < t_max; t += dt) kernel(X, Y, t);
+\end{lstlisting}
+\caption{Automatic generation of OpenCL kernel corresponding to 4th order
+Runge-Kutta method}
+\label{code:krnbuilder}
+\end{figure}
+
 VexCL library provides kernel generation mechanism that is able to solve this
 problem. It allows transparent conversion of generic CPU algorithms
 (restrictions applied) to OpenCL kernels. In order to do this conversion one
@@ -825,7 +817,7 @@ needs to record sequence of arithmetic expressions made by an algorithm.  The
 recording is done with help of \code{vex::generator::symbolic<T>} class. The
 class supports arithmetic expression templates and simply outputs to provided
 stream any expressions it is being subjected to. This technique is demonstrated
-on \figref{code:krnbuilder} and~\ref{code:symsysfunc}. Its advantage is that we
+on \figref{code:symsysfunc} and~\ref{code:krnbuilder}. Its advantage is that we
 are able to select any stepper from odeint library (or any other generic
 algorithm) for the generated kernel. \figref{fig:genkernel} presents
 performance comparison of Thrust-based odeint solution with hand-coded and
