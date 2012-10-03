@@ -79,7 +79,7 @@ Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
     Thrust to solve ODEs with either OpenCL or CUDA technologies. We
     found that OpenCL and CUDA work equally well for problems of large
     sizes. OpenCL has higher overhead for smaller problems, but allows
-    on the fly generation of more effectice kernels.
+    on the fly generation of more effective kernels.
 \end{abstract}
 
 \begin{keyword}
@@ -284,7 +284,7 @@ goal of comparing ease of use of the libraries.
 
 \section{Numerical experiments}
 
-typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
+Typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
 
 
 
@@ -295,19 +295,19 @@ typical use cases of solving ODEs on GPU, parameter studies, large systems, disc
 %
 \subsection{Damped Harmonic Oscillator Ensemble}
 
-dependence on an external parameter (the time)
+Dependence on an external parameter (the time)
 include $x^3$?
 
 The first example is a set of damped driven oscillators 
-
 \begin{equation} \label{eq:dampedsystem}
     \frac{\de x}{\de t} = \omega y + \varepsilon x, \quad 
-    \frac{\de y}{\de t} = -\omega x + \varepsilon y.
+    \frac{\de y}{\de t} = -\omega x + \varepsilon y
 \end{equation}
-
 with $\varepsilon = \varepsilon_0 + \varepsilon_a \cos \left( \omega_d
-t \right)$. $\omega$ is the natural frequency of the oscialltor and $\varepsilon$ is the time dependent daming constant. 
-Note, that this form is not the classical form of a damped oscillator, but can be derived easily from $\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ with $\Psi = x + \ii y$.
+t \right)$. $\omega$ is the natural frequency of the oscillator and
+$\varepsilon$ is the time dependent damping constant.  Note, that this form is
+not the classical form of a damped oscillator, but can be derived easily from
+$\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ with $\Psi = x + \ii y$.
 
 
 \figref{code:thrust:damped} shows Thrust version of the system functor for the
@@ -512,7 +512,7 @@ ensemble example.}
 phase oscillator describes the dynamics of an autonomous oscillator
 \cite{Pikovsky-Rosenblum,Kuramoto,scholarpedia articles}. Its
 evolutions is governed by the phase, a $2\pi$ periodic variable which
-grows linearily in time $\de \phi / \de t = \omega$. $\omega$ is here
+grows linearly in time $\de \phi / \de t = \omega$. $\omega$ is here
 the phase velocity. Since the absence of any information about the
 amplitude of the oscillator interesting behaviour can only be observed
 if many of such oscillators are coupled. In fact such system can be
@@ -528,7 +528,7 @@ coupled phase oscillators:
     - \phi_{i-1}).
 \end{equation}
 The index $i$ denotes here the $i$-th phase in the chain. Note, that
-the phase velocity might be heterogenous.
+the phase velocity might be heterogeneous.
 }
 
 
@@ -668,7 +668,7 @@ governed by
 \frac{\de q_{i,j}}{\de t} = p_{i,j} \quad \text{,} \quad \quad \frac{\de p_{i,j}}{\de t} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j} \,\,\text{.}
 \label{eq:disordered_ham}
 \end{equation}
-Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discret Laplacian
+Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discreet Laplacian
 $\Delta_d
 q_{i,j}=q_{i+1,j}+q_{i-1,j}+q_{i,j+1}+q_{i,j-1}-4q_{i,j}$. Such
 systems are widely used in theoretical physics to study phenomena
