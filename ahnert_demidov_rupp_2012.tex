@@ -119,19 +119,13 @@ new programming paradigm. However, the entry price may be lowered with help of
 specialized libraries. CUDA Toolkit includes several such libraries (BLAS
 implementation, Fast Fourier Transform, Thrust and others). OpenCL lacks
 standard libraries, but there there are number of third party projects aimed at
-both CUDA and OpenCL ease of development.
+developing both CUDA and OpenCL programs.
 
 This paper presents comparison of several modern C++ libraries aimed at ease of
 GPGPU development. We look at both convenience and performance of the libraries
 under consideration in the context of solving ordinary differential equations.
 The comparison is based on odeint~--- modern C++ library for solution of ODEs.
-Odeint is designed in a very flexible way such that the algorithms are
-completely independent from the underlying containers and even from the basic
-algebraic computations. This allows to effectively use libraries implementing
-basic linear algebra operations with either OpenCL or CUDA technologies for
-solution of ODEs.
-
-
+The GPGPU libraries that we tested are Thrust, VexCL and ViennaCL.
 
 \begin{description}
     \item[Odeint] is a modern C++
@@ -310,17 +304,17 @@ not the classical form of a damped oscillator, but can be derived easily from
 $\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ with $\Psi = x + \ii y$.
 
 
-\figref{code:thrust:damped} shows Thrust version of the system functor for the
-damped harmonic oscillator ensemble experiment. The functor holds model
+The Thrust version of the system functor for the damped harmonic oscillator
+ensemble example is presented on \figref{code:thrust:damped}. The functor holds model
 parameters and provides \code{operator()} with signature required by odeint
-library. The state type is represented by \code{device_vector<double>}.  First
-part of the vector holds $x$-components of state, and second part holds
-$y$-components. In the \code{operator()} components of state and state
-derivative are packed into a zip iterator and passed to \code{for_each}
-function together with provided device functor. In the functor individual
-components are unpacked again and the operations required are applied to
-derivative part. This technique allows to compute system function in single
-efficient pass resulting in single CUDA kernel launch.
+library. The state type is represented by \code{thrust::device_vector<double>}.
+$X$ and $Y$ components of the state are held in first and second parts of the
+vector correspondingly.  \code{operator()} packs the state components into a
+zip iterator and passes them to \code{thrust::for_each} algorithm together with
+provided device functor. There individual components are unpacked again and the
+operations required are applied to the derivative part. This technique allows
+to compute system function in single efficient pass resulting in single CUDA
+kernel launch.
 
 \begin{figure}[p]
 \begin{lstlisting}
@@ -372,12 +366,12 @@ ensemble example.}
 \label{code:thrust:damped}
 \end{figure}
 
-\figref{code:vexcl:damped} shows system functor for VexCL version of the damped
-harmonic oscillator example. The functor looks much simpler than Thrust variant
-because VexCL supports rich set of vector expression templates. The
-state type is represented by \code{multivector<double,2>} which holds two
+\figref{code:vexcl:damped} shows system functor for the VexCL version of the
+damped harmonic oscillator example. The functor looks much simpler than the
+Thrust variant because VexCL supports rich set of vector expressions. The state
+is represented by \code{vex::multivector<double,2>} type which holds two
 instances of \code{vex::vector<double>} and transparently dispatches all
-operations to its underlying components. It would be in principle possible to
+operations to the underlying components. It would be in principle possible to
 write the \code{operator()} body as
 \begin{lstlisting}[frame=leftline]
 double eps = offset + amp * cos(omega_d * t);
@@ -385,14 +379,14 @@ dxdt(0) = eps * x(0) + omega * x(1);
 dxdt(1) = eps * x(1) - omega * x(0);
 \end{lstlisting}
 This would basically coincide with the problem statement
-\eqref{eq:dampedsystem}. The drawback of this variant is that it would result
-in two kernel launches (one per each vector assignment) and lead to suboptimal
-performance. We also can not use simple multivector arithmetic operations here
-because components in the right hand sides of the assignments are interchanged.
-Fortunately, VexCL supports multi-operation notation. Assignment of a tuple of
-expressions to a multivector leads to generation and launch of single efficient
-OpenCL kernel. This notation is only marginally more cumbersome than the above
-variant.
+\eqref{eq:dampedsystem}. The drawback of this variant is that it would lead
+to two kernel launches (one per each vector assignment) and would result in
+suboptimal performance. We are not able to use simple multivector arithmetic
+operations here because components in the right hand sides of the assignments
+are interchanged.  Fortunately, VexCL provides notation for such
+multi-operations.  Assignment of a tuple of expressions to a multivector leads
+to generation and launch of single efficient OpenCL kernel. This notation is
+only slightly more cumbersome than the above variant.
 
 \begin{figure}[p]
 \begin{lstlisting}
@@ -441,12 +435,12 @@ example}
 \label{code:vexcl:phase}
 \end{figure}
 
-The ViennCL version of the damped harmonic oscillator example is presented on
+The ViennaCL version of the damped harmonic oscillator example is presented on
 \figref{code:viennacl:damped}. \code{boost::fusion::vector} is used to pack
-coordinate components of the state type (represented by
-\code{viennacl::vector<double>} instances) into a single structure. We also had
-to adapt odeint resizing mechanism to the resulting structure. Its
-implementation is straightforward and omitted here for the sake of conciseness.
+coordinate components of the state into a single type. Individual components
+are instances of \code{viennacl::vector<double>} type. We also had to adapt
+odeint resizing mechanism to the resulting structure. Its implementation is
+straightforward and omitted here for the sake of conciseness.
 
 ViennaCL, as well as VexCL, supports expression templates for a limited set of
 vector operations (closely corresponding to Level 1 BLAS routines). More
@@ -550,8 +544,8 @@ The concrete example we analyze here is:
 Note that $\phi_i$ is a function of the time, the index $i$ denotes here the
 $i$-th phase in the chain.
 
-Thrust version for the coupled phase oscillator chain looks very similar to the
-damped oscillator example. Again, we use zip iterator to pack required
+The Thrust version for the coupled phase oscillator chain looks very similar to
+the damped oscillator example. Again, we use zip iterator to pack required
 components and process the resulting sequence with single sweep of
 \code{for_each} algorithm. The only difference here is that we need values of
 neighboring vector elements. In order to provide the values, we use Thrust's
@@ -587,22 +581,22 @@ thrust::copy(c + 1, c + N, next.begin());
 next[N-1] = N-1; // next = { 1, 2, 3, ..., N-1, N-1 }
 \end{lstlisting}
 
-VexCL version of the example is presented on \figref{code:vexcl:phase}. Again,
-it is the most concise variant since VexCL provide native support for the
-user-defined stencils operations. The sum of sines in \eqref{eq:phasesystem} is
-encoded in \code{StencilOperator} class template. Template parameters are
-string for body of the generated OpenCL function encoding required operation;
-width and center point of the stencil and its return type. Once the stencil
-operator is defined, the functor's \code{operator()} is programmed with a
-single of code.
+The VexCL version of the example is presented on \figref{code:vexcl:phase}.
+Again, it is the most concise variant since VexCL provides native support for
+the user-defined stencils operations. The sum of sines in
+\eqref{eq:phasesystem} is encoded in \code{vex::StencilOperator<>} class
+template.  Template parameters are the body string for the generated OpenCL
+function encoding required operation, width and center point of the stencil,
+and its return type. Once the stencil operator is defined, the functor's
+\code{operator()} is implemented with a single line of code.
 
 \figref{code:viennacl:phase} presents ViennaCL version of the phase oscillator
 chain example. Unfortunately, ViennaCL does not provide operations required for
 the problem at hand, so we had to fallback to hand-coded OpenCL kernel.
 ViennaCL provide convenient mechanism for compilation and launching of custom
 kernels, so this was a pleasant experience in comparison with native OpenCL
-API. This low-level variant expectedly turned out to be most effective as it
-will be shown in Results section.
+API. This low-level variant expectedly turned out to be the most effective one
+(see the Results section).
 
 \begin{figure}[p]
 \begin{lstlisting}
