@@ -1,16 +1,16 @@
 close all
 clear all
 
-test = {'vexcl_1gpu',   'vexcl_cpu', ...
+test = {'thrust_gpu', 'vexcl_1gpu',   'vexcl_cpu', ...
 	'viennacl_gpu', 'viennacl_cpu'};
 
-lgnd = {'VexCL GPU',    'VexCL CPU', ...
+lgnd = {'Thrust GPU', 'VexCL GPU',    'VexCL CPU', ...
 	'ViennaCL GPU', 'ViennaCL CPU'};
 
-style = {'ko-', 'kd-', ...
+style = {'ko-', 'ko-', 'kd-', ...
 	 'ko--', 'kd--'};
 
-fcolor = {'w', 'w', ...
+fcolor = {'k', 'w', 'w', ...
 	  'w', 'w'};
 
 msize = 3;
@@ -63,7 +63,7 @@ xlim([1e2 1e7])
 ylim([1e-1 1e2])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
-ylabel('T / T(VexCL GPU)');
+ylabel('T / T(Thrust GPU)');
 axis square
 
 print('-depsc', 'perfcmp.eps');
