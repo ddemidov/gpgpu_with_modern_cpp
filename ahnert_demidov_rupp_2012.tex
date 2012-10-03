@@ -549,14 +549,13 @@ example}
 \end{equation}
 
 Natural choice for the implementation of \eqref{eq:latticesystem} is sparse
-matrix vector product. Unfortunately, Thrust does not provide neither sparse
-matrix type, nor sparse matrix~-- vector product operation.
-We had to omit the library from disordered ham lattice experiment doe to this
-limitation.
+matrix vector product. Unfortunately, Thrust provides neither sparse matrix
+type, nor sparse matrix~-- vector product operation.  We had to omit the
+library from disordered ham lattice experiment due to this limitation.
 
-The sum $-\Delta Kx-Dx$ may be represented as a single sparse matrix. The
-construction of the matrix is not very interesting in the context of this
-paper, so we only provide code for the system functor \code{operator()}.
+Linear operator $-\Delta Kx-Dx$ may be represented as a single sparse matrix.
+The construction of the matrix is not very interesting in the context of this
+paper, so we only provide code for the system functor's \code{operator()}.
 
 VexCL version looks very simple:
 \begin{lstlisting}[frame=leftline]
@@ -566,21 +565,19 @@ extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
 vex::UserFunction<pow3_body, double(double)> pow3;
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
-    dp = (-beta) * pow3(q) + (*A) * q;
+    dp = (-beta) * pow3(q) + A * q;
 }
 \end{lstlisting}
 
 User-defined OpenCL function \code{pow3} computes cube of its argument and is
-presented here for performance sake. \code{A} here is
-\code{std::unique_ptr<vex::SpMat<double>>} instance. We had to wrap the sparse
-matrix object into smart pointer because VexCL's sparse matrix does not provide
-default constructor.
+presented here for the performance sake. \code{A} is \code{vex::SpMat<double>}
+instance holding discretisation of linear operator $-\Delta Kx - Dx$.
 
 ViennaCL neither supports elementwise vector product nor provides
 overloaded math functions for its vector types. That's why we had to split its
 \code{operator()} into two parts: the first part computes sparse matrix~--
-vector product normally, while the second part uses hand-coded kernel to append
-non-linear term $-\beta q^3$ to the result:
+vector product normally, while the second part uses hand-coded kernel to
+subtract non-linear term $\beta q^3$ from the result:
 \begin{lstlisting}[frame=leftline]
 typedef viennacl::vector<double> state_type;
 
