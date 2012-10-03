@@ -331,16 +331,14 @@ struct oscillator {
     double omega, amp, offset, omega_d;
 
     oscillator(double omega, double amp, double offset, double omega_d)
-        : omega(omega), amp(amp), offset(offset), omega_d(omega_d)
-    { }
+        : omega(omega), amp(amp), offset(offset), omega_d(omega_d) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         double eps = offset + amp * cos(omega_d * t);
 
         dxdt = std::make_tuple(
                 eps * x(0) + omega * x(1),
-                eps * x(1) - omega * x(0)
-                );
+                eps * x(1) - omega * x(0) );
     }
 };
 \end{lstlisting}
@@ -353,18 +351,16 @@ ensemble example.}
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
 
-extern const char oscillator_body[] =
-    "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
+extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
 
 struct phase_oscillators {
     const state_type &omega;
     vex::StencilOperator< double, 3, 1, oscillator_body > S;
 
-    sys_func(const state_type &omega) : omega(omega), S(omega.queue_list())
-    { }
+    phase_oscillators(const state_type &omega) : omega(omega), S(omega.queue_list()) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        dxdt = omega + S( x );
+        dxdt = omega + S(x);
     }
 };
 \end{lstlisting}
