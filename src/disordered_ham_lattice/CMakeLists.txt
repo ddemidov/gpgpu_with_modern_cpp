@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(disordered_ham_lattice)
 
+if (CUDA_FOUND)
+    cuda_add_executable(thrust_disordered_lattice thrust_disordered_lattice.cu)
+    target_link_libraries(thrust_disordered_lattice ${CUDA_cusparse_LIBRARY})
+endif (CUDA_FOUND)
+
 add_executable(vexcl_disordered_lattice vexcl_disordered_lattice.cpp)
 target_link_libraries(vexcl_disordered_lattice OpenCL)
 set_target_properties(vexcl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
