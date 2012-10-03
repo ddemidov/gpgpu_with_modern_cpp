@@ -248,7 +248,7 @@ components are unpacked again and the operations required are applied to
 derivative part. This technique allows to compute system function in single
 efficient pass resulting in single CUDA kernel launch.
 
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 typedef thrust::device_vector<double> state_type;
 
@@ -322,7 +322,7 @@ expressions to a multivector leads to generation and launch of single efficient
 OpenCL kernel. This notation is only marginally more cumbersome than the above
 variant.
 
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 typedef vex::vector<double>         vector_type;
 typedef vex::multivector<double, 2> state_type;
@@ -349,6 +349,30 @@ ensemble example.}
 \label{code:vexcl:damped}
 \end{figure}
 
+\begin{figure}[p]
+\begin{lstlisting}
+typedef vex::vector<double> state_type;
+
+extern const char oscillator_body[] =
+    "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
+
+struct phase_oscillators {
+    const state_type &omega;
+    vex::StencilOperator< double, 3, 1, oscillator_body > S;
+
+    sys_func(const state_type &omega) : omega(omega) , S(omega.queue_list())
+    { }
+
+    void operator()(const state_type &x , state_type &dxdt , double t) const {
+        dxdt = omega + S( x );
+    }
+};
+\end{lstlisting}
+\caption{System functor for VexCL version of coupled phase oscillators chain
+example}
+\label{code:vexcl:phase}
+\end{figure}
+
 The ViennCL version of the damped harmonic oscillator example is presented on
 \figref{code:viennacl:damped}. \code{boost::fusion::vector} is used to pack
 coordinate components of the state type (represented by
@@ -366,7 +390,7 @@ This requires more of boilerplate code but the resulting expression tree
 carries information of whether two terminals represent the same vector
 instance. This in principle may allow generation of more effective code.
 
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 typedef viennacl::vector<double> vector_type;
 typedef fusion::vector<vector_type, vector_type> state_type;
@@ -472,30 +496,6 @@ width and center point of the stencil and its return type. Once the stancil
 operator is defined, the functor's \code{operator()} is programmed with a
 single of code.
 
-\begin{figure}
-\begin{lstlisting}
-typedef vex::vector<double> state_type;
-
-extern const char oscillator_body[] =
-    "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
-
-struct phase_oscillators {
-    const state_type &omega;
-    vex::StencilOperator< double, 3, 1, oscillator_body > S;
-
-    sys_func(const state_type &omega) : omega(omega) , S(omega.queue_list())
-    { }
-
-    void operator()(const state_type &x , state_type &dxdt , double t) const {
-        dxdt = omega + S( x );
-    }
-};
-\end{lstlisting}
-\caption{System functor for VexCL version of coupled phase oscillators chain
-example}
-\label{code:vexcl:phase}
-\end{figure}
-
 \figref{code:viennacl:phase} presents ViennaCL version of the phase oscillator
 chain example. Unfortunately, ViennaCL does not provide operations required for
 the problem at hand, so we had to fallback to hand-coded OpenCL kernel.
@@ -504,7 +504,7 @@ kernels, so this was a pleasant experience in comparison with native OpenCL
 API. This low-level variant expectedly turned out to be most effective as it
 will be shown in Results section.
 
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
@@ -617,7 +617,7 @@ one system and solve them simultaneously on the GPU.
 
 \section{Results}
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
     \end{center}
@@ -625,7 +625,7 @@ one system and solve them simultaneously on the GPU.
     \label{fig:lorenz:perf}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
     \end{center}
@@ -633,7 +633,7 @@ one system and solve them simultaneously on the GPU.
     \label{fig:phase:perf}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
     \end{center}
@@ -641,7 +641,7 @@ one system and solve them simultaneously on the GPU.
     \label{fig:damped:perf}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
     \end{center}
@@ -649,20 +649,20 @@ one system and solve them simultaneously on the GPU.
     \label{fig:lattice:perf}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \subfigure[
         Damped oscillator ensemble
-        ]{\includegraphics[width=0.4\textwidth]{data/damped_oscillator/scaling}}\quad
+        ]{\includegraphics[width=0.45\textwidth]{data/damped_oscillator/scaling}}\quad
         \subfigure[
         Disordered Ham lattice
-        ]{\includegraphics[width=0.4\textwidth]{data/disordered_ham_lattice/scaling}}\\
+        ]{\includegraphics[width=0.45\textwidth]{data/disordered_ham_lattice/scaling}}\\
         \subfigure[
         Lorenz attractor ensemble
-        ]{\includegraphics[width=0.4\textwidth]{data/lorenz_ensemble/scaling}}\quad
+        ]{\includegraphics[width=0.45\textwidth]{data/lorenz_ensemble/scaling}}\quad
         \subfigure[
         Damped phase oscillator chain
-        ]{\includegraphics[width=0.4\textwidth]{data/phase_oscillator_chain/scaling}}
+        ]{\includegraphics[width=0.45\textwidth]{data/phase_oscillator_chain/scaling}}
     \end{center}
     \caption{VexCL scaling with multigpu computation}
     \label{fig:scaling}
@@ -676,7 +676,7 @@ Runge-Kutta method used in our examples uses at least four temporary state
 variables on each integration step. All of those temporaries are full-blown
 vectors that waste global memory reads and writes. 
 
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 double2 system_function(
     double omega, double amp, double offset, double omega_d,
@@ -726,31 +726,7 @@ to the full integration step. \figref{code:customkrn} shows just this
 kernel. Unfortunately, by choosing this path we lost generality that odeint
 provides.
 
-\begin{figure}
-\begin{lstlisting}
-struct oscillator {
-    double omega, amp, offset, omega_d;
-    sym_value &sym_time;
-
-    oscillator(double omega, double amp, double offset,
-               double omega_d, sym_value &sym_time)
-        : omega(omega), amp(amp) , offset(offset) , omega_d(omega_d),
-          sym_time(sym_time)
-    {}
-
-    void operator()( const sym_state &x , sym_state &dxdt , double t ) {
-        sym_value eps;
-        eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
-        dxdt[0] = eps * x[0] + m_omega * x[1];
-        dxdt[1] = eps * x[1] - m_omega * x[0];
-    }
-};
-\end{lstlisting}
-\caption{System function used in automatic kernel generation.}
-\label{code:symsysfunc}
-\end{figure}
-
-\begin{figure}
+\begin{figure}[p]
 \begin{lstlisting}
 typedef double double;
 typedef vex::generator::symbolic<double> sym_value;
@@ -790,6 +766,30 @@ Runge-Kutta method}
 \label{code:krnbuilder}
 \end{figure}
 
+\begin{figure}[p]
+\begin{lstlisting}
+struct oscillator {
+    double omega, amp, offset, omega_d;
+    sym_value &sym_time;
+
+    oscillator(double omega, double amp, double offset,
+               double omega_d, sym_value &sym_time)
+        : omega(omega), amp(amp) , offset(offset) , omega_d(omega_d),
+          sym_time(sym_time)
+    {}
+
+    void operator()( const sym_state &x , sym_state &dxdt , double t ) {
+        sym_value eps;
+        eps = m_offset + m_amp * cos( m_omega_d * (sym_time + t) );
+        dxdt[0] = eps * x[0] + m_omega * x[1];
+        dxdt[1] = eps * x[1] - m_omega * x[0];
+    }
+};
+\end{lstlisting}
+\caption{Symbolic system functor used in automatic kernel generation.}
+\label{code:symsysfunc}
+\end{figure}
+
 VexCL library provides kernel generation mechanism that is able to solve this
 problem. It allows transparent conversion of generic CPU algorithms to OpenCL
 kernels. In order to do this conversion one needs to record sequence of
@@ -808,7 +808,7 @@ kernel by a small margin. We beleive this is due to the fact that VexCL kernel
 generator unrolls all operations in the kernel and hard-codes any constants it
 encounters in expression sequence.
 
-\begin{figure}
+\begin{figure}[p]
     \begin{center}
         \includegraphics[width=\textwidth]{data/damped_oscillator/genkernel}
     \end{center}
