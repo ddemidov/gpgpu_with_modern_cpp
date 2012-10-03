@@ -88,6 +88,13 @@ Gusshausstrasse 27-29/E360, A-1040 Wien, Austria
 
 \end{frontmatter}
 
+
+
+
+
+%
+% INTRODUCTION
+%
 \section{Introduction}
 
 Recently, GPGPU based computing has acquired considerable momentum in
@@ -199,6 +206,17 @@ solution of ODEs.
 %that authors of ViennaCL made correct design decision.  However, we think it is
 %interesting to compare approaches of VexCL and ViennaCL.
 
+
+
+
+
+
+
+
+
+%
+% ADAPTING ODEINT
+%
 \section{Adapting odeint}
 
 \begin{figure}
@@ -251,11 +269,30 @@ goal of comparing ease of use of the libraries.
 \subsection{VexCL}
 \subsection{ViennaCL}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Numerical experiments}
 
 typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
 
 
+
+
+
+%
+% DAMPED OSCILLATOR
+%
 \subsection{Damped Harmonic Oscillator Ensemble}
 
 dependence on an external parameter (the time)
@@ -462,6 +499,13 @@ ensemble example.}
 \label{code:viennacl:damped}
 \end{figure}
 
+
+
+
+
+%
+% PHASE OSCILLATORS
+%
 \subsection{Chain of Coupled Phase Oscillators}
 
 \rem{As a second example we choose a chain of coupled phase oscillators. A
@@ -602,6 +646,18 @@ example}
 \label{code:viennacl:phase}
 \end{figure}
 
+
+
+
+
+
+
+
+
+
+%
+% DISORDERED LATTICES
+%
 \subsection{Disordered Ham Lattice}
 
 \rem{
@@ -702,6 +758,19 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
+
+
+
+
+
+
+
+
+
+
+%
+% LORENZ ATTRACTOR
+%
 \subsection{Lorenz Attractor Ensemble}
 
 In the first example we will use the Lorenz system \cite{Lorenz}. The
@@ -822,6 +891,17 @@ be processed.
     \label{fig:scaling}
 \end{figure}
 
+
+
+
+
+
+
+
+
+%
+% FURTHER OPTIMIZATIOn
+%
 \section{Further optimizations}
 
 It may be said that performance we got so far is not optimal. Indeed, generic
@@ -960,6 +1040,16 @@ encounters in expression sequence.
     \label{fig:genkernel}
 \end{figure}
 
+
+
+
+
+
+
+
+% 
+% CONCLUSION
+%
 \section{Conclusion}
 
 Performance-wise, there is almost no difference between various platforms and
@@ -983,6 +1073,11 @@ same time its drawback: one has to (or may to) compile his kernels at compile
 time. This adds overhead notable for smaller workloads but at the same time it
 allows one to transparently build much more effective kernels, as it has been
 shown in this paper. 
+
+
+
+
+
 
 \section{Acknowledgments}
 
