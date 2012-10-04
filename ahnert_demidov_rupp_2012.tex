@@ -278,8 +278,42 @@ goal of comparing ease of use of the libraries.
 
 \section{Numerical experiments}
 
-Typical use cases of solving ODEs on GPU, parameter studies, large systems, discretization of PDEs...
+Ordinary differential equations play a major role in many scientific
+disciplines. They occur naturally in the context of mechanical
+systems, like granular and molecular dynamics -- in fact the Newtonian
+and Hamiltonian mechanics are formulated as ordinary differential
+equations. Many other applications can be found in such diverse
+fields, like biology and neuroscience, chemistry, social sciences, in
+nonlinear science. Furthermore, ODEs are used to solve partial
+differential equations (PDEs) numerically, they occur by discretization of
+the spatial coordinates.
 
+Odeint usually solves the initial value problem (IVP) of ordinary differential equations.
+\begin{equation}
+\frac{\de x}{\de t } = \dot{x} = f(x , t) \quad \text{,} \quad \quad x(0) = x_0
+\end{equation}
+Here, $x$ is the dependent variable. It is usually a vector of real
+number but also complex numbers are allowed. $t$ is the independent
+variable. We will call it time throughout the article and we will
+denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$
+is the system function and defines the ODE.
+
+Numerous methods on solving ODEs exist
+\cite{HairerSolvingODEI,HairerSolvingODEII,HairerGeometricNumericalIntegration2006}. They
+are usually categorized in the field of numerical analysis. Odeint
+implements the most prominent of these methods, for example the
+classical Runge-Kutta-Methods and Runge-Kutta-Fehlberg methods,
+multistep methods (Adams-Bashforth-Moulton), symplectic
+Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
+implicit Euler).
+
+Typical use cases for solving ODEs on GPUs are large systems of
+coupled ODEs which occur as discretizations of PDEs, or lattice
+ODEs. Another use case are parameter studies, where one wants to study
+the dependence of an ODE on some parameters. Here, one creates one
+large ODE which consists of many small uncoupled ODEs, each with a
+different parameter set. This one large system is then solved at once,
+hence all small ODEs are solved simultaneously.
 
 
 
@@ -289,13 +323,10 @@ Typical use cases of solving ODEs on GPU, parameter studies, large systems, disc
 %
 \subsection{Damped Harmonic Oscillator Ensemble}
 
-Dependence on an external parameter (the time)
-include $x^3$?
-
 The first example is a set of damped driven oscillators 
 \begin{equation} \label{eq:dampedsystem}
-    \frac{\de x}{\de t} = \omega y + \varepsilon x, \quad 
-    \frac{\de y}{\de t} = -\omega x + \varepsilon y
+    \dot{x} = \omega y + \varepsilon x \quad \text{,} \quad \quad
+    \dot{y} = -\omega x + \varepsilon y
 \end{equation}
 with $\varepsilon = \varepsilon_0 + \varepsilon_a \cos \left( \omega_d
 t \right)$. $\omega$ is the natural frequency of the oscillator and
@@ -502,47 +533,28 @@ ensemble example.}
 %
 \subsection{Chain of Coupled Phase Oscillators}
 
-\rem{As a second example we choose a chain of coupled phase oscillators. A
+As a second example we choose a chain of coupled phase oscillators. A
 phase oscillator describes the dynamics of an autonomous oscillator
-\cite{Pikovsky-Rosenblum,Kuramoto,scholarpedia articles}. Its
-evolutions is governed by the phase, a $2\pi$ periodic variable which
-grows linearly in time $\de \phi / \de t = \omega$. $\omega$ is here
-the phase velocity. Since the absence of any information about the
-amplitude of the oscillator interesting behaviour can only be observed
-if many of such oscillators are coupled. In fact such system can be
-used to study such divergent phenomena like synchronization, wave and
-pattern formation, phase chaos, or oscillation death \cite{}. It is a
+\cite{Synchronization-Pikovsky,Kuramoto-84}. Its evolutions is
+governed by the phase, a $2\pi$ periodic variable which grows linearly
+in time $\de \phi / \de t = \omega$. $\omega$ is here the phase
+velocity. Since the absence of any information about the amplitude of
+the oscillator interesting behaviour can only be observed if many of
+such oscillators are coupled. In fact such system can be used to study
+such divergent phenomena like synchronization, wave and pattern
+formation, phase chaos, or oscillation death \cite{}. It is a
 prominent example of an emergent system where the coupled system shows
 more complex behaviour than its constitutes.
 
 The concrete example we analyze here is a chain of nearest-neighbor
 coupled phase oscillators:
 \begin{equation}
-    \frac{\de \phi_i}{\de t} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
+    \dot{\phi}_i = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
     - \phi_{i-1}).
 \end{equation}
 The index $i$ denotes here the $i$-th phase in the chain. Note, that
 the phase velocity might be heterogeneous.
-}
 
-
-
-As a second example we choose a chain of coupled phase oscillators. Phase
-oscillators are a very simplified version of usual oscillator where the state
-is described by a $2\pi$ periodic variable. If a single phase oscillator is
-uncoupled its phase $\phi$ is described by a linear growth $d\phi/dt = \omega$
-where $\omega$ is the phase velocity. Therefore, interesting behavior can only
-be observed if two or more oscillators are coupled. In fact, a system of
-coupled phase oscillators is a prominent example of an emergent system where
-the coupled system shows a more complex behavior than its constitutes.
-
-The concrete example we analyze here is:
-\begin{equation} \label{eq:phasesystem}
-    \frac{d\phi_i}{dt} = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
-    - \phi_{i-1}).
-\end{equation}
-Note that $\phi_i$ is a function of the time, the index $i$ denotes here the
-$i$-th phase in the chain.
 
 The Thrust version for the coupled phase oscillator chain looks very similar to
 the damped oscillator example. Again, we use zip iterator to pack required
@@ -767,7 +779,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 %
 \subsection{Lorenz Attractor Ensemble}
 
-In the first example we will use the Lorenz system \cite{Lorenz}. The
+In the first example we will use the Lorenz system \cite{Lorenz-63}. The
 Lorenz system is a system of three coupled ODEs which shows chaotic
 behavior for a large range of parameters. It is one of the most used
 toying ODE in the nonlinear dynamics community. The ODE of the Lorenz
