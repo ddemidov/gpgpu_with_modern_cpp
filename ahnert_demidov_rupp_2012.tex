@@ -13,7 +13,7 @@
     showstringspaces=false,
     numbers=left,
     numberstyle=\tiny,
-    frame=single
+    frame=leftline
     }
 \newcommand{\code}[1]{\lstinline|#1|}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
@@ -83,8 +83,8 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 \end{abstract}
 
 \begin{keyword}
-    GPGPU \sep OpenCL \sep CUDA \sep Modern C++ libraries
-    % [KR]: Maybe add odeint, VexCL, ViennaCL, Thrust
+    GPGPU \sep OpenCL \sep CUDA \sep Modern C++ libraries \sep odeint \sep
+    VexCL \sep ViennaCL \sep Thrust
 \end{keyword}
 
 \end{frontmatter}
@@ -115,7 +115,7 @@ amount of boilerplate code from a developer.
 
 Both technologies are able to provide scientists with the vast computational
 resources of modern GPU cards at the price of a steep learning curve.
-Programmers needs to familiarize
+Programmers need to familiarize
 themselves with a new programming language and, more importantly, with a
 new programming paradigm. However, the entry price may be lowered with help of
 specialized libraries. The CUDA Toolkit includes several such libraries (BLAS
@@ -131,6 +131,10 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
 
 % [KR]: We need to define the scope of this work. We are investigating ODEs only, which we have to clarify.
 % There is a lot of GPGPU for dense linear algebra, sparse solvers, and molecular dynamics approaches. We don't consider any of these.
+
+% [DD]: Is `the context of solving ordinary differential equations` not enough
+% for this purpose? Or should we explicitly state that we are not intersted in
+% the topics you mentioned?
 
 \begin{description}
     \item[Odeint] is a modern C++
@@ -218,7 +222,14 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
 %
 \section{Adapting odeint}
 
-\begin{figure}
+Odeint provides a mechanism which lets the user change the way 
+elementary numerical computations are performed. This mechanism consists of a
+combination of state type, algebra and operations. The state type represents the
+state of the ODE being solved and is usually a vector type like
+\code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
+iterating through all elements of the state whereas the operations are
+responsible for the elementary operations. An example of using a range algebra
+is provided below:
 \begin{lstlisting}
 typedef std::array<double, 3> state_type;
 state_type x1, x2;
@@ -229,18 +240,7 @@ odeint::range_algebra algebra;
 // The following line computes x1 = dt * x2 for all elements of x1 and x2:
 algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
 \end{lstlisting}
-\caption{An example of range algebra in odeint.}
-\label{fig:odeintops}
-\end{figure}
-
-Odeint provides a mechanism which lets the user change the way 
-elementary numerical computations are performed. This mechanism consists of a
-combination of state type, algebra and operations. The state type represents the
-state of the ODE being solved and is usually a vector type like
-\code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
-iterating through all elements of the state whereas the operations are
-responsible for the elementary operations. \figref{fig:odeintops} provides an
-example of using a range algebra. Here \code{for_each2} is used, which means that
+Here \code{for_each2} is used, which means that
 two state types are iterated. The operation is a \code{scale_sum1} which simply
 calculates \code{x1[i] = dt * x2[i]}. Odeint provides a set of predefined
 algebras, which includes:
@@ -343,18 +343,9 @@ $\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ with $\Psi = x + \ii y$.
 
 
 The Thrust version of the system functor for the damped harmonic oscillator
-ensemble example is presented on \figref{code:thrust:damped}. The functor holds model
-parameters and provides \code{operator()} with a signature required by the odeint
-library. The state type is represented by \code{thrust::device_vector<double>}.
-$X$ and $Y$ components of the state are held in first and second halves of the
-vector correspondingly.  \code{operator()} packs the state components into a
-zip iterator and passes them to \code{thrust::for_each} algorithm together with the 
-provided device functor. There, individual components are unpacked again and the
-operations required are applied to the derivative part. This technique allows
-for the computation of the system function in single efficient pass resulting in a single CUDA
-kernel launch.
-
-\begin{figure}[p]
+ensemble example is presented below. The functor holds model parameters and
+provides \code{operator()} with a signature required by the odeint library. The
+state type is represented by \code{thrust::device_vector<double>}:
 \begin{lstlisting}
 typedef thrust::device_vector<double> state_type;
 
@@ -365,71 +356,59 @@ struct oscillator {
     oscillator(size_t N, double omega, double amp, double offset, double omega_d)
         : N(N), omega(omega), amp(amp), offset(offset), omega_d(omega_d) { }
 
-    struct oscillator_functor {
-        double eps, omega;
+    void operator()(const state_type &x, state_type &dxdt, double t) const;
+};
+\end{lstlisting}
 
-        oscillator_functor(double omega, double eps)
-            : omega(omega), eps(eps) {}
+$X$ and $Y$ components of the state are held in first and second halves of the
+vector correspondingly.  \code{operator()} packs the state components into a
+zip iterator and passes them to \code{thrust::for_each} algorithm together with
+the provided device functor:
+\begin{lstlisting}[firstnumber=last]
+struct oscillator_functor;
 
-        template< class T >
-        __host__ __device__ void operator()(T t) const {
-            double x = thrust::get< 0 >( t );
-            double y = thrust::get< 1 >( t );
-            thrust::get<2>(t) = eps * x + omega * y;
-            thrust::get<3>(t) = eps * y - omega * x;
-        }
-    };
+void oscillator::operator()(const state_type &x, state_type &dxdt, double t) const {
+    double eps = offset + amp * cos(omega_d * t);
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		boost::begin(x), boost::begin(x) + N,
+		boost::begin(dxdt), boost::begin(dxdt) + N ) ),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		boost::begin(x) + N, boost::end(x),
+		boost::begin(dxdt) + N, boost::end(dxdt) ) ),
+	oscillator_functor(omega, eps) );
+}
+\end{lstlisting}
+The device functor unpacks individual components and applies the required
+operations to the derivative part:
+\begin{lstlisting}[firstnumber=last]
+struct oscillator_functor {
+    double eps, omega;
 
-    void operator()(const state_type &x, state_type &dxdt, double t) const {
-        double eps = offset + amp * cos(omega_d * t);
-        thrust::for_each(
-            thrust::make_zip_iterator(
-                thrust::make_tuple(
-                    boost::begin(x),
-                    boost::begin(x) + N,
-                    boost::begin(dxdt),
-                    boost::begin(dxdt) + N ) ),
-            thrust::make_zip_iterator(
-                thrust::make_tuple(
-                    boost::begin(x) + N,
-                    boost::begin(x) + 2 * N,
-                    boost::begin(dxdt) + N,
-                    boost::begin(dxdt) + 2 * N ) ),
-            oscillator_functor(omega, eps) );
+    oscillator_functor(double omega, double eps) : omega(omega), eps(eps) {}
+
+    template< class T >
+    __host__ __device__ void operator()(T t) const {
+	double x = thrust::get< 0 >( t );
+	double y = thrust::get< 1 >( t );
+	thrust::get<2>(t) = eps * x + omega * y;
+	thrust::get<3>(t) = eps * y - omega * x;
     }
 };
 \end{lstlisting}
-\caption{System functor for Thrust version of damped harmonic oscillator
-ensemble example.}
-\label{code:thrust:damped}
-\end{figure}
-% [KR]: This example is too lengthy...
+This technique allows for the computation of the system function in single
+efficient pass resulting in a single CUDA kernel launch.
 
 
-\figref{code:vexcl:damped} shows system functor for the VexCL version of the
-damped harmonic oscillator example. The functor looks much simpler than the
-Thrust variant because VexCL supports a rich set of vector expressions. The state
-is represented by the \code{vex::multivector<double,2>} type which holds two
-instances of \code{vex::vector<double>} and transparently dispatches all
-operations to the underlying components. It would be in principle possible to
-write the \code{operator()} body as
-\begin{lstlisting}[frame=leftline]
-double eps = offset + amp * cos(omega_d * t);
-dxdt(0) = eps * x(0) + omega * x(1);
-dxdt(1) = eps * x(1) - omega * x(0);
-\end{lstlisting}
-This would basically coincide with the problem statement
-\eqref{eq:dampedsystem}. The drawback of this variant is that it would lead
-to two kernel launches (one per each vector assignment) and would result in
-suboptimal performance. We are not able to use simple multivector arithmetic
-operations here because components in the right hand sides of the assignments
-are interchanged.  Fortunately, VexCL provides notation for such
-multi-operations.  Assignment of a tuple of expressions to a multivector leads
-to generation and launch of single efficient OpenCL kernel. This notation is
-only slightly more cumbersome than the above variant.
-% [KR]: It's probably better to flip the paragraph: First say that a direct representation in possible, then say how performance can be further improved. A comparison in the benchmarks would also be of interest.
-
-\begin{figure}[p]
+The system functor for the VexCL version of the damped harmonic oscillator
+example is much simpler than the Thrust variant because VexCL supports a rich
+set of vector expressions. The state is represented by the
+\code{vex::multivector<double,2>} type which holds two instances of
+\code{vex::vector<double>} and transparently dispatches all operations to the
+underlying components. The code for \code{operator()} body practically
+coincides with the problem statement \eqref{eq:dampedsystem}: 
 \begin{lstlisting}
 typedef vex::vector<double> vector_type;
 typedef vex::multivector<double, 2> state_type;
@@ -441,59 +420,41 @@ struct oscillator {
         : omega(omega), amp(amp), offset(offset), omega_d(omega_d) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        double eps = offset + amp * cos(omega_d * t);
-
-        dxdt = std::make_tuple(
-                eps * x(0) + omega * x(1),
-                eps * x(1) - omega * x(0) );
+	double eps = offset + amp * cos(omega_d * t);
+	dxdt(0) = eps * x(0) + omega * x(1);
+	dxdt(1) = eps * x(1) - omega * x(0);
     }
 };
 \end{lstlisting}
-\caption{System functor for VexCL version of damped harmonic oscillator
-ensemble example.}
-\label{code:vexcl:damped}
-\end{figure}
 
-\begin{figure}[p]
-\begin{lstlisting}
-typedef vex::vector<double> state_type;
 
-extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
-
-struct phase_oscillators {
-    const state_type &omega;
-    vex::StencilOperator< double, 3, 1, oscillator_body > S;
-
-    phase_oscillators(const state_type &omega) : omega(omega), S(omega.queue_list()) { }
-
-    void operator()(const state_type &x, state_type &dxdt, double t) const {
-        dxdt = omega + S(x);
-    }
-};
+The drawback of this variant is that it leads
+to two kernel launches (one per each vector assignment) and results in
+suboptimal performance. We are not able to use simple multivector arithmetic
+operations here because components in the right hand sides of the assignments
+are interchanged.  Fortunately, VexCL provides notation for such
+multi-operations.  Assignment of a tuple of expressions to a multivector leads
+to generation and launch of single efficient OpenCL kernel. This notation is
+only slightly more cumbersome than the above variant:
+\begin{lstlisting}[firstnumber=11]
+double eps = offset + amp * cos(omega_d * t);
+dxdt = std::make_tuple(	    eps * x(0) + omega * x(1),
+			    eps * x(1) - omega * x(0)	);
 \end{lstlisting}
-\caption{System functor for VexCL version of coupled phase oscillators chain
-example}
-\label{code:vexcl:phase}
-\end{figure}
 
-The ViennaCL version of the damped harmonic oscillator example is presented on
-\figref{code:viennacl:damped}. \code{boost::fusion::vector} is used to pack
-coordinate components of the state into a single type. Individual components
-are instances of \code{viennacl::vector<double>} type. We also had to adapt
-odeint resizing mechanism to the resulting structure. Its implementation is
-straightforward and omitted here for the sake of conciseness.
+The ViennaCL version of the damped harmonic oscillator example uses
+\code{boost::fusion::vector} to pack coordinate components of the state into a
+single type. Individual components are instances of
+\code{viennacl::vector<double>} type. We also had to adapt odeint resizing
+mechanism to the resulting structure. Its implementation is straightforward and
+omitted here for the sake of conciseness.
 
 ViennaCL, as well as VexCL, supports expression templates for a limited set of
 vector operations (closely corresponding to Level 1 BLAS routines). More
 complex expressions may be built with help of the ViennaCL kernel generator
 interface, which supports single- or multiple-operations kernels. The required
 notation is a bit more cumbersome than that of VexCL library. OpenCL kernels
-here are generated from symbolic expressions involving explicit symbolic types.
-This requires more of boilerplate code but the resulting expression tree
-carries information of whether two terminals represent the same vector
-instance. This in principle allows generation of more effective code.
-
-\begin{figure}[p]
+here are generated from symbolic expressions involving explicit symbolic types:
 \begin{lstlisting}
 typedef viennacl::vector<double> vector_type;
 typedef fusion::vector<vector_type, vector_type> state_type;
@@ -516,24 +477,26 @@ struct oscillator {
              "oscillator")
     { }
 
-    void operator()( const state_type &x, state_type &dxdt, double t ) {
-        vector_type &X = const_cast<vector_type&>( fusion::at_c<0>(x) );
-        vector_type &Y = const_cast<vector_type&>( fusion::at_c<1>(x) );
-
-        vector_type &dX = fusion::at_c<0>(dxdt);
-        vector_type &dY = fusion::at_c<1>(dxdt);
-
-        double eps = offset + amp * cos(omega_d * t);
-
-        viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, omega) );
-    }
+    void operator()( const state_type &x, state_type &dxdt, double t );
 };
 \end{lstlisting}
-\caption{System functor for ViennaCL version of damped harmonic oscillator
-ensemble example.}
-\label{code:viennacl:damped}
-\end{figure}
-%% [KR]: I suggest to split the code snippet into two parts: The kernel generation, and the execution phase.
+
+This requires more of boilerplate code but the resulting expression tree
+carries information of whether two terminals represent the same vector
+instance. This in principle allows generation of more effective code. The
+\code{operator()} unpacks \code{boost::fusion::vector} container and launches
+the generated kernel:
+\begin{lstlisting}[firstnumber=last]
+void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
+    vector_type &X  = const_cast<vector_type&>( fusion::at_c<0>(x) );
+    vector_type &Y  = const_cast<vector_type&>( fusion::at_c<1>(x) );
+    vector_type &dX = fusion::at_c<0>(dxdt);
+    vector_type &dY = fusion::at_c<1>(dxdt);
+
+    double eps = offset + amp * cos(omega_d * t);
+    viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, omega) );
+}
+\end{lstlisting}
 
 
 
@@ -558,7 +521,7 @@ more complex behaviour than its constitutes.
 
 The concrete example we analyze here is a chain of nearest-neighbor
 coupled phase oscillators:
-\begin{equation}
+\begin{equation} \label{eq:phasesystem}
     \dot{\phi}_i = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
     - \phi_{i-1}).
 \end{equation}
@@ -572,7 +535,7 @@ components and process the resulting sequence with single sweep of the
 neighboring vector elements. In order to provide the values, we use Thrust's
 permutation iterator, so that \code{operator()} of the system functor looks
 like
-\begin{lstlisting}[frame=leftline]
+\begin{lstlisting}
 thrust::for_each(
     thrust::make_zip_iterator(
         thrust::make_tuple(
@@ -594,7 +557,7 @@ thrust::for_each(
 \code{prev} and \code{next} are instances of
 \code{thrust::device_vector<size_t>} holding indices to left and right vector
 elements and initialized as
-\begin{lstlisting}[frame=leftline]
+\begin{lstlisting}
 thrust::counting_iterator<size_t> c(0);
 thrust::copy(c, c + N - 1, prev.begin() + 1);
 prev[0] = 0;     // prev = { 0, 0, 1, 2, 3, ..., N-1 }
@@ -602,66 +565,72 @@ thrust::copy(c + 1, c + N, next.begin());
 next[N-1] = N-1; // next = { 1, 2, 3, ..., N-1, N-1 }
 \end{lstlisting}
 
-The VexCL version of the example is presented on \figref{code:vexcl:phase}.
-Again, it is the most concise variant since VexCL provides native support for
-the user-defined stencils operations. The sum of sines in
-\eqref{eq:phasesystem} is encoded using the \code{vex::StencilOperator<>} class
-template.  Template parameters are the body string for the generated OpenCL
-function encoding required operation, width and center point of the stencil,
-and its return type. Once the stencil operator is defined, the functor's
-\code{operator()} is implemented with a single line of code.
+The VexCL version of the example is presented below.  Again, it is the most
+concise variant since VexCL provides native support for the user-defined
+stencils operations. The sum of sines in \eqref{eq:phasesystem} is encoded
+using the \code{vex::StencilOperator<>} class template.  Template parameters
+are the body string for the generated OpenCL function encoding required
+operation, width and center point of the stencil, and its return type. Once the
+stencil operator is defined, the functor's \code{operator()} is implemented
+with a single line of code:
+\begin{lstlisting}
+typedef vex::vector<double> state_type;
+extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
 
-\figref{code:viennacl:phase} presents the ViennaCL version of the phase oscillator
-chain example. Unfortunately, ViennaCL does not provide operations required for
-the problem at hand, so we had to fallback to hand-coded OpenCL kernel.
+struct phase_oscillators {
+    const state_type &omega;
+    vex::StencilOperator< double, 3, 1, oscillator_body > S;
+    phase_oscillators(const state_type &omega) : omega(omega), S(omega.queue_list()) { }
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
+        dxdt = omega + S(x);
+    }
+};
+\end{lstlisting}
+
+
+Unfortunately, ViennaCL does not provide stencil operations required for
+the problem at hand, so we had to fallback to hand-coded OpenCL kernel:
+\begin{lstlisting}
+static const char phase_oscillator_source[] =
+    "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
+    "kernel void oscillator(\n"
+    "        uint n,\n"
+    "        global double *dx,\n"
+    "        global const double *x,\n"
+    "        global const double *omega\n"
+    "        )\n"
+    "{\n"
+    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
+    "        double X0 = x[i];\n"
+    "        double Xl = i > 0 ? x[i - 1] : X0;\n"
+    "        double Xr = i + 1 < n ? x[i + 1] : X0;\n"
+    "        dx[i] = omega[i] + sin(Xl - X0) + sin(X0 - Xr);\n"
+    "    }\n"
+    "}\n";
+\end{lstlisting}
 ViennaCL provide convenient mechanism for compilation and launching of custom
 kernels, so this was a pleasant experience in comparison with native OpenCL
 API. This low-level variant expectedly turned out to be the most effective one
-(see the Results section).
-
-\begin{figure}[p]
-\begin{lstlisting}
+(see the Results section):
+\begin{lstlisting}[firstnumber=last]
 typedef viennacl::vector<double> state_type;
 
 struct phase_oscillators {
     const state_type &omega;
 
     sys_func(const state_type &omega) : omega(omega) {
-        static const char source[] =
-            "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-            "kernel void oscillator(\n"
-            "        uint n,\n"
-            "        global double *dx,\n"
-            "        global const double *x,\n"
-            "        global const double *omega\n"
-            "        )\n"
-            "{\n"
-            "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-            "        double X0 = x[i];\n"
-            "        double Xl = i > 0 ? x[i - 1] : X0;\n"
-            "        double Xr = i + 1 < n ? x[i + 1] : X0;\n"
-            "        dx[i] = omega[i] + sin(Xl - X0) + sin(X0 - Xr);\n"
-            "    }\n"
-            "}\n";
-
-        viennacl::ocl::current_context().add_program(
-                source, "oscillator_program").add_kernel("oscillator");
+        viennacl::ocl::current_context().add_program(phase_oscillator_source,
+	    "oscillator_program").add_kernel("oscillator");
     }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         viennacl::ocl::kernel &step = viennacl::ocl::current_context().get_program(
             "oscillator_program").get_kernel("oscillator");
-        viennacl::ocl::enqueue(
-            step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
+
+        viennacl::ocl::enqueue( step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
     }
 };
 \end{lstlisting}
-\caption{System functor for ViennaCL version of coupled phase oscillators chain
-example}
-\label{code:viennacl:phase}
-\end{figure}
-% [KR]: Again, this rather lenghty code needs to be condensed and/or split.
-
 
 
 
@@ -718,7 +687,7 @@ The linear operator $-\Delta Kx-Dx$ may be represented as a single sparse matrix
 As the construction of the matrix is straight-forward, we only provide code for the system functor's \code{operator()}.
 
 The Thrust version of the system functor looks like this:
-\begin{lstlisting}[frame=leftline]
+\begin{lstlisting}
 typedef thrust::device_vector<double> state_type;
 
 void operator()(const state_type &q , state_type &dp) const {
@@ -738,7 +707,7 @@ Function \code{thrust::raw_pointer_cast()} is used to convert thrust device
 vector iterator to raw device pointer.
 
 The VexCL version is very simple:
-\begin{lstlisting}[frame=leftline]
+\begin{lstlisting}
 typedef vex::vector<double> state_type;
 
 extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
@@ -758,7 +727,7 @@ overloaded math functions for its vector types. Therefore, we had to split its
 \code{operator()} into two parts: the first part computes sparse matrix~--
 vector product normally, while the second part uses a hand-coded kernel to
 subtract non-linear term $\beta q^3$ from the result:
-\begin{lstlisting}[frame=leftline]
+\begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
@@ -908,156 +877,6 @@ be processed.
     \label{fig:scaling}
 \end{figure}
 
-
-
-
-
-
-
-
-
-%
-% FURTHER OPTIMIZATIOn
-%
-\section{Further optimizations}
-
-It may be said that the performance obtain so far is not optimal. Indeed, generic
-odeint algorithms use temporary vector variables. For example, the fourth-order
-Runge-Kutta method used in our examples uses at least four temporary state
-variables on each integration step. All of those temporaries are full-blown
-vectors that waste global memory reads and writes. 
-
-\begin{figure}[p]
-\begin{lstlisting}
-double2 system_function(
-    double omega, double amp, double offset, double omega_d,
-    double dt, double t, double2 s
-    )
-{
-    double eps = offset + amp * cos(omega_d * t);
-    double2 dsdt;
-    dsdt.x = dt * (eps * s.x + omega * s.y);
-    dsdt.y = dt * (eps * s.y - omega * s.x);
-    return dsdt;
-}
-kernel void dumped_oscillator(
-    ulong  n, global double *X, global double *Y,
-    double omega, double amp, double offset, double omega_d,
-    double dt, double t
-    )
-{
-    double2 s, dsdt, k1, k2, k3, k4;
-    for(size_t gid = get_global_id(0); gid < n; gid += get_global_size(0)) {
-        s.x = X[gid];
-        s.y = Y[gid];
-        k1 = system_function(omega, amp, offset, omega_d, dt, t, s);
-        k2 = system_function(omega, amp, offset, omega_d, dt,
-                t + 0.5 * dt, s + 0.5 * k1);
-        k3 = system_function(omega, amp, offset, omega_d, dt,
-                t + 0.5 * dt, s + 0.5 * k2);
-        k4 = system_function(omega, amp, offset, omega_d, dt,
-                t + dt, s + k3);
-        s += (k1 + 2 * k2 + 2 * k3 + k4) / 6;
-        X[gid] = s.x;
-        Y[gid] = s.y;
-    }
-};
-
-\end{lstlisting}
-\caption{Hand-coded kernel implementing single iteration of 4th order
-Runge-Kutta method.}
-\label{code:customkrn}
-\end{figure}
-
-It is of course possible to manually create computational kernels corresponding
-to the full integration step. \figref{code:customkrn} shows one such
-kernel. Unfortunately, by choosing this path we lost generality that odeint
-provides.
-% [KR]: The paragraph above needs improvements, it reads a bit bumpy...
-
-\begin{figure}[p]
-\begin{lstlisting}
-typedef vex::generator::symbolic<double> sym_value;
-typedef std::array<sym_value,2> sym_state;
-
-struct oscillator {
-    double omega, amp, offset, omega_d;
-    sym_value &sym_time;
-    oscillator(double omega, double amp, double offset,
-               double omega_d, sym_value &sym_time)
-        : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
-          sym_time(sym_time)
-    {}
-    void operator()(const sym_state &x, sym_state &dxdt, double t) {
-        sym_value eps = offset + amp * cos( omega_d * (sym_time + t) );
-        dxdt[0] = eps * x[0] + omega * x[1];
-        dxdt[1] = eps * x[1] - omega * x[0];
-    }
-};
-\end{lstlisting}
-\caption{Symbolic system functor used in automatic kernel generation.}
-\label{code:symsysfunc}
-\end{figure}
-
-\begin{figure}[p]
-\begin{lstlisting}
-// Custom kernel body will be recorded here:
-std::ostringstream body;
-vex::generator::set_recorder(body);
-
-// State types that would become kernel parameters:
-sym_state sym_S = {sym_value::VectorParameter, sym_value::VectorParameter};
-sym_value sym_time(sym_value::ScalarParameter);
-
-// Symbolic stepper:
-odeint::runge_kutta4<sym_state, double, sym_state, double,
-        odeint::range_algebra, odeint::default_operations
-        > sym_stepper;
-oscillator sys(1.0, 0.2, 0.0, 1.2, sym_time);
-sym_stepper.do_step(std::ref(sys), sym_S, 0, dt);
-
-// Now that expression sequence is recorded, we build OpenCL kernel:
-auto kernel = vex::generator::build_kernel(ctx.queue(),
-        "damped_oscillator", body.str(), sym_S[0], sym_S[1], sym_time);
-
-// Actual data (initialization skipped).
-vex::vector<double> X(ctx.queue(), n), Y(ctx.queue(), n);
-
-// Integration loop:
-for(double t = 0; t < t_max; t += dt) kernel(X, Y, t);
-\end{lstlisting}
-\caption{Automatic generation of OpenCL kernel corresponding to 4th order
-Runge-Kutta method}
-\label{code:krnbuilder}
-\end{figure}
-
-VexCL provides a kernel generation mechanism that is able to solve this
-problem. It allows for a transparent conversion of generic CPU algorithms
-(restrictions apply) to OpenCL kernels. In order to do this conversion one
-needs to record sequence of arithmetic expressions made by an algorithm.  The
-recording is done with help of \code{vex::generator::symbolic<T>} class. The
-class supports arithmetic expression templates and simply outputs to provided
-stream any expressions it is being subjected to. This technique is demonstrated
-on \figref{code:symsysfunc} and~\ref{code:krnbuilder}. Its advantage is that we
-are able to select any stepper from odeint library (or any other generic
-algorithm) for the generated kernel. \figref{fig:genkernel} presents
-performance comparison of Thrust-based odeint solution with hand-coded and
-generated OpenCL kernels. Both hand-coded and generated kernels show very
-similar performance and outperform Thrust-based odeint solution by a factor of
-5 for large problem sizes. Moreover, generated kernel is slightly faster than
-hand-coded kernel. We believe this is due to the fact that VexCL kernel
-generator unrolls all operations in the kernel and hard-codes any constants it
-encounters in expression sequence.
-% [KR]: I'd keep that out of the paper. It undermines the first examples and opens up a completely new topic. I suggest to write a separate paper on that.
-
-\begin{figure}[p]
-    \begin{center}
-        \includegraphics[width=\textwidth]{data/damped_oscillator/genkernel}
-    \end{center}
-    \caption{Performance of damped oscillator example with hand-coded and
-    generated OpenCL kernels compared with Thrust-based odeint solution.}
-    \label{fig:genkernel}
-\end{figure}
 
 
 
