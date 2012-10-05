@@ -3,7 +3,7 @@ clear all
 
 test   = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu'};
 lgnd   = {'Tesla  \times 1', 'Tesla  \times 2', 'Tesla  \times 3'};
-style  = {'ko:', 'ko-', 'ko--'};
+style  = {'k:', 'ko-', 'ko--'};
 fcolor = {'w', 'w', 'w'};
 msize  = 4;
 
