@@ -816,11 +816,13 @@ fact that OpenCL program compiles its computational kernels at runtime.
 % [KR]: The discussion of results should be extended...
 
 VexCL library allows transparent use of several GPUs. \figref{fig:scaling}
-shows scaling results for up to three Tesla GPUs. It is clear from the plots
-that it does make sense to use several GPUs only for problems of size larger
-than $10^5-10^6$. Additional advantage of multi-GPU programming model is that
-memory resources are split between all of the GPUs so that larger problems may
-be processed.
+shows scaling results for up to three Tesla C2070 GPUs. It is clear from the
+plots that it does make sense to use several GPUs only for problems of size
+larger than $10^5-10^6$. Figure \ref{fig:scaling}~(a) also shows
+scaling results for the system with three Tahiti GPUs. It seems that AMD OpenCL
+implementation does not work very well with multiple GPUs employed. Still,
+combined memory of several GPUs allows to solve proportionally larger problems
+on the same system.
 
 \begin{figure}[p]
     \begin{center}

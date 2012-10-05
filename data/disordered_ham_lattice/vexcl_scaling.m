@@ -2,10 +2,10 @@ close all
 clear all
 
 test   = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu'};
-lgnd   = {'VexCL 1 GPU', 'VexCL 2 GPUs', 'VexCL 3 GPUs'};
+lgnd   = {'Tesla  \times 1', 'Tesla  \times 2', 'Tesla  \times 3'};
 style  = {'ko:', 'ko-', 'ko--'};
 fcolor = {'w', 'w', 'w'};
-msize  = 3;
+msize  = 4;
 
 figure(1)
 set(gca, 'FontSize', 18);

@@ -1,11 +1,14 @@
 close all
 clear all
 
-test   = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu'};
-lgnd   = {'VexCL 1 GPU', 'VexCL 2 GPUs', 'VexCL 3 GPUs'};
-style  = {'ko:', 'ko-', 'ko--'};
-fcolor = {'w', 'w', 'w'};
-msize  = 3;
+test = {'vexcl_1gpu', 'vexcl_2gpu', 'vexcl_3gpu', ...
+	'vexcl_1gpu_tahiti', 'vexcl_2gpu_tahiti', 'vexcl_3gpu_tahiti'};
+
+lgnd   = {'Tesla  \times 1', 'Tesla  \times 2', 'Tesla  \times 3', ...
+          'Tahiti  \times 1', 'Tahiti  \times 2', 'Tahiti  \times 3'};
+style  = {'k:', 'ko-', 'ko--', 'k:', 'ko-', 'ko--'};
+fcolor = {'w', 'w', 'w', 'k', 'k', 'k'};
+msize  = 4;
 
 figure(1)
 set(gca, 'FontSize', 18);
@@ -23,7 +26,7 @@ for t = test
 	avg = [avg time];
     end
 
-    if idx == 1
+    if idx == 1 || idx == 4
 	ref_avg = avg;
     end
 
