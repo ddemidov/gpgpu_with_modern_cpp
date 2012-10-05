@@ -794,12 +794,13 @@ source code for the experiments and the full set of results may be found in a
 GitHub
 repository\footnote{\href{https://github.com/ddemidov/vexcl_odeint_paper}{https://github.com/ddemidov/vexcl\_odeint\_paper}}.
 
-All of the libraries tested in this paper allow for the use of both CPUs and GPUs.
-Thrust supports an OpenMP-based execution on the CPU, which is enabled by a
-compilation switch. OpenCL libraries natively support CPU as a compute
-device.  The timings we provide here were obtained for Nvidia Tesla C2070 GPUs
-and for an Intel Core i7 930 CPU. For each of the experiments, 10 runs were made
-and median time was selected as a representative value.
+All of the libraries tested in this paper allow for the use of both CPUs and
+GPUs.  Thrust supports an OpenMP-based execution on the CPU, which is enabled
+by a compilation switch. OpenCL libraries natively support CPU as a compute
+device.  The timings we provide here were obtained for Nvidia Tesla C2070 and
+AMD Radeon HD 7970 (Tahiti) GPUs, and for an Intel Core i7 930 CPU. For each of
+the experiments, 10 runs were made and median time was selected as a
+representative value.
 
 Figures \ref{fig:damped:perf} through \ref{fig:lorenz:perf} show performance
 data for the four numerical experiments. Left plots shows absolute time with

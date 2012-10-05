@@ -1,17 +1,17 @@
 close all
 clear all
 
-test = {'thrust_gpu', 'vexcl_1gpu',   'vexcl_cpu', ...
-	'viennacl_gpu', 'viennacl_cpu'};
+test = {'thrust_gpu', 'vexcl_1gpu', 'vexcl_1gpu_tahiti',  'vexcl_cpu', ...
+	'viennacl_gpu', 'viennacl_gpu_tahiti', 'viennacl_cpu'};
 
-lgnd = {'Thrust GPU', 'VexCL GPU',    'VexCL CPU', ...
-	'ViennaCL GPU', 'ViennaCL CPU'};
+lgnd = {'Thrust GPU', 'VexCL Tesla', 'VexCL Tahiti', 'VexCL CPU', ...
+	'ViennaCL Tesla', 'ViennaCL Tahiti', 'ViennaCL CPU'};
 
-style = {'ko-', 'ko-', 'kd-', ...
-	 'ko--', 'kd--'};
+style = {'ko-', 'ko-', 'kv-', 'kd-', ...
+	 'ko--', 'kv--', 'kd--'};
 
-fcolor = {'k', 'w', 'w', ...
-	  'w', 'w'};
+fcolor = {'k', 'w', 'w', 'w', ...
+	  'w', 'w', 'w'};
 
 msize = 3;
 
@@ -54,7 +54,8 @@ xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T (sec)');
-legend(lgnd, 'location', 'NorthWest');
+h = legend(lgnd, 'location', 'NorthWest');
+set(h, 'fontsize', 8);
 legend boxoff
 axis square
 
