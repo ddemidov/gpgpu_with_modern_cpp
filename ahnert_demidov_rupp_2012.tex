@@ -63,7 +63,8 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 
 \author{Karl Rupp}
 \ead{rupp@iue.tuwien.ac.at}
-\address{Mathematics and Computer Science Division, Argonne National Laboratory \\
+\address{Mathematics and Computer Science Division,
+Argonne National Laboratory \\
 9700 South Cass Avenue, Argonne, IL 60439, USA
 }
 
@@ -75,8 +76,8 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
     the underlying containers and even from the basic algebraic computations.
     This allows to effectively use libraries such as VexCL, ViennaCL, or Thrust
     to solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
-    and CUDA work equally well for problems of large sizes, while OpenCL has higher
-    overhead for smaller problems.
+    and CUDA work equally well for problems of large sizes, while OpenCL has
+    higher overhead for smaller problems.
     % [KR]: The abstract should end with a more catchy phrase
 
     % [DD]: Perhaps we should say something to the effect of: since CUDA and
@@ -103,20 +104,20 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 %
 \section{Introduction}
 
-Recently, general purpose computing on graphics processing units (GPGPU)
- has acquired considerable momentum in the
-scientific community. This is confirmed both by increasing numbers of
-GPGPU-related publications and GPU based supercomputers in
-the Top 500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
+Recently, general purpose computing on graphics processing units (GPGPU) has
+acquired considerable momentum in the scientific community. This is confirmed
+both by increasing numbers of GPGPU-related publications and GPU based
+supercomputers in the Top
+500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
 programming frameworks are NVIDIA CUDA and OpenCL.  The former is a proprietary
 parallel computing architecture developed by NVIDIA for general purpose
 computing on NVIDIA graphics adapters, and the latter is an open, royalty-free
-standard for cross-platform, parallel programming of modern processors maintained
-by the Khronos group. By nature, the two frameworks have their distinctive pros and cons. CUDA has
-a more mature programming environment with larger set of scientific libraries;
-but it is only supported on NVIDIA hardware. OpenCL is
-supported on wide range of hardware, but its native API requires much larger
-amount of boilerplate code from a developer.
+standard for cross-platform, parallel programming of modern processors
+maintained by the Khronos group. By nature, the two frameworks have their
+distinctive pros and cons. CUDA has a more mature programming environment with
+larger set of scientific libraries; but it is only supported on NVIDIA
+hardware. OpenCL is supported on wide range of hardware, but its native API
+requires much larger amount of boilerplate code from a developer.
 
 Both technologies are able to provide scientists with the vast computational
 resources of modern GPU cards at the price of a steep learning curve.
@@ -134,8 +135,10 @@ under consideration in the context of solving ordinary differential equations.
 The comparison is based on odeint, modern C++ library for solution of ODEs.
 The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
 
-% [KR]: We need to define the scope of this work. We are investigating ODEs only, which we have to clarify.
-% There is a lot of GPGPU for dense linear algebra, sparse solvers, and molecular dynamics approaches. We don't consider any of these.
+% [KR]: We need to define the scope of this work. We are investigating ODEs
+% only, which we have to clarify.  There is a lot of GPGPU for dense linear
+% algebra, sparse solvers, and molecular dynamics approaches. We don't consider
+% any of these.
 
 % [DD]: Is `the context of solving ordinary differential equations` not enough
 % for this purpose? Or should we explicitly state that we are not intersted in
@@ -178,15 +181,15 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
         preconditioner.
 \end{description}
 
-The main difference between CUDA and OpenCL is their handling of compute
-kernels compilation. In CUDA the compute kernels are compiled to PTX code
-together with the host program. The PTX is pseudo-assembler language which is
-compiled at runtime for the specific NVIDIA device it is being run on. Since
-PTX is already very low-level, this just-in-time kernel compilation has low
-overhead. In OpenCL the compute kernels are compiled at runtime from high level
-sources. This adds an overhead which is particularly noticeable for smaller
-sized problems. The pre-compilation to some low-level pseudo-code is not
-feasible in OpenCL because it has to support wide range of hardware.
+CUDA and OpenCL differ in their handling of compute kernels compilation. In
+CUDA the compute kernels are compiled to PTX code together with the host
+program. The PTX is pseudo-assembler language which is compiled at runtime for
+the specific NVIDIA device it is being run on. Since PTX is already very
+low-level, this just-in-time kernel compilation has low overhead. In OpenCL the
+compute kernels are compiled at runtime from high level sources. This adds an
+overhead which is particularly noticeable for smaller sized problems. The
+pre-compilation to some low-level pseudo-code is not feasible in OpenCL because
+it has to support wide range of hardware.
 
 The approach to generation and compilation of the compute kernels is one of the
 main differences between the OpenCL libraries we considered.  ViennaCL has
@@ -284,7 +287,7 @@ goal of comparing ease of use of the libraries.
 
 Ordinary differential equations play a major role in many scientific
 disciplines. They occur naturally in the context of mechanical
-systems, like granular and molecular dynamics -- in fact the Newtonian
+systems, like granular and molecular dynamics~--- in fact the Newtonian
 and Hamiltonian mechanics are formulated as ordinary differential
 equations. Many other applications can be found in such diverse
 fields, like biology and neuroscience, chemistry, social sciences, in
@@ -292,9 +295,11 @@ nonlinear science. Furthermore, ODEs are used to solve partial
 differential equations (PDEs) numerically, they occur by discretization of
 the spatial coordinates.
 
-Odeint usually solves the initial value problem (IVP) of ordinary differential equations.
+Odeint usually solves the initial value problem (IVP) of ordinary differential
+equations.
 \begin{equation}
-\frac{\de x}{\de t } = \dot{x} = f(x , t) \quad \text{,} \quad \quad x(0) = x_0
+\frac{\de x}{\de t } = \dot{x} = f(x , t) \quad \text{,} \quad \quad x(0) =
+x_0.
 \end{equation}
 Here, $x$ is the dependent variable. It is usually a vector of real
 number but also complex numbers are allowed. $t$ is the independent
@@ -302,13 +307,12 @@ variable. We will call it time throughout the article and we will
 denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$
 is the system function and defines the ODE.
 
-Numerous methods on solving ODEs exist
-\cite{HairerSolvingODEI,HairerSolvingODEII,HairerGeometricNumericalIntegration2006}. They
-are usually categorized in the field of numerical analysis. Odeint
-implements the most prominent of these methods, for example the
-classical Runge-Kutta-Methods and Runge-Kutta-Fehlberg methods,
-multistep methods (Adams-Bashforth-Moulton), symplectic
-Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
+Numerous methods on solving ODEs exist \cite{HairerSolvingODEI,
+HairerSolvingODEII, HairerGeometricNumericalIntegration2006}. They are usually
+categorized in the field of numerical analysis. Odeint implements the most
+prominent of these methods, for example the classical Runge-Kutta-Methods and
+Runge-Kutta-Fehlberg methods, multistep methods (Adams-Bashforth-Moulton),
+symplectic Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
 implicit Euler).
 
 Typical use cases for solving ODEs on GPUs are large systems of
@@ -441,9 +445,7 @@ dxdt = std::make_tuple(     eps * x(0) + omega * x(1),
 The ViennaCL version of the damped harmonic oscillator example uses
 \code{boost::fusion::vector} to pack coordinate components of the state into a
 single type. Individual components are instances of
-\code{viennacl::vector<double>} type. We also had to adapt odeint resizing
-mechanism to the resulting structure. Its implementation is straightforward and
-omitted here for the sake of conciseness.
+\code{viennacl::vector<double>} type.
 
 ViennaCL, as well as VexCL, supports expression templates for a limited set of
 vector operations (closely corresponding to Level 1 BLAS routines). More
@@ -645,7 +647,9 @@ Another example for our performance and usage study is a strongly
 nonlinear disordered Hamiltonian lattice. Its equations of motion are
 governed by
 \begin{equation}
-\frac{\de q_{i,j}}{\de t} = p_{i,j} \quad \text{,} \quad \quad \frac{\de p_{i,j}}{\de t} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j} \,\,\text{.}
+\frac{\de q_{i,j}}{\de t} = p_{i,j} \quad \text{,} \quad \quad \frac{\de
+p_{i,j}}{\de t} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j}
+\,\,\text{.}
 \label{eq:disordered_ham}
 \end{equation}
 Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discreet Laplacian
@@ -666,14 +670,15 @@ all are of the Runge-Kutta-Nystrom type.
     \frac{dp}{dt} = -\Delta Kq + Dq - \beta q^3.
 \end{equation}
 
-The natural choice for the implementation of \eqref{eq:latticesystem} is a sparse
-matrix-vector product. Unfortunately, Thrust provides neither a sparse matrix
-type, nor sparse matrix-vector product operation.  We had to combine Thrust
-with the CUSPARSE library in order to implement this example. CUSPARSE
+The natural choice for the implementation of \eqref{eq:latticesystem} is a
+sparse matrix-vector product. Unfortunately, Thrust provides neither a sparse
+matrix type, nor sparse matrix-vector product operation.  We had to combine
+Thrust with the CUSPARSE library in order to implement this example. CUSPARSE
 contains a set of basic linear algebra subroutines used for handling sparse
 matrices and is included in CUDA Toolkit distribution as well as Thrust
-library.
-% [KR]: Maybe mention the cusp library here?
+library. Another possibility would be to use an open source Cusp library~--- a
+library for sparse linear algebra and graph computations on CUDA
+\cite{CuspRef}. 
 
 All of the libraries considered use the hybrid
 ELL format for storing the sparse matrix, which is one of the most efficient formats for sparse matrices on
@@ -736,8 +741,6 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
         scaled_pow3(static_cast<cl_uint>(q.size()), dp, q, beta) );
 }
 \end{lstlisting}
-% [KR]: Maybe the kernel generator is able to do this :-)
-
 
 
 
@@ -772,7 +775,9 @@ with a different parameter $R$), pack them all into one system and
 solve them simultaneously. (In a real study of chaoticity one would
 usually calculate the Lyapunov exponents \cite{Benettin}, which
 require to solve the system of Lorenz and their linear perturbations.)
-%% [KR] The paragraph right above is probably not of interest for the reader in its current form. Either shorten, or extend.
+
+% [KR] The paragraph right above is probably not of interest for the reader in
+% its current form. Either shorten, or extend.
 
 In the first example we will use the Lorenz system and study its dependence on
 one of the parameters. The Lorenz system is a system of three coupled ODEs
@@ -791,8 +796,14 @@ one system and solve them simultaneously on the GPU.
 
 We present results for the numerical experiments in this section. The complete
 source code for the experiments and the full set of results may be found in a
-GitHub
-repository\footnote{\href{https://github.com/ddemidov/vexcl_odeint_paper}{https://github.com/ddemidov/vexcl\_odeint\_paper}}.
+GitHub repository\footnote{ \href{
+https://github.com/ddemidov/vexcl_odeint_paper } {
+https://github.com/ddemidov/vexcl\_odeint\_paper } }.
+
+% [DD]: May be we should rename repository to ahnert_demidov_rupp_2012 or
+% gpgpu_with_modern_cpp or to something else more sutable than the current
+% name.  Github allows to do that, but we will have to change remote urls in
+% our local clones. We can do this right before publishing to save the trouble.
 
 All of the libraries tested in this paper allow for the use of both CPUs and
 GPUs.  Thrust supports an OpenMP-based execution on the CPU, which is enabled
@@ -807,18 +818,38 @@ data for the four numerical experiments. Left plots shows absolute time with
 against the size of the solved problem, while right plots show relative
 performance with respect to Thrust GPU version.
 
+
 In general all of the experiments show 10x to 20x acceleration when run on GPU
 with respect to the CPU path. Both CUDA and OpenCL programs show considerable
 overhead for the smaller sized problems. Due to this overhead we needed
 problems of size $10^3-10^4$ to see any acceleration on GPU. The overhead for
 OpenCL libraries is larger than that of CUDA programs. This is explained by the
 fact that OpenCL program compiles its computational kernels at runtime.
-% [KR]: The discussion of results should be extended...
+
+% TODO GPU performance.
+
+If we look at the performance of the libraries on CPU, then Thrust outperforms
+VexCL on larger problems by 15--40\%, except for the coupled phase oscillator
+test, where VexCL is faster by about 5\%. VexCL uses native stencil convolution
+operator in the latter example, while Thrust version has to use inefficient
+permutation iterators. For the ViennaCL the CPU performance is even worse. It
+is in general slower than Thrust by about 75\%  and slower than VexCL by
+30--70\%. The only exception is again the phase oscillator test, where ViennaCL
+outperforms other libraries since we had to resort to hand-written kernel.
+
+The difference between Thrust and OpenCL libraries is explained by the fact
+that Thrust uses OpenMP backend when run on a CPU. Thus, it does not have any
+overhead related to kernel compilation.  The gap between OpenCL libraries may
+be attributed to the fact that ViennaCL uses the same set of kernels for both
+GPUs and CPUs, while VexCL generates different kernels for different types of
+compute devices. Moreover, both of the libraries are primarily aimed at GPU
+performance and do not use CPU-specific optimizations (such as employing OpenCL
+vector data types that facilitate use of SSE instructions).
 
 VexCL library allows transparent use of several GPUs. \figref{fig:scaling}
 shows scaling results for up to three Tesla C2070 GPUs. It is clear from the
 plots that it does make sense to use several GPUs only for problems of size
-larger than $10^5-10^6$. Figure \ref{fig:scaling}~(a) also shows
+larger than $10^5-10^6$. \figref{fig:scaling:damped} also shows
 scaling results for the system with three Tahiti GPUs. It seems that AMD OpenCL
 implementation does not work very well with multiple GPUs employed. Still,
 combined memory of several GPUs allows to solve proportionally larger problems
@@ -860,7 +891,7 @@ on the same system.
     \begin{center}
         \subfigure[
         Damped oscillator ensemble
-        ]{\includegraphics[width=0.45\textwidth]{data/damped_oscillator/scaling}}\quad
+	]{\label{fig:scaling:damped}\includegraphics[width=0.45\textwidth]{data/damped_oscillator/scaling}}\quad
         \subfigure[
         Coupled phase oscillator chain
         ]{\includegraphics[width=0.45\textwidth]{data/phase_oscillator_chain/scaling}}\\
@@ -920,9 +951,9 @@ been shown in this paper.
 \section{Acknowledgments}
 
 This work has been partially supported by RFBR grant No 12-07-0007. We also
-would like to thank Gradient
-JSC\footnote{\href{http://www.gradient-geo.com/en}{http://www.gradient-geo.com/en}}
-for the kindly provided AMD hardware.
+would like to thank Gradient JSC\footnote{ \href{
+http://www.gradient-geo.com/en }{ http://www.gradient-geo.com/en } } for the
+kindly provided AMD hardware.
 
 
 \bibliographystyle{model1-num-names}
