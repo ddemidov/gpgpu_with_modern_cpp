@@ -68,18 +68,23 @@ Lobachevsky st. 2/31, 420008 Kazan, Russia
 }
 
 \begin{abstract}
-    We present a comparison of several modern C++ libraries intended for
-    OpenCL and CUDA programming. The comparison is based on odeint,
-    a framework for the solution of ordinary differential
-    equations. Odeint is designed in a very flexible way such that the
-    algorithms are completely independent from the underlying
-    containers and even from the basic algebraic computations. This
-    allows to effectively use libraries such as VexCL, ViennaCL, or
-    Thrust to solve ODEs with either OpenCL or CUDA technologies. We
-    found that OpenCL and CUDA work equally well for problems of large
-    sizes. OpenCL has higher overhead for smaller problems, but allows
-    on the fly generation of more effective kernels.
+    We present a comparison of several modern C++ libraries intended for OpenCL
+    and CUDA programming. The comparison is based on odeint, a framework for
+    the solution of ordinary differential equations. Odeint is designed in a
+    very flexible way such that the algorithms are completely independent from
+    the underlying containers and even from the basic algebraic computations.
+    This allows to effectively use libraries such as VexCL, ViennaCL, or Thrust
+    to solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
+    and CUDA work equally well for problems of large sizes, while OpenCL has higher
+    overhead for smaller problems.
     % [KR]: The abstract should end with a more catchy phrase
+
+    % [DD]: Perhaps we should say something to the effect of: since CUDA and
+    % OpenCL performance seems to be on par, we beleive that main factor for
+    % the library to work with should be convenience of its interface and
+    % availability of required functions. In the context of our work (ODE
+    % solving) OpenCL libraries proved to be more convenient due to
+    % availability of expression templates.
 \end{abstract}
 
 \begin{keyword}
@@ -173,45 +178,37 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
 	preconditioner.
 \end{description}
 
-%Odeint supports Thrust and VexCL natively, but for ViennaCL we needed to
-%provide adaptation code. Since ViennaCL already supports expression templates
-%it can directly be used with the \code{vector_space_algebra} of odeint. There
-%is no need to introduce an additional algebra or new operations. So in order to
-%use \code{viennacl::vector} with odeint we only only needed to adapt the
-%resizing operation. Resizing in odeint is necessary since many solvers need
-%temporary state types. These state types need to be constructed and initialized
-%which is done by the resizing mechanism of odeint.
-%
-%The resizing mechanism of odeint consist of three class templates. These
-%classes are \code{is_resizeable<>} which is simply a meta function telling
-%odeint if the type is really resizable. The second class is
-%\code{same_size_impl<>} which has a static method \code{same_size} taking two
-%\code{state_type} instances as arguments and returning if both instances have
-%the same size. The third class is \code{resize_impl<>} which performs the
-%actual resizing. These classes have a default implementation and can be
-%specialized for any type.  For ViennaCL the specialization is very simple and
-%is presented on \figref{fig:adapt:viennacl}.
-%
-%We were only able to test damped harmonic oscillator example with ViennaCL,
-%since the library lacks such vector operations as elementwise multiplication or
-%function application necessary for the other examples.  Nevertheless we
-%consider comparison with ViennaCL interesting enough to include in this paper.
-%Indeed, ViennaCL and VexCL employ somewhat different approaches to OpenCL
-%kernel generation. ViennaCL has limited number of kernels, which coincide
-%functionally with BLAS level 1 routines. These kernels are compiled in batch at
-%the program start to allow for faster initialization. However, due to this
-%design decision each vector expression may result in launch of more than one
-%kernel.  On the other hand, VexCL generates and compiles single kernel for each
-%vector expression it encounters.  This leads to higher initialization overhead,
-%but should prove more effective in the long runs. It should be noted that main
-%aim of ViennaCL is provision of iterative solvers for large sparse systems of
-%equations. In this context complex vector expressions are rare and we think
-%that authors of ViennaCL made correct design decision.  However, we think it is
-%interesting to compare approaches of VexCL and ViennaCL.
+The main difference between CUDA and OpenCL is their handling of compute
+kernels compilation. In CUDA the compute kernels are compiled to PTX code
+together with the host program. The PTX is pseudo-assembler language which is
+compiled at runtime for the specific NVIDIA device it is being run on. Since
+PTX is already very low-level, this just-in-time kernel compilation has low
+overhead. In OpenCL the compute kernels are compiled at runtime from high level
+sources. This adds an overhead which is particularly noticeable for smaller
+sized problems. The pre-compilation to some low-level pseudo-code is not
+feasible in OpenCL because it has to support wide range of hardware.
 
+The approach to generation and compilation of the compute kernels is one of the
+main differences between the OpenCL libraries we considered.  ViennaCL has
+limited set of predefined kernels, which functionally coincides with BLAS level
+1 routines.  These kernels are compiled in batch at the program start to allow
+for faster initialization. However, due to this design decision each vector
+expression may result in launch of more than one kernel.  On the other hand,
+VexCL generates and compiles an OpenCL program with a single kernel for each
+vector expression it encounters.  This leads to potentially higher
+initialization overhead, but should prove to be more effective in the long
+runs. It should be noted that main aim of ViennaCL is provision of iterative
+solvers for large sparse systems of equations. In this context complex vector
+expressions are rare and we believe that authors of ViennaCL made correct
+design decision.  However, we think it is interesting to compare approaches of
+VexCL and ViennaCL.
 
-
-
+% [DD]: what do you think of: The other difference between CUDA and OpenCL is
+% that CUDA supports subset of C++ language in compute kernels, while OpenCL
+% kernels are written in subset of C99. Therefore, CUDA programmers may use
+% template metaprogramming techniques which may lead to more efficient and
+% compact code.  Native OpenCL API does not provide this ability, but modern
+% C++ libraries such as those considered in this work...
 
 
 
@@ -909,7 +906,7 @@ major difference with respect to CUDA. Namely, it has a  much wider range of
 supported hardware, which is only going to extend with time because it is an
 open standard supported by major hardware producers. The other OpenCL advantage
 that we did not discuss in this paper is the ability to generate kernels
-optimized for the problem at hand at runtime. We beleive that this feature has
+optimized for the problem at hand at runtime. We believe that this feature has
 good potential, but we leave its in-depth discussion for the future work.  On
 the other hand, this feature of OpenCL may be considered its drawback: runtime
 kernel compilation adds certain overhead notable for smaller workloads as has
