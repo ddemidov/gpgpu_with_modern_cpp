@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(vexcl_odeint_paper_sources)
 
+# set( Boost_NO_SYSTEM_PATHS 1 )
 find_package(Boost)
 
 find_package(CUDA QUIET)
@@ -16,6 +17,7 @@ set(VIENNACL_ROOT  $ENV{VIENNACL_ROOT} CACHE STRING "ViennaCL root")
 MESSAGE(STATUS "odeint found in ${ODEINT_ROOT}")
 MESSAGE(STATUS "VexCL found in ${VEXCL_ROOT}")
 MESSAGE(STATUS "ViennaCL found in ${VIENNACL_ROOT}")
+MESSAGE(STATUS "Boost found in ${BOOST_ROOT}")
 
 include_directories(
     ${BOOST_ROOT}

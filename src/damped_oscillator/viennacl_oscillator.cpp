@@ -27,33 +27,33 @@ typedef fusion::vector<
     viennacl::vector< value_type >
     > state_type;
 
-namespace boost { namespace numeric { namespace odeint {
+// namespace boost { namespace numeric { namespace odeint {
 
-template<>
-struct is_resizeable< state_type > : boost::true_type { };
+// template<>
+// struct is_resizeable< state_type > : boost::true_type { };
 
-template<>
-struct resize_impl< state_type , state_type >
-{
-    static void resize( state_type &x1 , const state_type &x2 )
-    {
-        fusion::at_c< 0 >( x1 ).resize( fusion::at_c< 0 >( x2 ).size() , false );
-        fusion::at_c< 1 >( x1 ).resize( fusion::at_c< 1 >( x2 ).size() , false );
-    }
-};
+// template<>
+// struct resize_impl< state_type , state_type >
+// {
+//     static void resize( state_type &x1 , const state_type &x2 )
+//     {
+//         fusion::at_c< 0 >( x1 ).resize( fusion::at_c< 0 >( x2 ).size() , false );
+//         fusion::at_c< 1 >( x1 ).resize( fusion::at_c< 1 >( x2 ).size() , false );
+//     }
+// };
 
-template<>
-struct same_size_impl< state_type , state_type >
-{
-    static bool same_size( const state_type &x1 , const state_type &x2 )
-    {
-        return
-            ( fusion::at_c< 0 >( x1 ).size() == fusion::at_c< 0 >( x2 ).size() ) &&
-            ( fusion::at_c< 1 >( x1 ).size() == fusion::at_c< 1 >( x2 ).size() ) ;
-    }
-};
+// template<>
+// struct same_size_impl< state_type , state_type >
+// {
+//     static bool same_size( const state_type &x1 , const state_type &x2 )
+//     {
+//         return
+//             ( fusion::at_c< 0 >( x1 ).size() == fusion::at_c< 0 >( x2 ).size() ) &&
+//             ( fusion::at_c< 1 >( x1 ).size() == fusion::at_c< 1 >( x2 ).size() ) ;
+//     }
+// };
 
-} } }
+// } } }
 
 
 struct oscillator
