@@ -499,27 +499,29 @@ void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
 %
 \subsection{Chain of Coupled Phase Oscillators}
 
-As a second example we consider a chain of coupled phase oscillators. A
-phase oscillator describes the dynamics of an autonomous oscillator
-\cite{Synchronization-Pikovsky,Kuramoto-84}. Its evolution is
+As a second example we consider a chain of coupled phase
+oscillators. A phase oscillator describes the dynamics of an
+autonomous oscillator \cite{PhaseOscillator}. Its evolution is
 governed by the phase, a $2\pi$ periodic variable which grows linearly
-in time $\de \phi / \de t = \omega$. $\omega$ is here the phase
-velocity. Due to the absence of any information about the amplitude of
-the oscillator, interesting behaviour can only be observed if many of
-such oscillators are coupled. In fact, such a system can be used to study
-such divergent phenomena like synchronization, wave and pattern
-formation, phase chaos, or oscillation death \cite{}. It is a
-prominent example of an emergent system where the coupled system shows
-more complex behaviour than its constitutes.
+in time $\dot{\varphi} = \omega$, where $\omega$ is the phase
+velocity. The amplitude of the oscillator does not occur in this
+equation, such that interesting behaviour can only be observed if many
+of such oscillators are coupled. In fact, such a system can be used to
+study such divergent phenomena like synchronization, wave and pattern
+formation, phase chaos, or oscillation death
+\cite{Synchronization-Pikovsky,Kuramoto-84}. It is a prominent example
+of an emergent system where the coupled system shows more complex
+behaviour than its constitutes.
+
 
 The concrete example we analyze here is a chain of nearest-neighbor
 coupled phase oscillators:
 \begin{equation} \label{eq:phasesystem}
-    \dot{\phi}_i = \omega_i + \sin( \phi_{i+1} - \phi_i) + \sin( \phi_i
-    - \phi_{i-1}).
+    \dot{\varphi}_i = \omega_i + \sin( \varphi_{i+1} - \varphi_i) + \sin( \varphi_i
+    - \varphi_{i-1}).
 \end{equation}
 The index $i$ denotes here the $i$-th phase in the chain. Note, that
-the phase velocity might be heterogeneous.
+the phase velocity is different for each oscillator.
 
 The Thrust version for the coupled phase oscillator chain looks very similar to
 the damped oscillator example. Again, we use a zip iterator to pack required
@@ -637,13 +639,14 @@ struct phase_oscillators {
 %
 \subsection{Disordered Hamiltonian Lattice}
 
-\rem{
+
 Another example for our performance and usage study is a strongly
 nonlinear disordered Hamiltonian lattice. Its equations of motion are
 governed by
 \begin{equation}
-\frac{\de q_{i,j}}{\de t} = p_{i,j} \quad \text{,} \quad \quad \frac{\de
-p_{i,j}}{\de t} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j}
+\dot{q}_{i,j} = p_{i,j}
+\quad \text{,} \quad \quad 
+\dot{p}_{i,j} = - \omega_{i,j}^2 q_i - \beta q_{i,j}^3 + \Delta_d q_{i,j}
 \,\,\text{.}
 \label{eq:disordered_ham}
 \end{equation}
@@ -654,18 +657,15 @@ systems are widely used in theoretical physics to study phenomena
 like Anderson localization or thermalization.
 
 An important property of \eqref{eq:disordered_ham} is its Hamiltonian
-nature. It can be obtained from a Hamiltonian and the energy and phase
-volume is conserved during its evolution. To account for these
-properties, a special class of solvers exists, namely symplectic
+nature. It can be obtained from Hamilton equations and the energy and
+phase volume are conserved during the time evolution. To account for
+these properties, a special class of solvers exists, namely symplectic
 solvers. Odeint implements three different variants of such solvers,
 all are of the Runge-Kutta-Nystrom type.
-}
 
-\begin{equation} \label{eq:latticesystem}
-    \frac{dp}{dt} = -\Delta Kq + Dq - \beta q^3.
-\end{equation}
 
-The natural choice for the implementation of \eqref{eq:latticesystem} is a
+
+The natural choice for the implementation of \eqref{eq:disordered_ham} is a
 sparse matrix-vector product. Unfortunately, Thrust provides neither a sparse
 matrix type, nor sparse matrix-vector product operation.  We had to combine
 Thrust with the CUSPARSE library in order to implement this example. CUSPARSE
@@ -746,11 +746,11 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 
 
 %
-% LORENZ ATTRACTOR
+% LORENZ ATTRACTOR, OPTIONAL
 %
 \subsection{Lorenz Attractor Ensemble}
 
-In the first example we will use the Lorenz system \cite{Lorenz-63}. The
+In the fourth example we will use the Lorenz system \cite{Lorenz-63}. The
 Lorenz system is a system of three coupled ODEs which shows chaotic
 behavior for a large range of parameters. It is one of the most frequently
 used ODE for evaluation purposes in the nonlinear dynamics community.
@@ -761,31 +761,20 @@ The ODE of the Lorenz system reads
     \frac{\de z}{\de t} &= -bz + xy.
 \end{align}
 
-Solutions of the Lorenz system usually furnish a very interesting behavior
-in dependence on one of its parameters.
-For example, one might want to
-study the dependence on the chaoticity on the parameter
+Solutions of the Lorenz system usually furnish a very interesting
+behavior in dependence on one of its parameters.  For example, one
+might want to study the dependence on the chaoticity on the parameter
 $R$. Therefore, one would create a large set of Lorenz systems (each
 with a different parameter $R$), pack them all into one system and
 solve them simultaneously. (In a real study of chaoticity one would
-usually calculate the Lyapunov exponents \cite{Benettin}, which
-require to solve the system of Lorenz and their linear perturbations.)
+usually calculate the Lyapunov exponents \cite{Ott-book-02}, which
+require to solve the Lorenz system and their linear perturbations.)
 
 % [KR] The paragraph right above is probably not of interest for the reader in
 % its current form. Either shorten, or extend.
 
-In the first example we will use the Lorenz system and study its dependence on
-one of the parameters. The Lorenz system is a system of three coupled ODEs
-which shows chaotic behavior for a large range of parameters. The ODE reads
-\begin{align}
-    \frac{dx}{dt} &= -\sigma \left( x - y \right), \\
-    \frac{dy}{dt} &= R x - y - xz, \\
-    \frac{dz}{dt} &= -bz + xy.
-\end{align}
 
-We will study the dependence on the parameter $R$. Therefore, we create a large
-set of these systems (each with a different parameter $R$), pack them all into
-one system and solve them simultaneously on the GPU.
+
 
 \section{Results}
 
