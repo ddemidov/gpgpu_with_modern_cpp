@@ -72,20 +72,13 @@ Argonne National Laboratory \\
     We present a comparison of several modern C++ libraries intended for OpenCL
     and CUDA programming. The comparison is based on odeint, a framework for
     the solution of ordinary differential equations. Odeint is designed in a
-    very flexible way such that the algorithms are completely independent from
-    the underlying containers and even from the basic algebraic computations.
-    This allows to effectively use libraries such as VexCL, ViennaCL, or Thrust
-    to solve ODEs with either OpenCL or CUDA technologies. We found that OpenCL
-    and CUDA work equally well for problems of large sizes, while OpenCL has
-    higher overhead for smaller problems.
-    % [KR]: The abstract should end with a more catchy phrase
-
-    % [DD]: Perhaps we should say something to the effect of: since CUDA and
-    % OpenCL performance seems to be on par, we beleive that main factor for
-    % the library to work with should be convenience of its interface and
-    % availability of required functions. In the context of our work (ODE
-    % solving) OpenCL libraries proved to be more convenient due to
-    % availability of expression templates.
+    very flexible and may be easily adapted for effective use of libraries such
+    as VexCL, ViennaCL, or Thrust to solve ODEs with either OpenCL or CUDA
+    technologies. We found that OpenCL and CUDA work equally well for problems
+    of large sizes, while OpenCL has higher overhead for smaller problems.
+    Furthermore, we show that modern high level libraries allow to effectively
+    use computational resources of manycore GPUs or multicore CPUs without much
+    knowledge of the underlying technologies.
 \end{abstract}
 
 \begin{keyword}
