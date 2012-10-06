@@ -816,7 +816,9 @@ representative value.
 Figures \ref{fig:damped:perf} through \ref{fig:lorenz:perf} show performance
 data for the four numerical experiments. Left plots shows absolute time with
 against the size of the solved problem, while right plots show relative
-performance with respect to Thrust GPU version.
+performance with respect to Thrust GPU version.  Table~\ref{tab:abstimes}
+presents absolute running times for the largest problem size for all of the
+considered libraries. 
 
 
 In general all of the experiments show 10x to 20x acceleration when run on GPU
@@ -826,9 +828,10 @@ problems of size $10^3-10^4$ to see any acceleration on GPU. The overhead for
 OpenCL libraries is larger than that of CUDA programs. This is explained by the
 fact that OpenCL program compiles its computational kernels at runtime.
 
-% TODO GPU performance.
+Performance of the considered libraries on Tesla GPUs is close to each other. 
 
-If we look at the performance of the libraries on CPU, then Thrust outperforms
+If we look at the performance of the libraries on CPU, then performance
+difference between the libraries becomes more pronounced. Thrust outperforms
 VexCL on larger problems by 15--40\%, except for the coupled phase oscillator
 test, where VexCL is faster by about 5\%. VexCL uses native stencil convolution
 operator in the latter example, while Thrust version has to use inefficient
@@ -836,6 +839,32 @@ permutation iterators. For the ViennaCL the CPU performance is even worse. It
 is in general slower than Thrust by about 75\%  and slower than VexCL by
 30--70\%. The only exception is again the phase oscillator test, where ViennaCL
 outperforms other libraries since we had to resort to hand-written kernel.
+
+\begin{table}
+    \caption{Absolute run times (sec) for the largest problem size}
+    \label{tab:abstimes}
+    \begin{center}
+    \begin{tabular}{|lc|rrrr|}
+	\hline
+	& & \em Damped	    & \em Coupled	& \em Disordered    & \em Lorenz    \\
+	& & \em harmonic    & \em phase		& \em Hamiltonian   & \em attractor \\
+	& & \em oscillators & \em oscillators	& \em lattice	    & \em ensemble  \\
+	\hline
+	\em Thrust   &\em Tesla & 153.53 & 263.99 & 319.54 & 242.75 \\
+	\em VexCL    &\em Tesla & 154.76 & 189.38 & 401.31 & 255.06 \\
+	\em ViennaCL &\em Tesla & 164.52 & 165.21 & 433.24 & 259.82 \\
+	\hline
+	\em VexCL    &\em Tahiti &  94.97 & 108.83 & 228.93 & 149.20 \\
+	\em ViennaCL &\em Tahiti &  91.73 &  83.61 & 213.22 & 148.62 \\
+	\hline
+	\em Thrust   &\em CPU	& 1~454.81 & 5~172.84 &      N/A & 2~339.33 \\
+	\em VexCL    &\em CPU	& 1~678.26 & 5~015.02 & 3~152.92 & 3~206.17 \\
+	\em ViennaCL &\em CPU	& 2~574.70 & 4~605.93 & 5~485.99 & 4~127.98 \\
+	\hline
+    \end{tabular}
+    \end{center}
+\end{table}
+
 
 The difference between Thrust and OpenCL libraries is explained by the fact
 that Thrust uses OpenMP backend when run on a CPU. Thus, it does not have any
@@ -854,6 +883,13 @@ scaling results for the system with three Tahiti GPUs. It seems that AMD OpenCL
 implementation does not work very well with multiple GPUs employed. Still,
 combined memory of several GPUs allows to solve proportionally larger problems
 on the same system.
+
+VexCL was the only library that managed to stay on high level and did not need
+help of third party libraries in all of our examples. ViennaCL lacks some
+elementwise vector operations and stencil convolution operation, so we had to
+provide hand-written kernels for those; Thrust version of coupled phase
+oscillator chain example needed help of CUSPARSE library for implemetation of
+sparse matrix~-- vector product.
 
 \begin{figure}[p]
     \begin{center}
