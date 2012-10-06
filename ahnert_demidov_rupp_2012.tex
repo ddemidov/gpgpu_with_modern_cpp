@@ -828,7 +828,15 @@ problems of size $10^3-10^4$ to see any acceleration on GPU. The overhead for
 OpenCL libraries is larger than that of CUDA programs. This is explained by the
 fact that OpenCL program compiles its computational kernels at runtime.
 
-Performance of the considered libraries on Tesla GPUs is close to each other. 
+Performance of the considered libraries on Tesla GPUs is close to each other.
+Thrust shows better results most of the time with the only exception os phase
+oscillator chain example, where we had to use permutation iterators. VexCL and
+ViennaCL are in general slower than Thrust by 1--7\%. It occurs that CUSPARSE
+implementation of sparse matrix~-- vector product is more efficient than that
+of OpenCL libraries, since VexCL and ViennaCL are slower than Thrust/CUSPARSE
+combination by about 30\%. Both OpenCL libraries show very similar results on a
+GPU. ViennaCL is faster for phase oscillator chain example by about 15\% since
+we had to resort to hand-written kernel there.
 
 If we look at the performance of the libraries on CPU, then performance
 difference between the libraries becomes more pronounced. Thrust outperforms
@@ -841,8 +849,6 @@ is in general slower than Thrust by about 75\%  and slower than VexCL by
 outperforms other libraries since we had to resort to hand-written kernel.
 
 \begin{table}
-    \caption{Absolute run times (sec) for the largest problem size}
-    \label{tab:abstimes}
     \begin{center}
     \begin{tabular}{|lc|rrrr|}
 	\hline
@@ -862,6 +868,8 @@ outperforms other libraries since we had to resort to hand-written kernel.
 	\em ViennaCL &\em CPU	& 2~574.70 & 4~605.93 & 5~485.99 & 4~127.98 \\
 	\hline
     \end{tabular}
+    \caption{Absolute run times (sec) for the largest problem size}
+    \label{tab:abstimes}
     \end{center}
 \end{table}
 
