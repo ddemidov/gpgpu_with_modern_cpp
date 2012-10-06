@@ -132,8 +132,10 @@ developing both CUDA and OpenCL programs.
 This paper presents comparison of several modern C++ libraries aimed at ease of
 GPGPU development. We look at both convenience and performance of the libraries
 under consideration in the context of solving ordinary differential equations.
-The comparison is based on odeint, modern C++ library for solution of ODEs.
-The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
+The comparison is based on odeint, modern C++ library for solution of ODEs that
+has been recently included into Boost\footnote{ \href{ http://boost.org } {
+http://boost.org } }.  The GPGPU libraries considered in this work are Thrust,
+VexCL, and ViennaCL:
 
 % [KR]: We need to define the scope of this work. We are investigating ODEs
 % only, which we have to clarify.  There is a lot of GPGPU for dense linear
@@ -182,14 +184,14 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
 \end{description}
 
 CUDA and OpenCL differ in their handling of compute kernels compilation. In
-CUDA the compute kernels are compiled to PTX code together with the host
-program. The PTX is pseudo-assembler language which is compiled at runtime for
-the specific NVIDIA device it is being run on. Since PTX is already very
-low-level, this just-in-time kernel compilation has low overhead. In OpenCL the
-compute kernels are compiled at runtime from high level sources. This adds an
-overhead which is particularly noticeable for smaller sized problems. The
-pre-compilation to some low-level pseudo-code is not feasible in OpenCL because
-it has to support wide range of hardware.
+NVIDIA's framework the compute kernels are compiled to PTX code together with
+the host program. The PTX is pseudo-assembler language which is compiled at
+runtime for the specific NVIDIA device it is being run on. Since PTX is already
+very low-level, this just-in-time kernel compilation has low overhead. In
+OpenCL the compute kernels are compiled at runtime from high level sources.
+This adds an overhead which is particularly noticeable for smaller sized
+problems. The pre-compilation to some low-level pseudo-code is not feasible in
+OpenCL because it has to support wide range of hardware.
 
 The approach to generation and compilation of the compute kernels is one of the
 main differences between the OpenCL libraries we considered.  ViennaCL has
