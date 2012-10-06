@@ -107,17 +107,17 @@ Argonne National Laboratory \\
 Recently, general purpose computing on graphics processing units (GPGPU) has
 acquired considerable momentum in the scientific community. This is confirmed
 both by increasing numbers of GPGPU-related publications and GPU based
-supercomputers in the Top
-500\footnote{\href{http://top500.org/}{http://top500.org/}} list. Major
-programming frameworks are NVIDIA CUDA and OpenCL.  The former is a proprietary
-parallel computing architecture developed by NVIDIA for general purpose
-computing on NVIDIA graphics adapters, and the latter is an open, royalty-free
-standard for cross-platform, parallel programming of modern processors
-maintained by the Khronos group. By nature, the two frameworks have their
-distinctive pros and cons. CUDA has a more mature programming environment with
-larger set of scientific libraries; but it is only supported on NVIDIA
-hardware. OpenCL is supported on wide range of hardware, but its native API
-requires much larger amount of boilerplate code from a developer.
+supercomputers in the Top 500\footnote{ \href{ http://top500.org }{
+http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
+OpenCL.  The former is a proprietary parallel computing architecture developed
+by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
+latter is an open, royalty-free standard for cross-platform, parallel
+programming of modern processors maintained by the Khronos group. By nature,
+the two frameworks have their distinctive pros and cons. CUDA has a more mature
+programming environment with larger set of scientific libraries; but it is only
+supported on NVIDIA hardware. OpenCL is supported on wide range of hardware,
+but its native API requires much larger amount of boilerplate code from a
+developer.
 
 Both technologies are able to provide scientists with the vast computational
 resources of modern GPU cards at the price of a steep learning curve.
@@ -147,40 +147,40 @@ VexCL, and ViennaCL:
 % the topics you mentioned?
 
 \begin{description}
-    \item[Odeint] is a modern C++
-        library\footnote{\href{http://odeint.com}{http://odeint.com}} for
-        numerically solving Ordinary Differential Equations \cite{OdeintRef1,
-        OdeintRef2}. It is developed in a generic way using Template
-        Metaprogramming which leads to extraordinary high flexibility at top
-        performance. The numerical algorithms are implemented independently of
-        the underlying arithmetics.  This results in a broad
-        applicability of the library, especially in non-standard environments.
-        For example, odeint supports matrix types, arbitrary precision
-        arithmetics and can be easily adopted to use either CUDA or OpenCL
-        frameworks.  Odeint is used in this work as a framework for comparison
-        of other libraries.
-    \item[Thrust] is a parallel algorithms
-        library\footnote{\href{http://thrust.github.com}{http://thrust.github.com}}
-        which resembles the C++ Standard Template Library \cite{ThrustRef}.
-        Thrust's high-level interface greatly enhances developer productivity
-        while enabling performance portability between GPUs and multicore CPUs.
-        Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
+    \item[Odeint] is a modern C++ library\footnote{ \href{ http://odeint.com }{
+	http://odeint.com } } for numerically solving Ordinary Differential
+	Equations \cite{OdeintRef1, OdeintRef2}. It is developed in a generic
+	way using Template Metaprogramming which leads to extraordinary high
+	flexibility at top performance. The numerical algorithms are
+	implemented independently of the underlying arithmetics.  This results
+	in a broad applicability of the library, especially in non-standard
+	environments.  For example, odeint supports matrix types, arbitrary
+	precision arithmetics and can be easily adopted to use either CUDA or
+	OpenCL frameworks.  Odeint is used in this work as a framework for
+	comparison of other libraries.
+    \item[Thrust] is a parallel algorithms library\footnote{ \href{
+	http://thrust.github.com }{ http://thrust.github.com }} which resembles
+	the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
+	high-level interface greatly enhances developer productivity while
+	enabling performance portability between GPUs and multicore CPUs.
+	Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
     \item[VexCL] is vector expression template
-        library\footnote{\href{https://github.com/ddemidov/vexcl}{https://github.com/ddemidov/vexcl}}
-        for OpenCL \cite{VexCLRef}. It has been created for ease of OpenCL
-        development with C++.  VexCL strives to reduce the amount of boilerplate
-        code needed to develop OpenCL applications. The library provides a
-        convenient and intuitive notation for vector arithmetic, reduction, and
-        sparse matrix-vector multiplication.  Multi-device and even
-        multi-platform computations are supported.
+	library\footnote{ \href{ https://github.com/ddemidov/vexcl }{
+	https://github.com/ddemidov/vexcl }} for OpenCL \cite{VexCLRef}. It has
+	been created for ease of OpenCL development with C++.  VexCL strives to
+	reduce the amount of boilerplate code needed to develop OpenCL
+	applications. The library provides a convenient and intuitive notation
+	for vector arithmetic, reduction, and sparse matrix-vector
+	multiplication.  Multi-device and even multi-platform computations are
+	supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
-        library\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
-        written in C++ and based on OpenCL \cite{ViennaCLRef}. It allows
-        simple, high-level access to the vast computing resources available on
-        parallel architectures such as GPUs and is primarily focused on common
-        linear algebra operations (BLAS levels 1, 2 and 3) and the solution of
-        large systems of equations by means of iterative methods with optional
-        preconditioner.
+	library\footnote{ \href{ http://viennacl.sourceforge.net }{
+	http://viennacl.sourceforge.net }} written in C++ and based on OpenCL
+	\cite{ViennaCLRef}. It allows simple, high-level access to the vast
+	computing resources available on parallel architectures such as GPUs
+	and is primarily focused on common linear algebra operations (BLAS
+	levels 1, 2 and 3) and the solution of large systems of equations by
+	means of iterative methods with optional preconditioner.
 \end{description}
 
 CUDA and OpenCL differ in their handling of compute kernels compilation. In
