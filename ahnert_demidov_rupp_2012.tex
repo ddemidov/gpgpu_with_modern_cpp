@@ -170,7 +170,7 @@ The GPGPU libraries considered in this work are Thrust, VexCL, and ViennaCL:
         code needed to develop OpenCL applications. The library provides a
         convenient and intuitive notation for vector arithmetic, reduction, and
         sparse matrix-vector multiplication.  Multi-device and even
-        multi-platform computations are supported. 
+        multi-platform computations are supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
         library\footnote{\href{http://viennacl.sourceforge.net}{http://viennacl.sourceforge.net}}
         written in C++ and based on OpenCL \cite{ViennaCLRef}. It allows
@@ -222,7 +222,7 @@ VexCL and ViennaCL.
 %
 \section{Adapting odeint}
 
-Odeint provides a mechanism which lets the user change the way 
+Odeint provides a mechanism which lets the user change the way
 elementary numerical computations are performed. This mechanism consists of a
 combination of state type, algebra and operations. The state type represents the
 state of the ODE being solved and is usually a vector type like
@@ -331,7 +331,7 @@ hence all small ODEs are solved simultaneously.
 %
 \subsection{Damped Harmonic Oscillator Ensemble}
 
-The first example is a set of damped driven oscillators 
+The first example is a set of damped driven oscillators
 \begin{equation} \label{eq:dampedsystem}
     \dot{x} = \omega y + \varepsilon x \quad \text{,} \quad \quad
     \dot{y} = -\omega x + \varepsilon y
@@ -408,7 +408,7 @@ set of vector expressions. The state is represented by the
 \code{vex::multivector<double,2>} type which holds two instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
 underlying components. The code for \code{operator()} body practically
-coincides with the problem statement \eqref{eq:dampedsystem}: 
+coincides with the problem statement \eqref{eq:dampedsystem}:
 \begin{lstlisting}
 typedef vex::vector<double> vector_type;
 typedef vex::multivector<double, 2> state_type;
@@ -678,7 +678,7 @@ contains a set of basic linear algebra subroutines used for handling sparse
 matrices and is included in CUDA Toolkit distribution as well as Thrust
 library. Another possibility would be to use an open source Cusp library~--- a
 library for sparse linear algebra and graph computations on CUDA
-\cite{CuspRef}. 
+\cite{CuspRef}.
 
 All of the libraries considered use the hybrid
 ELL format for storing the sparse matrix, which is one of the most efficient formats for sparse matrices on
@@ -757,7 +757,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 
 In the first example we will use the Lorenz system \cite{Lorenz-63}. The
 Lorenz system is a system of three coupled ODEs which shows chaotic
-behavior for a large range of parameters. It is one of the most frequently 
+behavior for a large range of parameters. It is one of the most frequently
 used ODE for evaluation purposes in the nonlinear dynamics community.
 The ODE of the Lorenz system reads
 \begin{align}
@@ -766,7 +766,7 @@ The ODE of the Lorenz system reads
     \frac{\de z}{\de t} &= -bz + xy.
 \end{align}
 
-Solutions of the Lorenz system usually furnish a very interesting behavior 
+Solutions of the Lorenz system usually furnish a very interesting behavior
 in dependence on one of its parameters.
 For example, one might want to
 study the dependence on the chaoticity on the parameter
@@ -814,39 +814,41 @@ the experiments, 10 runs were made and median time was selected as a
 representative value.
 
 Figures \ref{fig:damped:perf} through \ref{fig:lorenz:perf} show performance
-data for the four numerical experiments. Left plots shows absolute time with
-against the size of the solved problem, while right plots show relative
-performance with respect to Thrust GPU version.  Table~\ref{tab:abstimes}
-presents absolute running times for the largest problem size for all of the
-considered libraries. 
+data for the four numerical experiments. Left hand side plots shows absolute
+time against the size of the problem being solved, while right hand side plots
+show relative performance with respect to Thrust GPU version.
+Table~\ref{tab:abstimes} presents absolute running times for the largest
+problem size for all of the considered libraries.
 
 
-In general all of the experiments show 10x to 20x acceleration when run on GPU
-with respect to the CPU path. Both CUDA and OpenCL programs show considerable
-overhead for the smaller sized problems. Due to this overhead we needed
-problems of size $10^3-10^4$ to see any acceleration on GPU. The overhead for
-OpenCL libraries is larger than that of CUDA programs. This is explained by the
-fact that OpenCL program compiles its computational kernels at runtime.
+In general all of the experiments show $10\times$ to $20\times$ acceleration
+when run on GPU with respect to the CPU path. This is expected acceleration
+rate for the memory bound examples that we looked at. Both CUDA and OpenCL
+programs show considerable overhead for the smaller sized problems.  Due to
+this overhead we needed problems of size $10^3-10^4$ to see any acceleration on
+GPU. The overhead for OpenCL libraries is larger than that of CUDA programs.
+This is explained by the fact that OpenCL program compiles its computational
+kernels at runtime.
 
-Performance of the considered libraries on Tesla GPUs is close to each other.
-Thrust shows better results most of the time with the only exception os phase
-oscillator chain example, where we had to use permutation iterators. VexCL and
-ViennaCL are in general slower than Thrust by 1--7\%. It occurs that CUSPARSE
-implementation of sparse matrix~-- vector product is more efficient than that
-of OpenCL libraries, since VexCL and ViennaCL are slower than Thrust/CUSPARSE
-combination by about 30\%. Both OpenCL libraries show very similar results on a
-GPU. ViennaCL is faster for phase oscillator chain example by about 15\% since
-we had to resort to hand-written kernel there.
+Performance-wise, all of the considered libraries are close to each other when
+run on a GPU.  Thrust shows better results most of the time with the only
+exception of phase oscillator chain example, where we had to use permutation
+iterators which require use of auxilary index vector. VexCL and ViennaCL are in
+general slower than Thrust by 1--7\%. It occurs that CUSPARSE implementation of
+sparse matrix~-- vector product is more efficient than that of OpenCL
+libraries, since VexCL and ViennaCL are slower than Thrust/CUSPARSE combination
+by about 30\% for the disordered Hamiltonian lattice experiment. Both of the
+OpenCL libraries show very similar results on a GPU.  ViennaCL is faster for
+phase oscillator chain example by about 15\% since we had to resort to a
+hand-written kernel there.
 
-If we look at the performance of the libraries on CPU, then performance
+If we look at the performance of the libraries on a CPU, then performance
 difference between the libraries becomes more pronounced. Thrust outperforms
-VexCL on larger problems by 15--40\%, except for the coupled phase oscillator
-test, where VexCL is faster by about 5\%. VexCL uses native stencil convolution
-operator in the latter example, while Thrust version has to use inefficient
-permutation iterators. For the ViennaCL the CPU performance is even worse. It
-is in general slower than Thrust by about 75\%  and slower than VexCL by
-30--70\%. The only exception is again the phase oscillator test, where ViennaCL
-outperforms other libraries since we had to resort to hand-written kernel.
+VexCL on larger problems by 15--40\%, except for the chain of coupled phase
+oscillators example, where VexCL is faster by about 5\%. For the ViennaCL the
+CPU performance is even worse. It is in general slower than Thrust by about
+75\%  and slower than VexCL by 30--70\%. The only exception is again the phase
+oscillator test, where ViennaCL outperforms other libraries.
 
 \begin{table}
     \begin{center}
@@ -868,20 +870,20 @@ outperforms other libraries since we had to resort to hand-written kernel.
 	\em ViennaCL &\em CPU	& 2~574.70 & 4~605.93 & 5~485.99 & 4~127.98 \\
 	\hline
     \end{tabular}
-    \caption{Absolute run times (sec) for the largest problem size}
+    \caption{Absolute run times (sec) for the largest problem size.}
     \label{tab:abstimes}
     \end{center}
 \end{table}
 
 
-The difference between Thrust and OpenCL libraries is explained by the fact
+The difference between Thrust and OpenCL libraries may be explained by the fact
 that Thrust uses OpenMP backend when run on a CPU. Thus, it does not have any
-overhead related to kernel compilation.  The gap between OpenCL libraries may
-be attributed to the fact that ViennaCL uses the same set of kernels for both
-GPUs and CPUs, while VexCL generates different kernels for different types of
-compute devices. Moreover, both of the libraries are primarily aimed at GPU
-performance and do not use CPU-specific optimizations (such as employing OpenCL
-vector data types that facilitate use of SSE instructions).
+overhead related to OpenCL initialization and kernel compilation.  The gap
+between OpenCL libraries may be attributed to the different workgroup sizes
+used in their kernels and the fact that VexCL generates slightly different
+kernels when run on a CPU device. Moreover, both of the libraries are primarily
+aimed at GPU performance and do not use CPU-specific optimizations, such as
+employing OpenCL vector data types that facilitate use of SSE instructions.
 
 VexCL library allows transparent use of several GPUs. \figref{fig:scaling}
 shows scaling results for up to three Tesla C2070 GPUs. It is clear from the
@@ -892,7 +894,7 @@ implementation does not work very well with multiple GPUs employed. Still,
 combined memory of several GPUs allows to solve proportionally larger problems
 on the same system.
 
-VexCL was the only library that managed to stay on high level and did not need
+VexCL was the only library that managed to stay at high level and did not need
 help of third party libraries in all of our examples. ViennaCL lacks some
 elementwise vector operations and stencil convolution operation, so we had to
 provide hand-written kernels for those; Thrust version of coupled phase
@@ -903,7 +905,7 @@ sparse matrix~-- vector product.
     \begin{center}
         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
     \end{center}
-    \caption{Damped oscillator ensemble results}
+    \caption{Damped harmonic oscillator ensemble results.}
     \label{fig:damped:perf}
 \end{figure}
 
@@ -911,7 +913,7 @@ sparse matrix~-- vector product.
     \begin{center}
         \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
     \end{center}
-    \caption{Coupled phase oscillator chain results}
+    \caption{Coupled phase oscillator chain results.}
     \label{fig:phase:perf}
 \end{figure}
 
@@ -919,7 +921,7 @@ sparse matrix~-- vector product.
     \begin{center}
         \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
     \end{center}
-    \caption{Disordered Hamiltonian lattice results}
+    \caption{Disordered Hamiltonian lattice results.}
     \label{fig:lattice:perf}
 \end{figure}
 
@@ -927,26 +929,26 @@ sparse matrix~-- vector product.
     \begin{center}
         \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
     \end{center}
-    \caption{Lorenz attractor ensemble results}
+    \caption{Lorenz attractor ensemble results.}
     \label{fig:lorenz:perf}
 \end{figure}
 
 \begin{figure}[p]
     \begin{center}
         \subfigure[
-        Damped oscillator ensemble
+        Damped harmonic oscillator ensemble.
 	]{\label{fig:scaling:damped}\includegraphics[width=0.45\textwidth]{data/damped_oscillator/scaling}}\quad
         \subfigure[
-        Coupled phase oscillator chain
+        Coupled phase oscillator chain.
         ]{\includegraphics[width=0.45\textwidth]{data/phase_oscillator_chain/scaling}}\\
         \subfigure[
-        Disordered Hamiltonian lattice
+        Disordered Hamiltonian lattice.
         ]{\includegraphics[width=0.45\textwidth]{data/disordered_ham_lattice/scaling}}\quad
         \subfigure[
-        Lorenz attractor ensemble
+        Lorenz attractor ensemble.
         ]{\includegraphics[width=0.45\textwidth]{data/lorenz_ensemble/scaling}}
     \end{center}
-    \caption{VexCL scaling with multigpu computation}
+    \caption{VexCL scaling with multigpu computation.}
     \label{fig:scaling}
 \end{figure}
 
@@ -958,7 +960,7 @@ sparse matrix~-- vector product.
 
 
 
-% 
+%
 % CONCLUSION
 %
 \section{Conclusion}
@@ -968,7 +970,7 @@ libraries when those are run on the same hardware. As we have shown, various
 computational problems may be solved effectively in terms of both human and
 machine time with the help of modern high-level libraries.  There are some
 differences in the programming interfaces of the libraries which may be crucial
-for ones specific application. 
+for ones specific application.
 
 Thrust is more low-level and its interface is very close to the C++ STL
 library.  The OpenCL libraries we looked at demonstrated that they are able to
@@ -986,9 +988,13 @@ optimized for the problem at hand at runtime. We believe that this feature has
 good potential, but we leave its in-depth discussion for the future work.  On
 the other hand, this feature of OpenCL may be considered its drawback: runtime
 kernel compilation adds certain overhead notable for smaller workloads as has
-been shown in this paper. 
+been shown in this paper.
 
+% [DD]: OpenCL libraries showed excelent functional portability but not so good
+% performance portability.
 
+% [DD]: Some words about odeint generality that allowed us to run the set of
+% experiments.
 
 
 
