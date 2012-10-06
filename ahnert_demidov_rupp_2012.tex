@@ -122,13 +122,14 @@ implementation, Fast Fourier Transform, Thrust and others). OpenCL lacks
 standard libraries, but there are a number of third-party projects aimed at
 developing both CUDA and OpenCL programs.
 
-This paper presents comparison of several modern C++ libraries aimed at ease of
-GPGPU development. We look at both convenience and performance of the libraries
-under consideration in the context of solving ordinary differential equations.
-The comparison is based on odeint, modern C++ library for solution of ODEs that
-has been recently included into Boost\footnote{ \href{ http://boost.org } {
-http://boost.org } }.  The GPGPU libraries considered in this work are Thrust,
-VexCL, and ViennaCL:
+This paper presents comparison of several modern C++ libraries aimed
+at ease of GPGPU development. We look at both convenience and
+performance of the libraries under consideration in the context of
+solving ordinary differential equations.  The comparison is based on
+odeint, modern C++ library for solution of ODEs that has been recently
+included into the Boost libraries\footnote{ \href{ http://boost.org }
+  { http://boost.org } }.  The GPGPU libraries considered in this work
+are Thrust, VexCL, and ViennaCL:
 
 % [KR]: We need to define the scope of this work. We are investigating ODEs
 % only, which we have to clarify.  There is a lot of GPGPU for dense linear
@@ -145,7 +146,7 @@ VexCL, and ViennaCL:
 	Equations \cite{OdeintRef1, OdeintRef2}. It is developed in a generic
 	way using Template Metaprogramming which leads to extraordinary high
 	flexibility at top performance. The numerical algorithms are
-	implemented independently of the underlying arithmetics.  This results
+	implemented independently of the underlying arithmetics. This results
 	in a broad applicability of the library, especially in non-standard
 	environments.  For example, odeint supports matrix types, arbitrary
 	precision arithmetics and can be easily adopted to use either CUDA or
@@ -208,6 +209,8 @@ VexCL and ViennaCL.
 % compact code.  Native OpenCL API does not provide this ability, but modern
 % C++ libraries such as those considered in this work...
 
+% [KA]: I think this is a good remark.
+
 
 
 
@@ -217,14 +220,55 @@ VexCL and ViennaCL.
 %
 \section{Adapting odeint}
 
-Odeint provides a mechanism which lets the user change the way
-elementary numerical computations are performed. This mechanism consists of a
-combination of state type, algebra and operations. The state type represents the
-state of the ODE being solved and is usually a vector type like
-\code{std::vector<>} or \code{std::array<>}. The algebra is responsible for
-iterating through all elements of the state whereas the operations are
-responsible for the elementary operations. An example of using a range algebra
-is provided below:
+One main feature of odeint is the decoupling of the specific algorithm
+for solving the ODE from the underlying arithmetic operations. This
+is achieved by a combination of a state type, an algebra and
+operations. The state type represents the state of the ODE being
+solved and is usually a vector type like \code{std::vector<>},
+\code{std::array<>}, or a vector living on the GPU. The algebra is
+responsible for iterating through all elements of the state whereas
+the operations are responsible for the elementary operations.
+
+\rem{
+To see how this works consider an implementation of the Euler method.
+% add a sentence about the Euler method, with the formula.
+\begin{lstlisting}
+template< class State , class Algebra , class Operations >
+class euler
+{
+    // ...
+    template< class Ode >
+    void do_step( Ode ode , State &x , time_type t , time_type dt )
+    {
+        ode( x , m_dxdt , dt );
+        Algebra::for_each3( x , x , m_dxdt , Operations::scale_sum2( 1.0 , dt ) );
+    }
+};
+\end{lstlisting}
+The state type, the algebra, and the operations enter the stepper as
+template parameter, hence they are exchangeable. The function object
+ode represents the ODE and must be provided by the user. It calculates
+the r.h.s.~ of \eqref{eq:ode} and stores the result in
+\code{m_dxdt}. The call of \code{for_each3} iterates three vectors and
+applies on each element \code{scale_sum2}. In this specific case it
+calculates $x(t+\Delta t) = x(t) + dt * f(x(t) , t)$ which is exactly
+Euler formula. Note, that the operation is here in-place, meaning that
+$x$ is updated to the new value.
+
+The main point here is, that no specific arithmetic operation is yet
+specified. All arithmetic calculations and iterations are completely
+encapsulated into the algebra and the operations which must be
+provided by the user. Note, that algebra and the operations must be
+choosen such that they work with interact correctly with the state
+type.
+}
+% [KA]: Maybe the paragraph above explains the functioning a bit better.
+% The paragraph is not finished and 
+% it requires to put the paragraphs about ODEs in front of this paragraph.
+
+
+
+An example of using a range algebra is provided below:
 \begin{lstlisting}
 typedef std::array<double, 3> state_type;
 state_type x1, x2;
@@ -235,6 +279,8 @@ odeint::range_algebra algebra;
 // The following line computes x1 = dt * x2 for all elements of x1 and x2:
 algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
 \end{lstlisting}
+% [KA]: maybe a for_each3 would be better, since it is exactly the Euler
+% formula.
 Here \code{for_each2} is used, which means that
 two state types are iterated. The operation is a \code{scale_sum1} which simply
 calculates \code{x1[i] = dt * x2[i]}. Odeint provides a set of predefined
@@ -295,6 +341,7 @@ equations.
 \begin{equation}
 \frac{\de x}{\de t } = \dot{x} = f(x , t) \quad \text{,} \quad \quad x(0) =
 x_0.
+\label{eq:ode}
 \end{equation}
 Here, $x$ is the dependent variable. It is usually a vector of real
 number but also complex numbers are allowed. $t$ is the independent
