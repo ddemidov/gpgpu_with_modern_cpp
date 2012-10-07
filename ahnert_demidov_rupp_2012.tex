@@ -257,8 +257,7 @@ The main point here is, that no specific arithmetic operation is yet
 specified. All arithmetic calculations and iterations are completely
 encapsulated into the algebra and the operations which must be
 provided by the user. Note, that algebra and the operations must be
-choosen such that they work with interact correctly with the state
-type.
+choosen such that they interact correctly with the state type.
 
 % [KA]: Maybe the paragraph above explains the functioning a bit better.
 % The paragraph is not finished and 
@@ -814,11 +813,13 @@ library for sparse linear algebra and graph computations on CUDA
 \cite{CuspRef}.
 
 All of the libraries considered use the hybrid
-ELL format for storing the sparse matrix, which is one of the most efficient formats for sparse matrices on
-GPUs~\cite{BellGarland2008}.
+ELL format for storing the sparse matrix, which is one of the most efficient
+formats for sparse matrices on GPUs~\cite{BellGarland2008}.
 
-The linear operator $-\Delta Kx-Dx$ may be represented as a single sparse matrix.
-As the construction of the matrix is straight-forward, we only provide code for the system functor's \code{operator()}.
+The linear operator $\Delta_d q_{i,j} - \omega^2_{i,j}q_i$ may be represented
+as a single sparse matrix.  As the construction of the matrix is
+straight-forward, we only provide code for the system functor's
+\code{operator()}.
 
 The Thrust version of the system functor looks like this:
 \begin{lstlisting}
@@ -843,7 +844,7 @@ vector iterator to raw device pointer.
 The VexCL version employs the user-defined OpenCL function \code{pow3} which
 computes the third power of its argument and is used for the performance sake.
 \code{A} is \code{vex::SpMat<double>} instance holding discretisation of linear
-operator $-\Delta Kx - Dx$:
+operator $\Delta_d q_{i,j} - \omega^2_{i,j}q_i$:
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
 
