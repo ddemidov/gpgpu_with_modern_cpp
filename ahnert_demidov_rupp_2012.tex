@@ -206,7 +206,7 @@ The other difference between CUDA and OpenCL is that CUDA supports subset of
 C++ language in compute kernels, while OpenCL kernels are written in subset of
 C99. Therefore, CUDA programmers may use template metaprogramming techniques
 which may lead to more efficient and compact code.  Native OpenCL API does not
-provide this ability, but this drawback is balanced by the ability for
+provide this feature, but this drawback is balanced by the ability for
 on-the-fly kernel generation. Modern C++ libraries such as those considered in
 this work successfully use this approach and hide gory details from their
 users.
@@ -246,7 +246,7 @@ class euler
 The state type, the algebra, and the operations enter the stepper as
 template parameter, hence they are exchangeable. The function object
 ode represents the ODE and must be provided by the user. It calculates
-the r.h.s.~ of \eqref{eq:ode} and stores the result in
+the r.h.s. of \eqref{eq:ode} and stores the result in
 \code{m_dxdt}. The call of \code{for_each3} iterates three vectors and
 applies on each element \code{scale_sum2}. In this specific case it
 calculates $x(t+\Delta t) = x(t) + dt * f(x(t) , t)$ which is exactly
@@ -302,14 +302,10 @@ used with the \code{vector_space_algebra} and the \code{default_operations}
 which simply calls the operations directly on the matrix or vector type. In
 this case only odeint resizing mechanism has to be adapted.
 
-In the following subsections we describe odeint adaptation for GPGPU libraries
-under consideration. We should mention that odeint now supports all of the
-mentioned libraries natively. However, providing adaptation examples serves our
-goal of comparing ease of use of the libraries.
-
-\subsection{Thrust}
-\subsection{VexCL}
-\subsection{ViennaCL}
+We describe odeint adaptation for GPGPU libraries under consideration in the
+paragraphs below. We should mention that odeint now supports all of the
+considered libraries natively. However, providing adaptation examples serves
+our goal of comparing convenience of the libraries interfaces.
 
 
 
