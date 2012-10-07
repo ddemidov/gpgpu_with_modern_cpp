@@ -307,15 +307,112 @@ paragraphs below. We should mention that odeint now supports all of the
 considered libraries natively. However, providing adaptation examples serves
 our goal of comparing convenience of the libraries interfaces.
 
+To adapt Thrust to odeint we need to provide both algebra and operations. The
+algebra should define \code{for_each} family of algorithms for up to 8
+arguments. All of these operations look very similar to each other, so we
+only provide \code{for_each3} code here:
+\begin{lstlisting}
+struct thrust_algebra {
+    template<class StateType1, class StateType2, class StateType3, class Operation>
+    static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Operation op)
+    {
+        thrust::for_each(
+                thrust::make_zip_iterator( thrust::make_tuple(
+		    boost::begin(s1),
+		    boost::begin(s2),
+		    boost::begin(s3) ) ),
+		thrust::make_zip_iterator( thrust::make_tuple( 
+		    boost::end(s1),
+		    boost::end(s2),
+		    boost::end(s3) ) ),
+		op);
+    }
+};
+\end{lstlisting}
+
+The operations that are called in the \code{for_each} family of algorithms are
+defined in \code{thrust_operations} and are actually device functors:
+\begin{lstlisting}
+struct thrust_operations {
+    template<class Fac1 = double, class Fac2 = Fac1, class Fac3 = Fac2>
+    struct scale_sum3 {
+        const Fac1 m_alpha1;
+        const Fac2 m_alpha2;
+        const Fac3 m_alpha3;
+
+        scale_sum3(const Fac1 alpha1, const Fac2 alpha2, const Fac3 alpha3)
+	    : m_alpha1(alpha1), m_alpha2(alpha2), m_alpha3(alpha3) { }
+
+        template< class Tuple >
+        __host__ __device__ void operator()( Tuple t ) const {
+            thrust::get<0>(t) = m_alpha1 * thrust::get<1>(t)
+	                       + m_alpha2 * thrust::get<2>(t)
+			       + m_alpha3 * thrust::get<3>(t);
+        }
+    };
+\end{lstlisting}
+
+As you can see, \code{thrust::make_zip_iterator} is used here to pack several
+device vectors into single iterable sequence. The sequence is then processed by
+device functor which uses \code{thrust::get<>} functions to unpack the zip
+iterator into separate values. This is approach is heavily used with Thrust and
+allows to process several vectors in single efficient sweep. Adaptation of
+resizing operations is trivial and is omitted for the sake of conciseness.
 
 
+Both VexCL and ViennaCL provide convenient expression templates that may be
+directly used with odeint's \code{vector_space_algebra} and
+\code{default_operations}. This combination proved to be convenient and
+effective with VexCL where each expression results in a single kernel. For
+ViennaCL though default operations involving more than two terms result in
+multiple kernel launches.  Moreover, temporary vectors are allocated and
+deallocated for each of such composite operations.  This results in dramatic
+decrease of performance, so we had to provide specialized operations for
+ViennaCL. These use custom kernel generation mechanism provided by the library.
+For example, \code{scale_sum3} operation is defined as:
+\begin{lstlisting}
+struct viennacl_operations {
+    template<class Fac1 = double, class Fac2 = Fac1, class Fac3 = Fac2>
+    struct scale_sum3 {
+	// ...
+        template<class T1, class T2, class T3, class T4>
+        void operator()( viennacl::vector<T1> &v1,
+                const viennacl::vector<T2> &v2,
+                const viennacl::vector<T3> &v3,
+                const viennacl::vector<T4> &v4
+                ) const
+        {
+            using namespace viennacl;
 
+            static generator::symbolic_vector    <0, T1>   sym_v1;
+            static generator::symbolic_vector    <1, T2>   sym_v2;
+            static generator::symbolic_vector    <2, T3>   sym_v3;
+            static generator::symbolic_vector    <3, T4>   sym_v4;
+            static generator::cpu_symbolic_scalar<4, Fac1> sym_a1;
+            static generator::cpu_symbolic_scalar<5, Fac2> sym_a2;
+            static generator::cpu_symbolic_scalar<6, Fac3> sym_a3;
 
+            static generator::custom_operation op(
+                    sym_v1 = sym_a1 * sym_v2
+                           + sym_a2 * sym_v3
+                           + sym_a3 * sym_v4,
+		    "scale_sum3"
+                    );
 
-
-
-
-
+            ocl::enqueue( op(v1,
+                        const_cast< viennacl::vector<T2>& >(v2),
+                        const_cast< viennacl::vector<T3>& >(v3),
+                        const_cast< viennacl::vector<T4>& >(v4),
+                        const_cast< Fac1& >(m_alpha1),
+                        const_cast< Fac2& >(m_alpha2),
+                        const_cast< Fac3& >(m_alpha3)
+                        ) );
+        }
+    };
+\end{lstlisting}
+Here custom kernel is automatically generated from symbolic vector expression
+once and is called whenever the operation is required.  Resizing operations for
+both of OpenCL libraries are trivial and not provided here.
 
 
 
