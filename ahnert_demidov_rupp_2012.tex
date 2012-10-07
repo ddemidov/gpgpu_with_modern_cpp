@@ -353,10 +353,11 @@ struct thrust_operations {
 
 As you can see, \code{thrust::make_zip_iterator} is used here to pack several
 device vectors into single iterable sequence. The sequence is then processed by
-device functor which uses \code{thrust::get<>} functions to unpack the zip
-iterator into separate values. This is approach is heavily used with Thrust and
-allows to process several vectors in single efficient sweep. Adaptation of
-resizing operations is trivial and is omitted for the sake of conciseness.
+\code{thrust::for_each} algorithm and the device functor which uses
+\code{thrust::get<>} functions to unpack the zip iterator into separate values.
+This approach is heavily used with Thrust and allows to process several vectors
+in single efficient sweep. Adaptation of resizing operations is trivial and is
+omitted for the sake of conciseness.
 
 
 Both VexCL and ViennaCL provide convenient expression templates that may be
