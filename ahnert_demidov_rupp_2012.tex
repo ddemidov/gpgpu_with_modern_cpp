@@ -219,6 +219,51 @@ users.
 %
 \section{Adapting odeint}
 
+Ordinary differential equations play a major role in many scientific
+disciplines. They occur naturally in the context of mechanical
+systems, like granular and molecular dynamics~--- in fact the Newtonian
+and Hamiltonian mechanics are formulated as ordinary differential
+equations. Many other applications can be found in such diverse
+fields, like biology and neuroscience, chemistry, social sciences, in
+nonlinear science. Furthermore, ODEs are used to solve partial
+differential equations (PDEs) numerically, they occur by discretization of
+the spatial coordinates.
+
+Odeint usually solves the initial value problem (IVP) of ordinary differential
+equations.
+\begin{equation}
+\frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) =
+x_0.
+\label{eq:ode}
+\end{equation}
+Here, $x$ is the dependent variable. It is usually a vector of real
+number but also complex numbers are allowed. $t$ is the independent
+variable. We will call $t$ the time throughout the article and we will
+denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$ is
+the system function and defines the ODE.
+
+Numerous methods on solving ODEs exist \cite{HairerSolvingODEI,
+  HairerSolvingODEII, HairerGeometricNumericalIntegration2006}. They
+are usually categorized in the field of numerical analysis. Odeint
+implements the most prominent of these methods, for example the
+classical Runge-Kutta-Methods and Runge-Kutta-Fehlberg methods,
+multistep methods (Adams-Bashforth-Moulton), symplectic
+Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
+implicit Euler). All of these methods work iteratively. They start
+from a given initial value $x(t_0)$ to calculate the next value
+$x(t+\Delta t)$. $Delta t$ is the step size. This value acts then as
+the starting value for the next iteration and so. The most simple
+method one can imagine the is the explicit Euler scheme
+\begin{equation}
+x(t+\Delta t) = x(t) + \Delta t \,\, f(x(t),t)
+\label{eq:euler}
+\end{equation}
+It is usually not used for real applications but is used here for
+demonstration purposes. The accuracy of the Euler scheme is not very
+good and one needs to perform many steps with small step size to
+obtain reasonable results.
+
+
 One main feature of odeint is the decoupling of the specific algorithm
 for solving the ODE from the underlying arithmetic operations. This
 is achieved by a combination of a state type, an algebra and
@@ -248,16 +293,13 @@ template parameter, hence they are exchangeable. The function object
 ode represents the ODE and must be provided by the user. It calculates
 the r.h.s. of \eqref{eq:ode} and stores the result in
 \code{m_dxdt}. The call of \code{for_each3} iterates three vectors and
-applies on each element \code{scale_sum2}. In this specific case it
-calculates $x(t+\Delta t) = x(t) + dt * f(x(t) , t)$ which is exactly
-Euler formula. Note, that the operation is here in-place, meaning that
-$x$ is updated to the new value.
-
-The main point here is, that no specific arithmetic operation is yet
-specified. All arithmetic calculations and iterations are completely
-encapsulated into the algebra and the operations which must be
-provided by the user. Note, that algebra and the operations must be
-choosen such that they interact correctly with the state type.
+applies on each element \code{scale_sum2}. The operation is here
+in-place, meaning that $x$ is updated to the new value. The main
+reason for the separation here is that all arithmetic calculations and
+iterations are completely encapsulated into the algebra and the
+operations which must be provided by the user. Note, that algebra and
+the operations must be choosen such that they interact correctly with
+the state type.
 
 % [KA]: Maybe the paragraph above explains the functioning a bit better.
 % The paragraph is not finished and 
@@ -266,50 +308,71 @@ choosen such that they interact correctly with the state type.
 % [DD]: I like it better than the paragraph below. That I took from odeint
 % documentation and it feels out of context here. May be we should omit it.
 
-\rem{
-An example of using a range algebra is provided below:
-\begin{lstlisting}
-typedef std::array<double, 3> state_type;
-state_type x1, x2;
-// Initialize x1 and x2.
-
-double dt = 0.1;
-odeint::range_algebra algebra;
-// The following line computes x1 = dt * x2 for all elements of x1 and x2:
-algebra.for_each2(x1, x2, default_operations::scale_sum1(dt));
-\end{lstlisting}
-% [KA]: maybe a for_each3 would be better, since it is exactly the Euler
-% formula.
-Here \code{for_each2} is used, which means that
-two state types are iterated. The operation is a \code{scale_sum1} which simply
-calculates \code{x1[i] = dt * x2[i]}. Odeint provides a set of predefined
-algebras, which includes:
+Odeint provides a set of predefined algebras, which includes:
 \begin{itemize}
-    \item \code{range_algebra}: default algebra which works on Boost.Ranges
-    \item \code{array_algebra}: specialized algebra for boost::array
-    \item \code{fusion_algebra}: algebra for compile-time sequences like
-        \code{boost::fusion::vector}, \code{std::tuple}, etc.
-    \item \code{vector_space_algebra}: algebra for vector space types which
-        provide overloaded arithmetic operators for elementwise operations.
+\item \code{range_algebra}: default algebra which works on Boost.Ranges
+\item \code{array_algebra}: specialized algebra for \code{boost::array}
+\item \code{fusion_algebra}: algebra for compile-time sequences like
+  \code{boost::fusion::vector}, \code{std::tuple}, etc.
+\item \code{vector_space_algebra}: algebra for vector space types which
+  provide overloaded arithmetic operators for elementwise operations.
 \end{itemize}
-% [KR]: A few more details would be nice in the previous paragraph...
-}
+Each of these algebras is a class consisting of \code{for_each1},
+\dots, \code{for_eachN} methods. For example the \code{for_each3}
+method in the \code{range_algebra} is similar to
+\begin{lstlisting}
+struct range_algebra
+{
+    // ...
+    template< class R1 , class R2 Op op >
+    void for_each2( R1 &r1 , R2 &r2 , Op op ) {
+        auto it1 = boost::begin( r1 );
+        auto it2 = boost::begin( r2 );
+        for( ; it1 != boost::end( r1 ) ; )
+            op( *it1++ , *it2++ );
+    }
+    // ...
+};
+\end{lstlisting}
+The operations are a struct with public member classes defining the
+operations which are used be the algebras. There is only one default
+operations class implementation in odeint
+\begin{lstlisting}
+struct default_algebra
+{
+    // ...
+    template< class Fac1 , class Fac2 >
+    struct scale_sum2 {
+        Fac1 m_fac1;
+        Fac2 m_fac2;
+        scale_sum2( Fac1 fac1 , Fac2 fac2 ) : m_fac1( fac1 ) , m_fac2( fac2 ) { }
+        template< class S1 , class S2 , class S3 >
+        void operator()( S1 &s1 , const S2 &s2 , const S3 &s3 ) const {
+            s1 = m_fac1 * s2 + m_fac2 * s3;
+        }
+    };
+    // ...
+};
+\end{lstlisting}
 
-Many libraries for vector and matrix types provide expression templates for the
-elementary operations. Such libraries do not need an own algebra but can be
-used with the \code{vector_space_algebra} and the \code{default_operations}
-which simply calls the operations directly on the matrix or vector type. In
-this case only odeint resizing mechanism has to be adapted.
 
-We describe odeint adaptation for GPGPU libraries under consideration in the
-paragraphs below. We should mention that odeint now supports all of the
-considered libraries natively. However, providing adaptation examples serves
-our goal of comparing convenience of the libraries interfaces.
+Many libraries for vector and matrix types provide expression
+templates for the elementary operations. Such libraries do not need an
+own algebra but can be used with the \code{vector_space_algebra} and
+the \code{default_operations} which simply calls the operations
+directly on the matrix or vector type. In this case only odeint
+resizing mechanism has to be adapted.
 
-To adapt Thrust to odeint we need to provide both algebra and operations. The
-algebra should define \code{for_each} family of algorithms for up to 8
-arguments. All of these operations look very similar to each other, so we
-only provide \code{for_each3} code here:
+We describe odeint adaptation for GPGPU libraries under consideration
+in the paragraphs below. We should mention that odeint now supports
+all of the considered libraries natively. However, providing
+adaptation examples serves our goal of comparing convenience of the
+libraries interfaces.
+
+To adapt Thrust to odeint we need to provide both algebra and
+operations. The algebra should define the \code{for_each} family of
+algorithms. All of these operations look very similar to each other,
+so we only provide \code{for_each3} code here:
 \begin{lstlisting}
 struct thrust_algebra {
     template<class StateType1, class StateType2, class StateType3, class Operation>
@@ -317,13 +380,9 @@ struct thrust_algebra {
     {
         thrust::for_each(
                 thrust::make_zip_iterator( thrust::make_tuple(
-		    boost::begin(s1),
-		    boost::begin(s2),
-		    boost::begin(s3) ) ),
+		    boost::begin(s1), boost::begin(s2), boost::begin(s3) ) ),
 		thrust::make_zip_iterator( thrust::make_tuple( 
-		    boost::end(s1),
-		    boost::end(s2),
-		    boost::end(s3) ) ),
+		    boost::end(s1), boost::end(s2), boost::end(s3) ) ),
 		op);
     }
 };
@@ -333,53 +392,51 @@ The operations that are called in the \code{for_each} family of algorithms are
 defined in \code{thrust_operations} and are actually device functors:
 \begin{lstlisting}
 struct thrust_operations {
-    template<class Fac1 = double, class Fac2 = Fac1, class Fac3 = Fac2>
-    struct scale_sum3 {
+    template<class Fac1 = double, class Fac2 = Fac1>
+    struct scale_sum2 {
         const Fac1 m_alpha1;
         const Fac2 m_alpha2;
-        const Fac3 m_alpha3;
 
-        scale_sum3(const Fac1 alpha1, const Fac2 alpha2, const Fac3 alpha3)
-	    : m_alpha1(alpha1), m_alpha2(alpha2), m_alpha3(alpha3) { }
+        scale_sum3(const Fac1 alpha1, const Fac2 alpha2)
+	    : m_alpha1(alpha1), m_alpha2(alpha2) { }
 
         template< class Tuple >
         __host__ __device__ void operator()( Tuple t ) const {
             thrust::get<0>(t) = m_alpha1 * thrust::get<1>(t)
-	                       + m_alpha2 * thrust::get<2>(t)
-			       + m_alpha3 * thrust::get<3>(t);
+	                       + m_alpha2 * thrust::get<2>(t);
         }
     };
 \end{lstlisting}
 
 As you can see, \code{thrust::make_zip_iterator} is used here to pack several
 device vectors into single iterable sequence. The sequence is then processed by
-\code{thrust::for_each} algorithm and the device functor which uses
+the \code{thrust::for_each} algorithm and the device functor which uses
 \code{thrust::get<>} functions to unpack the zip iterator into separate values.
 This approach is heavily used with Thrust and allows to process several vectors
 in single efficient sweep. Adaptation of resizing operations is trivial and is
 omitted for the sake of conciseness.
 
 
-Both VexCL and ViennaCL provide convenient expression templates that may be
-directly used with odeint's \code{vector_space_algebra} and
-\code{default_operations}. This combination proved to be convenient and
-effective with VexCL where each expression results in a single kernel. For
-ViennaCL though default operations involving more than two terms result in
-multiple kernel launches.  Moreover, temporary vectors are allocated and
-deallocated for each of such composite operations.  This results in dramatic
-decrease of performance, so we had to provide specialized operations for
-ViennaCL. These use custom kernel generation mechanism provided by the library.
-For example, \code{scale_sum3} operation is defined as:
+Both VexCL and ViennaCL provide convenient expression templates that
+may be directly used with odeint's \code{vector_space_algebra} and
+\code{default_operations}. This combination proved to be convenient
+and effective with VexCL where each expression results in a single
+kernel. For ViennaCL though default operations involving more than two
+terms result in multiple kernel launches.  Moreover, temporary vectors
+are allocated and deallocated for each of such composite operations.
+This results in dramatic decrease of performance, so we had to provide
+specialized operations for ViennaCL. These use a custom kernel
+generation mechanism provided by the library.  For example,
+\code{scale_sum2} operation is defined as:
 \begin{lstlisting}
 struct viennacl_operations {
-    template<class Fac1 = double, class Fac2 = Fac1, class Fac3 = Fac2>
-    struct scale_sum3 {
+    template<class Fac1 = double, class Fac2 = Fac1>
+    struct scale_sum2 {
 	// ...
-        template<class T1, class T2, class T3, class T4>
+        template<class T1, class T2, class T3>
         void operator()( viennacl::vector<T1> &v1,
                 const viennacl::vector<T2> &v2,
-                const viennacl::vector<T3> &v3,
-                const viennacl::vector<T4> &v4
+                const viennacl::vector<T3> &v3
                 ) const
         {
             using namespace viennacl;
@@ -387,25 +444,20 @@ struct viennacl_operations {
             static generator::symbolic_vector    <0, T1>   sym_v1;
             static generator::symbolic_vector    <1, T2>   sym_v2;
             static generator::symbolic_vector    <2, T3>   sym_v3;
-            static generator::symbolic_vector    <3, T4>   sym_v4;
-            static generator::cpu_symbolic_scalar<4, Fac1> sym_a1;
-            static generator::cpu_symbolic_scalar<5, Fac2> sym_a2;
-            static generator::cpu_symbolic_scalar<6, Fac3> sym_a3;
+            static generator::cpu_symbolic_scalar<3, Fac1> sym_a1;
+            static generator::cpu_symbolic_scalar<4, Fac2> sym_a2;
 
             static generator::custom_operation op(
                     sym_v1 = sym_a1 * sym_v2
-                           + sym_a2 * sym_v3
-                           + sym_a3 * sym_v4,
-		    "scale_sum3"
+                           + sym_a2 * sym_v3,
+		    "scale_sum2"
                     );
 
             ocl::enqueue( op(v1,
                         const_cast< viennacl::vector<T2>& >(v2),
                         const_cast< viennacl::vector<T3>& >(v3),
-                        const_cast< viennacl::vector<T4>& >(v4),
                         const_cast< Fac1& >(m_alpha1),
-                        const_cast< Fac2& >(m_alpha2),
-                        const_cast< Fac3& >(m_alpha3)
+                        const_cast< Fac2& >(m_alpha2)
                         ) );
         }
     };
@@ -419,44 +471,22 @@ both of OpenCL libraries are trivial and not provided here.
 
 \section{Numerical experiments}
 
-Ordinary differential equations play a major role in many scientific
-disciplines. They occur naturally in the context of mechanical
-systems, like granular and molecular dynamics~--- in fact the Newtonian
-and Hamiltonian mechanics are formulated as ordinary differential
-equations. Many other applications can be found in such diverse
-fields, like biology and neuroscience, chemistry, social sciences, in
-nonlinear science. Furthermore, ODEs are used to solve partial
-differential equations (PDEs) numerically, they occur by discretization of
-the spatial coordinates.
-
-Odeint usually solves the initial value problem (IVP) of ordinary differential
-equations.
-\begin{equation}
-\frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) =
-x_0.
-\label{eq:ode}
-\end{equation}
-Here, $x$ is the dependent variable. It is usually a vector of real
-number but also complex numbers are allowed. $t$ is the independent
-variable. We will call it time throughout the article and we will
-denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$
-is the system function and defines the ODE.
-
-Numerous methods on solving ODEs exist \cite{HairerSolvingODEI,
-HairerSolvingODEII, HairerGeometricNumericalIntegration2006}. They are usually
-categorized in the field of numerical analysis. Odeint implements the most
-prominent of these methods, for example the classical Runge-Kutta-Methods and
-Runge-Kutta-Fehlberg methods, multistep methods (Adams-Bashforth-Moulton),
-symplectic Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
-implicit Euler).
-
 Typical use cases for solving ODEs on GPUs are large systems of
-coupled ODEs which occur as discretizations of PDEs, or lattice
-ODEs. Another use case are parameter studies, where one wants to study
-the dependence of an ODE on some parameters. Here, one creates one
-large ODE which consists of many small uncoupled ODEs, each with a
-different parameter set. This one large system is then solved at once,
-hence all small ODEs are solved simultaneously.
+coupled ODEs which occur as discretizations of PDEs, or in ODEs
+defined on lattices or graphs. Another use case are parameter studies,
+where one wants to study the dependence of an ODE on some
+parameters. Here, one creates one large ODE which consists of many
+small uncoupled ODEs, each with a different parameter set. This one
+large system is then solved at once, hence all small ODEs are solved
+simultaneously.
+
+In this section we will show four examples and study their
+performance. Two examples are of the first type, namely a
+one-dimensional lattice of simple phase oscillators and a
+two-dimensional Hamiltonian lattice. The other two examples are
+parameter studies.
+
+
 
 
 
@@ -895,11 +925,13 @@ Lorenz system is a system of three coupled ODEs which shows chaotic
 behavior for a large range of parameters. It is one of the most frequently
 used ODE for evaluation purposes in the nonlinear dynamics community.
 The ODE of the Lorenz system reads
-\begin{align}
-    \frac{\de x}{\de t} &= -\sigma \left( x - y \right), \\
-    \frac{\de y}{\de t} &= R x - y - xz, \\
-    \frac{\de z}{\de t} &= -bz + xy.
-\end{align}
+\begin{equation}
+  \dot{x} = -\sigma \left( x - y \right) \,\, , \quad 
+  \dot{y} = R x - y - xz \,\, , \quad
+  \dot{z} = -bz + xy.
+  \label{eq:lorenz}
+\end{equation}
+
 
 Solutions of the Lorenz system usually furnish a very interesting
 behavior in dependence on one of its parameters.  For example, one
