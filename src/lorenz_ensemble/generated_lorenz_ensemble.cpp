@@ -96,7 +96,6 @@ int main( int argc , char **argv )
     for(value_type t = 0; t < t_max; t += dt)
 	kernel(X, Y, Z, R);
 
-    std::vector< value_type > res( n );
-    vex::copy( X , res );
-    cout << res[0] << endl;
+    vex::copy( X , r );
+    cout << r[0] << endl;
 }
