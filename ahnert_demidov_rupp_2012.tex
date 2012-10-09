@@ -1,7 +1,5 @@
 \documentclass[1p]{elsarticle}
 
-\usepackage{amsmath}
-\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{subfigure}
 \usepackage[colorlinks,unicode,linkcolor=black]{hyperref}
@@ -15,28 +13,17 @@
     numberstyle=\tiny,
     frame=leftline
     }
+
 \newcommand{\code}[1]{\lstinline|#1|}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
+\newcommand{\eqref}[1]{(\ref{#1})}
 
 %
 % mathematical commands
 %
-\newcommand {\re} {\text{Re}}
-\newcommand {\im} {\text{Im}}
 \newcommand {\de} {\mbox{d}}
-\newcommand {\ii} {\text{i}}
-\newcommand {\ee} {\text{e}}
-\newcommand {\mathbi}[1] {\textbf{\em #1}}
-\newcommand {\sign} {\text{sign}}
-\newcommand {\bra}[1] {\langle #1 \mid}
-\newcommand {\ket}[1] {\mid #1 \rangle}
-\newcommand {\braket}[2] {\langle #1 \mid #2 \rangle}
-\newcommand {\mean}[1] {\langle #1 \rangle}
-\newcommand {\sech} {\text{sech}}
-\newcommand {\conj} {\ast}
-
+\newcommand {\ii} {\mathop{i}}
 \newcommand {\rem}[1]{}
-
 
 \journal{Journal of Parallel and Distributed Computing}
 
