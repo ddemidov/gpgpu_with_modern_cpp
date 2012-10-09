@@ -987,7 +987,8 @@ CPU performance is even worse. It is in general slower than Thrust by about
 oscillator test, where ViennaCL outperforms other libraries.
 
 \begin{table}
-    \begin{center}
+    \caption{Absolute run times (sec) for the largest problem size.}
+    \label{tab:abstimes}
     \begin{tabular}{|lc|rrrr|}
 	\hline
 	& & \em Damped	    & \em Coupled	& \em Disordered    & \em Lorenz    \\
@@ -1006,9 +1007,6 @@ oscillator test, where ViennaCL outperforms other libraries.
 	\em ViennaCL &\em CPU	& 2~574.70 & 4~605.93 & 5~485.99 & 4~127.98 \\
 	\hline
     \end{tabular}
-    \caption{Absolute run times (sec) for the largest problem size.}
-    \label{tab:abstimes}
-    \end{center}
 \end{table}
 
 
@@ -1037,7 +1035,7 @@ provide hand-written kernels for those; Thrust version of coupled phase
 oscillator chain example needed help of CUSPARSE library for implemetation of
 sparse matrix~-- vector product.
 
-\begin{figure}[p]
+\begin{figure}
     \begin{center}
         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
     \end{center}
@@ -1045,7 +1043,7 @@ sparse matrix~-- vector product.
     \label{fig:damped:perf}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}
     \begin{center}
         \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
     \end{center}
@@ -1053,7 +1051,7 @@ sparse matrix~-- vector product.
     \label{fig:phase:perf}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}
     \begin{center}
         \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
     \end{center}
@@ -1061,7 +1059,7 @@ sparse matrix~-- vector product.
     \label{fig:lattice:perf}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}
     \begin{center}
         \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
     \end{center}
@@ -1069,7 +1067,7 @@ sparse matrix~-- vector product.
     \label{fig:lorenz:perf}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}
     \begin{center}
         \subfigure[
         Damped harmonic oscillator ensemble.
