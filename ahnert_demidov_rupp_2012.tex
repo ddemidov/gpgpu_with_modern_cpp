@@ -351,8 +351,8 @@ algorithms. All of these operations look very similar to each other,
 so we only provide \code{for_each3} code here:
 \begin{lstlisting}
 struct thrust_algebra {
-    template<class StateType1, class StateType2, class StateType3, class Operation>
-    static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Operation op)
+    template<class StateType1, class StateType2, class StateType3, class Oper>
+    static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Oper op)
     {
         thrust::for_each(
                 thrust::make_zip_iterator( thrust::make_tuple(
@@ -585,7 +585,7 @@ dxdt = std::make_tuple(     eps * x(0) + omega * x(1),
                             eps * x(1) - omega * x(0)   );
 \end{lstlisting}
 
-The ViennaCL version of the damped harmonic oscillator example uses
+The ViennaCL version of the damped harmonic oscillator ensemble example uses
 \code{boost::fusion::vector} to pack coordinate components of the state into a
 single type. Individual components are instances of
 \code{viennacl::vector<double>} type.
@@ -625,7 +625,7 @@ struct oscillator {
 This requires more of boilerplate code but the resulting expression tree
 carries information of whether two terminals represent the same vector
 instance. This in principle allows generation of more effective code. The
-\code{operator()} unpacks \code{boost::fusion::vector} container and launches
+\code{operator()} unpacks \code{fusion::vector} container and launches
 the generated kernel:
 \begin{lstlisting}[firstnumber=24]
 void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
@@ -723,7 +723,8 @@ extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1
 struct phase_oscillators {
     const state_type &omega;
     vex::StencilOperator< double, 3, 1, oscillator_body > S;
-    phase_oscillators(const state_type &omega) : omega(omega), S(omega.queue_list()) { }
+    phase_oscillators(const state_type &omega)
+	: omega(omega), S(omega.queue_list()) { }
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         dxdt = omega + S(x);
     }
