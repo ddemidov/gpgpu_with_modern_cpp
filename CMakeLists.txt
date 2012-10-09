@@ -18,7 +18,7 @@ if (LATEX_COMPILER)
 	       data/disordered_ham_lattice/perfcmp.eps
 	       data/disordered_ham_lattice/scaling.eps
 	BIBFILES ref.bib
-	DEPENDS elsarticle.cls
+	DEPENDS siamltex.cls siam.bst siam10.clo subeqn.clo
 	DEFAULT_PDF
 	MANGLE_TARGET_NAMES
 	)
