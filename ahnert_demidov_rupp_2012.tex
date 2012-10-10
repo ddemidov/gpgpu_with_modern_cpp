@@ -46,15 +46,16 @@ Argonne National Laboratory,
 \maketitle
 
 \begin{abstract}
-    We present a comparison of several modern C++ libraries intended for OpenCL
-    and CUDA programming. The comparison is based on odeint, a framework for
-    the solution of ordinary differential equations. Odeint is designed in a
+    We present a comparison of several modern C++ libraries providing high-level interfaces
+    for programming multi- and many-core architectures on top of OpenCL or CUDA.
+    The comparison focuses on the solution of ordinary differential equations and is based on odeint,
+    a framework for the solution of ordinary differential equations. Odeint is designed in a
     very flexible way and may be easily adapted for effective use of libraries such
-    as VexCL, ViennaCL, or Thrust to solve ODEs with either OpenCL or CUDA
-    technologies. We found that OpenCL and CUDA work equally well for problems
+    as VexCL, ViennaCL, or Thrust using OpenCL or CUDA technologies.
+    We found that OpenCL and CUDA work equally well for problems
     of large sizes, while OpenCL has higher overhead for smaller problems.
-    Furthermore, we show that modern high level libraries allow to effectively
-    use computational resources of manycore GPUs or multicore CPUs without much
+    Furthermore, we show that modern high-level libraries allow to effectively
+    use the computational resources of manycore GPUs or multicore CPUs without much
     knowledge of the underlying technologies.
 \end{abstract}
 
@@ -88,26 +89,26 @@ by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
 latter is an open, royalty-free standard for cross-platform, parallel
 programming of modern processors maintained by the Khronos group. By nature,
 the two frameworks have their distinctive pros and cons. CUDA has a more mature
-programming environment with larger set of scientific libraries; but it is only
-supported on NVIDIA hardware. OpenCL is supported on wide range of hardware,
-but its native API requires much larger amount of boilerplate code from a
+programming environment with a larger set of scientific libraries, but is 
+available on NVIDIA hardware only. OpenCL is supported on wide range of hardware,
+but its native API requires a much larger amount of boilerplate code from a
 developer.
 
 Both technologies are able to provide scientists with the vast computational
-resources of modern GPU cards at the price of a steep learning curve.
+resources of modern GPUs at the price of a steep learning curve.
 Programmers need to familiarize
 themselves with a new programming language and, more importantly, with a
-new programming paradigm. However, the entry price may be lowered with help of
+new programming paradigm. However, the entry barrier may be lowered with the help of
 specialized libraries. The CUDA Toolkit includes several such libraries (BLAS
-implementation, Fast Fourier Transform, Thrust and others). OpenCL lacks
+implementations, Fast Fourier Transform, Thrust and others). OpenCL lacks
 standard libraries, but there are a number of third-party projects aimed at
 developing both CUDA and OpenCL programs.
 
-This paper presents comparison of several modern C++ libraries aimed
+This paper presents a comparison of several modern C++ libraries aimed
 at ease of GPGPU development. We look at both convenience and
 performance of the libraries under consideration in the context of
 solving ordinary differential equations.  The comparison is based on
-odeint, modern C++ library for solution of ODEs that has been recently
+odeint, a modern C++ library for solution of ODEs that has been recently
 included into the Boost libraries\footnote{ \href{ http://boost.org }
   { http://boost.org } }.  The GPGPU libraries considered in this work
 are Thrust, VexCL, and ViennaCL:
@@ -122,23 +123,23 @@ are Thrust, VexCL, and ViennaCL:
 % the topics you mentioned?
 
 \begin{description}
-    \item[Odeint] is a modern C++ library\footnote{ \href{ http://odeint.com }{
-	http://odeint.com } } for numerically solving Ordinary Differential
-	Equations \cite{OdeintRef1, OdeintRef2}. It is developed in a generic
+    \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com }{
+	http://odeint.com } } for solving ordinary differential
+	equations (ODEs) numerically \cite{OdeintRef1, OdeintRef2}. It is developed in a generic
 	way using Template Metaprogramming which leads to extraordinary high
-	flexibility at top performance. The numerical algorithms are
+	flexibility at utmost performance. The numerical algorithms are
 	implemented independently of the underlying arithmetics. This results
 	in a broad applicability of the library, especially in non-standard
 	environments.  For example, odeint supports matrix types, arbitrary
-	precision arithmetics and can be easily adopted to use either CUDA or
-	OpenCL frameworks.  Odeint is used in this work as a framework for
+	precision arithmetics, and can be easily adopted to use either CUDA or
+	OpenCL frameworks.  Odeint is used in this work as a framework for the
 	comparison of other libraries.
     \item[Thrust] is a parallel algorithms library\footnote{ \href{
 	http://thrust.github.com }{ http://thrust.github.com }} which resembles
 	the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
 	high-level interface greatly enhances developer productivity while
 	enabling performance portability between GPUs and multicore CPUs.
-	Thrust is distributed with NVIDIA CUDA Toolkit since version 4.1.
+	Thrust is distributed with the NVIDIA CUDA Toolkit since version 4.1.
     \item[VexCL] is vector expression template
 	library\footnote{ \href{ https://github.com/ddemidov/vexcl }{
 	https://github.com/ddemidov/vexcl }} for OpenCL \cite{VexCLRef}. It has
@@ -151,44 +152,47 @@ are Thrust, VexCL, and ViennaCL:
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
 	library\footnote{ \href{ http://viennacl.sourceforge.net }{
 	http://viennacl.sourceforge.net }} written in C++ and based on OpenCL
-	\cite{ViennaCLRef}. It allows simple, high-level access to the vast
-	computing resources available on parallel architectures such as GPUs
-	and is primarily focused on common linear algebra operations (BLAS
+	\cite{ViennaCLRef}. Its interface is compatible with 
+	Boost.uBLAS\footnote{ \href{ http://www.boost.org/libs/numeric/ublas }
+	{ http://www.boost.org/libs/numeric/ublas } }
+	and allows for simple, high-level access to the vast
+	computing resources available on parallel architectures such as GPUs.
+	The library's primary focus is on common linear algebra operations (BLAS
 	levels 1, 2 and 3) and the solution of large systems of equations by
 	means of iterative methods with optional preconditioner.
 \end{description}
 
 CUDA and OpenCL differ in their handling of compute kernels compilation. In
 NVIDIA's framework the compute kernels are compiled to PTX code together with
-the host program. The PTX is pseudo-assembler language which is compiled at
-runtime for the specific NVIDIA device it is being run on. Since PTX is already
+the host program. The PTX is a pseudo-assembler language which is compiled at
+runtime for the specific NVIDIA device the kernel is launched on. Since PTX is already
 very low-level, this just-in-time kernel compilation has low overhead. In
-OpenCL the compute kernels are compiled at runtime from high level sources.
+OpenCL the compute kernels are compiled at runtime from higher-level C-like sources.
 This adds an overhead which is particularly noticeable for smaller sized
-problems. The pre-compilation to some low-level pseudo-code is not feasible in
-OpenCL because it has to support wide range of hardware.
+problems. A pre-compilation to some low-level pseudo-code as in CUDA is not feasible in
+OpenCL because of hardware agnosticism by design.
 
-The approach to generation and compilation of the compute kernels is one of the
-main differences between the OpenCL libraries we considered.  ViennaCL has
-limited set of predefined kernels, which functionally coincides with BLAS level
-1 routines.  These kernels are compiled in batch at the program start to allow
+The approach taken for the generation and compilation of the compute kernels is one of the
+main differences between the OpenCL libraries we considered. 
+ViennaCL uses a set of predefined kernels, which functionally overlaps with BLAS level
+1 routines for vector operations. 
+These kernels are compiled in batch at the program start to allow
 for faster initialization. However, due to this design decision each vector
 expression may result in launch of more than one kernel.  On the other hand,
 VexCL generates and compiles an OpenCL program with a single kernel for each
 vector expression it encounters.  This leads to potentially higher
 initialization overhead, but should prove to be more effective in the long
-runs. It should be noted that main aim of ViennaCL is provision of iterative
-solvers for large sparse systems of equations. In this context complex vector
-expressions are rare and we believe that authors of ViennaCL made correct
-design decision.  However, we think it is interesting to compare approaches of
-VexCL and ViennaCL.
+runs. It should be noted that because of the main focus of ViennaCL being on iterative
+solvers for large sparse systems of equations, where complex vector
+expressions are rare, predefined kernels are favorable.
+The implications of these two distinct design decisions in VexCL and ViennaCL will be further addressed in the discussion of the results.
 
-The other difference between CUDA and OpenCL is that CUDA supports subset of
+The other difference between CUDA and OpenCL is that CUDA supports a subset of the
 C++ language in compute kernels, while OpenCL kernels are written in subset of
 C99. Therefore, CUDA programmers may use template metaprogramming techniques
-which may lead to more efficient and compact code.  Native OpenCL API does not
-provide this feature, but the drawback is balanced by the ability for
-on-the-fly kernel generation. Modern C++ libraries such as those considered in
+which may lead to more efficient and compact code. The native OpenCL API does not
+provide such a feature, but the drawback is balanced by the ability of
+kernel source generation during runtime. Modern C++ libraries such as those considered in
 this work successfully use this approach and hide gory details from their
 users.
 
@@ -1134,8 +1138,9 @@ been shown in this paper.
 
 \section{Acknowledgments}
 
-This work has been partially supported by RFBR grant No 12-07-0007. We also
-would like to thank Gradient JSC\footnote{ \href{
+This work has been partially supported by the Russian Foundation for Basic 
+Research (RFBR) grant No 12-07-0007 and the Austrian Science Fund (FWF), grant P23598.
+We also would like to thank Gradient JSC\footnote{ \href{
 http://www.gradient-geo.com/en }{ http://www.gradient-geo.com/en } } for the
 kindly provided AMD hardware.
 
