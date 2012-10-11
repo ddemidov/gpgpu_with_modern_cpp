@@ -108,7 +108,7 @@ This paper presents a comparison of several modern C++ libraries aimed
 at ease of GPGPU development. We look at both convenience and
 performance of the libraries under consideration in the context of
 solving ordinary differential equations.  The comparison is based on
-odeint, a modern C++ library for solution of ODEs that has been recently
+odeint, a modern C++ library for solution of ordinary differential equations (ODEs) that has been recently
 included into the Boost libraries\footnote{ \href{ http://boost.org }
   { http://boost.org } }.  The GPGPU libraries considered in this work
 are Thrust, VexCL, and ViennaCL:
@@ -124,9 +124,9 @@ are Thrust, VexCL, and ViennaCL:
 
 \begin{description}
     \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com }{
-	http://odeint.com } } for solving ordinary differential
-	equations (ODEs) numerically \cite{OdeintRef1, OdeintRef2}. It is developed in a generic
-	way using Template Metaprogramming which leads to extraordinary high
+	http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1, OdeintRef2}.
+	It is developed in a generic
+	way using template metaprogramming techniques, which leads to extraordinary high
 	flexibility at utmost performance. The numerical algorithms are
 	implemented independently of the underlying arithmetics. This results
 	in a broad applicability of the library, especially in non-standard
@@ -178,13 +178,13 @@ ViennaCL uses a set of predefined kernels, which functionally overlaps with BLAS
 1 routines for vector operations. 
 These kernels are compiled in batch at the program start to allow
 for faster initialization. However, due to this design decision each vector
-expression may result in launch of more than one kernel.  On the other hand,
+expression may result in the launch of more than one kernel.  On the other hand,
 VexCL generates and compiles an OpenCL program with a single kernel for each
 vector expression it encounters.  This leads to potentially higher
 initialization overhead, but should prove to be more effective in the long
 runs. It should be noted that because of the main focus of ViennaCL being on iterative
 solvers for large sparse systems of equations, where complex vector
-expressions are rare, predefined kernels are favorable.
+expressions are rare, predefined kernels are favorable in such a setting.
 The implications of these two distinct design decisions in VexCL and ViennaCL will be further addressed in the discussion of the results.
 
 The other difference between CUDA and OpenCL is that CUDA supports a subset of the
@@ -206,60 +206,56 @@ users.
 
 Ordinary differential equations play a major role in many scientific
 disciplines. They occur naturally in the context of mechanical
-systems, like granular and molecular dynamics~--- in fact the Newtonian
-and Hamiltonian mechanics are formulated as ordinary differential
-equations. Many other applications can be found in such diverse
-fields as biology and neuroscience, chemistry, social sciences, in
-nonlinear science. Furthermore, ODEs are used to solve partial
-differential equations (PDEs) numerically, they occur by discretization of
-the spatial coordinates.
+systems, like granular and molecular dynamics. In fact, the Newtonian
+and Hamiltonian mechanics are formulated as ODEs.
+Many other applications can be found in such diverse
+fields as biology and neuroscience, chemistry, and social sciences. % [KR] Citations required here!
+Furthermore, ODEs are also encountered in the context of the numerical solution of nonstationary partial
+differential equations (PDEs), where they occur after the discretization of the spatial coordinates. % [KR] This is probably the most common case
 
-Odeint usually solves the initial value problem (IVP) of ordinary differential
-equations.
+Odeint usually solves % [KR]: 'usually solves' is a bit too fuzzy. Does it support other types (implicit ODEs, higher-order ODEs)? If yes, we should state that here.  It is advisable to define the scope properly in a SIAM Journal.
+the initial value problem (IVP) of ordinary differential equations.
 \begin{equation}
 \frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) =
 x_0.
 \label{eq:ode}
 \end{equation}
-Here, $x$ is the dependent variable. It is usually a vector of real
-values but also complex values are allowed. $t$ is the independent
-variable. We will call $t$ the time throughout the article and we will
+Here, $x$ is the dependent variable and is usually a vector of real or complex values.
+$t$ is the independent variable. We will refer to $t$ as the time throughout the article and 
 denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$ is
 the system function and defines the ODE.
 
-Numerous methods on solving ODEs exist \cite{HairerSolvingODEI,
-  HairerSolvingODEII, HairerGeometricNumericalIntegration2006}. They
-are usually categorized in the field of numerical analysis. Odeint
+Numerous methods for solving ODEs exist \cite{HairerSolvingODEI,
+  HairerSolvingODEII, HairerGeometricNumericalIntegration2006}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer)
+which are usually categorized in the field of numerical analysis. 
+Odeint
 implements the most prominent of these methods, for example the
 classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods,
 multistep methods (Adams-Bashforth-Moulton), symplectic
 Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
-implicit Euler). All of these methods work iteratively. They start
+implicit Euler). All of these methods work iteratively, starting
 from a given initial value $x(t_0)$ to calculate the next value
-$x(t+\Delta t)$. $\Delta t$ is the step size. This value acts then as
-the starting value for the next iteration and so. The most simple
-method one can imagine is the explicit Euler scheme
+$x(t+\Delta t)$. 
+$\Delta t$ is the step size and many be chosen either statically or adaptively.
+For reference, we note that the simplest method is the explicit Euler scheme
 \begin{equation}
-x\left(t+\Delta t\right) = x(t) + \Delta t \; f(x(t),t).
+x\left(t+\Delta t\right) := x(t) + \Delta t \; f(x(t),t) .
 \label{eq:euler}
 \end{equation}
-It is usually not used for real applications but is used here for
-demonstration purposes. The accuracy of the Euler scheme is not very
-good and one needs to perform many steps with small step size to
-obtain reasonable results.
+Its global accuracy is of first order, but the scheme is usually not used for real applications because of stability issues.
 
 
 One main feature of odeint is the decoupling of the specific algorithm
 for solving the ODE from the underlying arithmetic operations. This
-is achieved by a combination of a state type, an algebra and
+is achieved by a combination of a state type, an algebra, and
 operations. The state type represents the state of the ODE being
 solved and is usually a vector type like \code{std::vector<>},
 \code{std::array<>}, or a vector residing on a GPU. The algebra is
 responsible for iterating through all elements of the state whereas
 the operations are responsible for the elementary operations.
 
-To see how this works consider an implementation of the Euler method.
-% add a sentence about the Euler method, with the formula.
+To see how the explicit Euler method \eqref{eq:euler} is translated to
+code in odeint, we briefly discuss its implementation:
 \begin{lstlisting}
 template< class State, class Algebra, class Operations >
 class euler {
@@ -271,14 +267,19 @@ class euler {
     }
 };
 \end{lstlisting}
-The state type, the algebra, and the operations enter the stepper as
-template parameter, hence they are exchangeable. The function object
-ode represents the ODE and must be provided by the user. It calculates
-the r.h.s. of \eqref{eq:ode} and stores the result in
-\code{m_dxdt}. The call of \code{for_each3} iterates three vectors and
+The state type, the algebra, and the operations enter the stepper  % [KR]: It is not yet defined what a 'stepper'...
+as template parameter, hence they are exchangeable. The function object
+\code{ode} represents the ODE and must be provided by the user. It calculates
+the right hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in
+\code{m_dxdt}. The call of \code{for_each3} iterates three vectors and    % [KR]: This is a bit confusing. What does 'iterate three vectors' mean in this context? It is not obvious how the for_each3-scale_sum2-call equals x(t) + \Delta t \; f(x(t),t) .
 applies on each element \code{scale_sum2}. The operation is performed
-in-place, meaning that $x$ is updated to the new value. The main
-reason for the separation here is that all arithmetic calculations and
+in-place, meaning that $x$ is updated to the new value. 
+In the code-snippet above, the call to \code{for_each3} is thus equivalent to the vector operation
+\begin{lstlisting}
+ x = 1.0 * x + dt * m_dxdt
+\end{lstlisting}
+which is just \eqref{eq:euler}, since \code{m_dxdt} holds the values of $f(x(t), t)$.
+The main reason for the separation of algebra and operations is that all arithmetic calculations and
 iterations are completely encapsulated into the algebra and the
 operations which must be provided by the user. Note, that algebra and
 the operations must be chosen such that they interact correctly with
@@ -291,68 +292,77 @@ the state type.
 % [DD]: I like it better than the paragraph below. That I took from odeint
 % documentation and it feels out of context here. May be we should omit it.
 
-Odeint provides a set of predefined algebras, which includes:
-\begin{remunerate}
-\item \code{range_algebra}: default algebra which works on Boost.Ranges;
-\item \code{array_algebra}: specialized algebra for \code{boost::array};
-\item \code{fusion_algebra}: algebra for compile-time sequences like
-  \code{boost::fusion::vector}, \code{std::tuple}, etc.;
-\item \code{vector_space_algebra}: algebra for vector space types that
-  provide overloaded arithmetic operators for elementwise operations.
-\end{remunerate}
-Each of these algebras is a class consisting of \code{for_each1},
-\dots, \code{for_eachN} methods. For example the \code{for_each3}
-method in the \code{range_algebra} is similar to
-\begin{lstlisting}
-struct range_algebra {
-    // ...
-    template< class R1, class R2, class Op >
-    void for_each2(R1 &r1, R2 &r2, Op op) {
-        auto it1 = boost::begin(r1);
-        auto it2 = boost::begin(r2);
-        while(it1 != boost::end(r1)) op( *it1++, *it2++ );
-    }
-    // ...
-};
-\end{lstlisting}
-The operations are represented by a struct with public member classes defining the
-operations which are used by the algebras. There is only one default
-operations class implementation in odeint
-\begin{lstlisting}
-struct default_algebra {
-    // ...
-    template< class Fac1, class Fac2 >
-    struct scale_sum2 {
-        Fac1 m_fac1;
-        Fac2 m_fac2;
-        scale_sum2( Fac1 fac1, Fac2 fac2 ) : m_fac1(fac1), m_fac2(fac2) { }
-        template< class S1, class S2, class S3 >
-        void operator()( S1 &s1, const S2 &s2, const S3 &s3 ) const {
-            s1 = m_fac1 * s2 + m_fac2 * s3;
-        }
-    };
-    // ...
-};
-\end{lstlisting}
+% [KR]: The paragraph below also appears to be way too much implementation
+%       It is not really relevant for what follows, so I prefer to omit it.
+%       I commented it in the meanwhile.
 
+% Odeint provides a set of predefined algebras, which includes:
+% \begin{remunerate}
+% \item \code{range_algebra}: default algebra which works on Boost.Ranges;
+% \item \code{array_algebra}: specialized algebra for \code{boost::array};
+% \item \code{fusion_algebra}: algebra for compile-time sequences like
+%   \code{boost::fusion::vector}, \code{std::tuple}, etc.;
+% \item \code{vector_space_algebra}: algebra for vector space types that
+%   provide overloaded arithmetic operators for elementwise operations.
+% \end{remunerate}
+% Each of these algebras is a class consisting of \code{for_each1},
+% \dots, \code{for_eachN} methods. For example the \code{for_each3}
+% method in the \code{range_algebra} is similar to
+% \begin{lstlisting}
+% struct range_algebra {
+%     // ...
+%     template< class R1, class R2, class Op >
+%     void for_each2(R1 &r1, R2 &r2, Op op) {
+%         auto it1 = boost::begin(r1);
+%         auto it2 = boost::begin(r2);
+%         while(it1 != boost::end(r1)) op( *it1++, *it2++ );
+%     }
+%     // ...
+% };
+% \end{lstlisting}
+% The operations are represented by a struct with public member classes defining the
+% operations which are used by the algebras. There is only one default
+% operations class implementation in odeint
+% \begin{lstlisting}
+% struct default_algebra {
+%     // ...
+%     template< class Fac1, class Fac2 >
+%     struct scale_sum2 {
+%         Fac1 m_fac1;
+%         Fac2 m_fac2;
+%         scale_sum2( Fac1 fac1, Fac2 fac2 ) : m_fac1(fac1), m_fac2(fac2) { }
+%         template< class S1, class S2, class S3 >
+%         void operator()( S1 &s1, const S2 &s2, const S3 &s3 ) const {
+%             s1 = m_fac1 * s2 + m_fac2 * s3;
+%         }
+%     };
+%     // ...
+% };
+% \end{lstlisting}
 
+% [KR]: Rephrased the following paragraph a bit to account for the removal of the previous paragraph
 Many libraries for vector and matrix types provide expression
-templates for the elementary operations. Such libraries do not need an
-own algebra but can be used with the \code{vector_space_algebra} and
-the \code{default_operations} which simply calls the operations
-directly on the matrix or vector type. In this case only odeint
-resizing mechanism has to be adapted.
+templates \cite{veldhuizen,vandervorde} for the elementary operations using operator overload convenience.
+Such libraries do not need to define their own algebra,
+but can instead be used with a default algebra
+and a default operation set included in odeint,
+which simply call the operations directly on the matrix or vector type.
+In this case only the resizing mechanism of odeint has to be adapted for the new types.
 
-We describe odeint adaptation for GPGPU libraries under consideration
-in the paragraphs below. We should mention that odeint now supports
-all of the considered libraries natively. However, providing
-adaptation examples serves our goal of comparing convenience of the
-libraries interfaces.
+We describe the adaptation of odeint for the GPGPU libraries under consideration
+in the following. The adaptions are now part of odeint, thus native support
+for these libraries is available.
+Implementation details such the resizing of vectors is accomplished in a straight-forward manner
+and not further addressed for the sake of conciseness.
+% [KR]: I don't think that we need to justify the discussion with the next sentence. The paper is just about this topic :-)
+%However, providing
+%adaptation examples serves our goal of comparing convenience of the
+%libraries interfaces.
 
 To adapt Thrust to odeint we need to provide both an algebra and
-operations. The algebra should define the \code{for_each} family of
-algorithms. All of these operations look very similar to each other,
-so we only provide \code{for_each3} code here:
+operations. The algebra needs to define the \code{for_each} family of
+algorithms. All of these operations follow the same pattern,
+so we consider \code{for_each3} only:
 \begin{lstlisting}
 struct thrust_algebra {
     template<class StateType1, class StateType2, class StateType3, class Oper>
@@ -367,9 +377,13 @@ struct thrust_algebra {
     }
 };
 \end{lstlisting}
+Here, \code{thrust::make_zip_iterator} is used in combination with \code{make_tuple} 
+to pack several device vector iterators into a single iterable sequence.
+The sequence is then processed by the \code{thrust::for_each} algorithm, applying the function object
+\code{op} to each entry.
 
-The operations that are called in the \code{for_each} family of algorithms are
-defined in \code{thrust_operations} and are actually device functors:
+The operations called via the function object \code{op} defined in \code{thrust_operations}
+and are actually function objects executed on the respective CUDA device:
 \begin{lstlisting}
 struct thrust_operations {
     template<class Fac1 = double, class Fac2 = Fac1>
@@ -387,24 +401,22 @@ struct thrust_operations {
         }
     };
 \end{lstlisting}
-
-As you can see, \code{thrust::make_zip_iterator} is used here to pack several
-device vectors into single iterable sequence. The sequence is then processed by
-the \code{thrust::for_each} algorithm and the device functor which uses
-\code{thrust::get<>} functions to unpack the zip iterator into separate values.
+The device function object uses \code{thrust::get<>} functions to unpack the zip iterator into separate values.
 This approach is heavily used with Thrust and allows to process several vectors
-in single efficient sweep. Adaptation of resizing operations is trivial and is
-omitted here for the sake of conciseness.
+in single efficient sweep. 
+% [KR] The following sentence refers to an implementation detail and is not of importance for the performance, thus I commented it.
+%Adaptation of resizing operations is trivial and is
+%omitted here for the sake of conciseness.
 
 
 Both VexCL and ViennaCL provide convenient expression templates that
 may be directly used with odeint's \code{vector_space_algebra} and
 \code{default_operations}. This combination proved to be 
-effective with VexCL where each expression results in a single
-kernel. For ViennaCL though default operations involving more than two
+effective with VexCL, where each expression results in a single
+kernel. For ViennaCL, however, default operations involving more than two
 terms result in multiple kernel launches.  Moreover, temporary vectors
-are allocated and deallocated for each of such composite operations.
-This results in dramatic decrease of performance, so we had to provide
+are allocated and deallocated for each of such composite operations, resulting in a dramatic decrease of performance.
+To address such problems, ViennaCL provides a kernel generator \cite{tillet:kernel-generator}, which is able to generate
 specialized operations for ViennaCL. These use a custom kernel
 generation mechanism provided by the library.  For example,
 \code{scale_sum2} operation is defined as:
@@ -417,42 +429,39 @@ struct viennacl_operations {
         template<class T1, class T2, class T3>
         void operator()( viennacl::vector<T1> &v1,
                 const viennacl::vector<T2> &v2,
-                const viennacl::vector<T3> &v3
-                ) const
+                const viennacl::vector<T3> &v3) const
         {
             using namespace viennacl;
 
+            // instantiate symbolic types:
             static generator::symbolic_vector    <0, T1>   sym_v1;
             static generator::symbolic_vector    <1, T2>   sym_v2;
             static generator::symbolic_vector    <2, T3>   sym_v3;
             static generator::cpu_symbolic_scalar<3, Fac1> sym_a1;
             static generator::cpu_symbolic_scalar<4, Fac2> sym_a2;
 
+            // run the kernel generation at first call of this function:
             static generator::custom_operation op(
-                    sym_v1 = sym_a1 * sym_v2
-                           + sym_a2 * sym_v3,
-		    "scale_sum2"
-                    );
+                    sym_v1 = sym_a1 * sym_v2 + sym_a2 * sym_v3,
+		    "scale_sum2");
 
-            ocl::enqueue( op(v1,
-                        const_cast< vector<T2>& >(v2),
-                        const_cast< vector<T3>& >(v3),
-                        const_cast< Fac1& >(m_alpha1),
-                        const_cast< Fac2& >(m_alpha2)
-                        ) );
+	    // launch the kernel:
+            ocl::enqueue( op(v1, v2, v3, m_alpha1, m_alpha2) );
         }
     };
     // ...
 };
-\end{lstlisting}
-Here custom kernel is automatically generated from symbolic vector expression
-once and is called whenever the operation is required.  Resizing operations for
-both of OpenCL libraries are trivial and not provided here.
+\end{lstlisting} % [KR]: The const_cast<> was necessary due to an oversight of 'const' in the operator overloads. This is now fixed.
+Here, a custom OpenCL kernel is automatically generated from symbolic vector expression
+in the first call of the \code{operator()} and then reused for all subsequent calls.
 
-
-
+Thus, 
 
 \section{Numerical experiments}
+
+As shown in the previous section, all three GPGPU libraries considered in our comparison
+could be adapted to odeint without getting in contact with low-level CUDA or OpenCL code.
+The purpose of this section is to evaluate the performance of the GPGPU libraries and whether there is a price to pay for the high-level interface.
 
 Typical use cases for solving ODEs on GPUs are large systems of
 coupled ODEs which occur as discretizations of PDEs, or in ODEs
