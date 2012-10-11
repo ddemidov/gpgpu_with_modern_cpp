@@ -1071,25 +1071,64 @@ sparse matrix~-- vector product.
     \label{fig:damped:perf}
 \end{figure}
 
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
+%    \end{center}
+%    \caption{Coupled phase oscillator chain results.}
+%    \label{fig:phase:perf}
+%\end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:phase:perf:tesla}\includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:phase:perf:tahiti}\includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp_tahiti}}
     \end{center}
     \caption{Coupled phase oscillator chain results.}
     \label{fig:phase:perf}
 \end{figure}
 
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
+%    \end{center}
+%    \caption{Disordered Hamiltonian lattice results.}
+%    \label{fig:lattice:perf}
+%\end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:lattice:perf:tesla}\includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:lattice:perf:tahiti}\includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp_tahiti}}
     \end{center}
     \caption{Disordered Hamiltonian lattice results.}
     \label{fig:lattice:perf}
 \end{figure}
 
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
+%    \end{center}
+%    \caption{Lorenz attractor ensemble results.}
+%    \label{fig:lorenz:perf}
+%\end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:lorenz:perf:tesla}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:lorenz:perf:tahiti}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tahiti}}
     \end{center}
     \caption{Lorenz attractor ensemble results.}
     \label{fig:lorenz:perf}
