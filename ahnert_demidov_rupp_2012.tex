@@ -644,10 +644,10 @@ instance. This in principle allows generation of more effective code. The
 the generated kernel:
 \begin{lstlisting}[firstnumber=24]
 void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
-    vector_type &X  = const_cast<vector_type&>( fusion::at_c<0>(x) );
-    vector_type &Y  = const_cast<vector_type&>( fusion::at_c<1>(x) );
-    vector_type &dX = fusion::at_c<0>(dxdt);
-    vector_type &dY = fusion::at_c<1>(dxdt);
+    auto &X  = fusion::at_c<0>(x);
+    auto &Y  = fusion::at_c<1>(x);
+    auto &dX = fusion::at_c<0>(dxdt);
+    auto &dY = fusion::at_c<1>(dxdt);
 
     double eps = offset + amp * cos(omega_d * t);
     viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, omega) );
