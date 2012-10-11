@@ -1039,9 +1039,22 @@ provide hand-written kernels for those; Thrust version of coupled phase
 oscillator chain example needed help of CUSPARSE library for implemetation of
 sparse matrix~-- vector product.
 
+% \begin{figure}
+%     \begin{center}
+%         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
+%     \end{center}
+%     \caption{Damped harmonic oscillator ensemble results.}
+%     \label{fig:damped:perf}
+% \end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:damped:perf:tesla}\includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:damped:perf:tahiti}\includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp_tahiti}}
     \end{center}
     \caption{Damped harmonic oscillator ensemble results.}
     \label{fig:damped:perf}
