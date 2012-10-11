@@ -342,7 +342,9 @@ the state type.
 
 % [KR]: Rephrased the following paragraph a bit to account for the removal of the previous paragraph
 Many libraries for vector and matrix types provide expression
-templates \cite{Veldhuizen:ExpressionTemplates,Vandevoorde:CppTemplates} for the elementary operations using operator overload convenience.
+templates \cite{Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques,
+Vandevoorde:CppTemplates} for the elementary operations using operator overload
+convenience.
 Such libraries do not need to define their own algebra,
 but can instead be used with a default algebra
 and a default operation set included in odeint,
@@ -642,10 +644,10 @@ instance. This in principle allows generation of more effective code. The
 the generated kernel:
 \begin{lstlisting}
 void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
-    vector_type &X  = const_cast<vector_type&>( fusion::at_c<0>(x) );
-    vector_type &Y  = const_cast<vector_type&>( fusion::at_c<1>(x) );
-    vector_type &dX = fusion::at_c<0>(dxdt);
-    vector_type &dY = fusion::at_c<1>(dxdt);
+    auto &X  = fusion::at_c<0>(x);
+    auto &Y  = fusion::at_c<1>(x);
+    auto &dX = fusion::at_c<0>(dxdt);
+    auto &dY = fusion::at_c<1>(dxdt);
 
     double eps = offset + amp * cos(omega_d * t);
     viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, omega) );
@@ -996,31 +998,69 @@ problem size for all of the considered libraries are given in Table~\ref{tab:abs
     \label{fig:damped:perf}
 \end{figure}
 
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
+%    \end{center}
+%    \caption{Coupled phase oscillator chain results.}
+%    \label{fig:phase:perf}
+%\end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:phase:perf:tesla}\includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:phase:perf:tahiti}\includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp_tahiti}}
     \end{center}
     \caption{Coupled phase oscillator chain results.}
     \label{fig:phase:perf}
 \end{figure}
 
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
+%    \end{center}
+%    \caption{Disordered Hamiltonian lattice results.}
+%    \label{fig:lattice:perf}
+%\end{figure}
+
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
+	\subfigure[
+	NVIDIA Tesla C2070.
+	]{\label{fig:lattice:perf:tesla}\includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp_tesla}}
+	\subfigure[
+	AMD Radeon HD 7970 (Tahiti).
+	]{\label{fig:lattice:perf:tahiti}\includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp_tahiti}}
     \end{center}
     \caption{Disordered Hamiltonian lattice results.}
     \label{fig:lattice:perf}
 \end{figure}
 
+
+%\begin{figure}
+%    \begin{center}
+%        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
+%    \end{center}
+%    \caption{Lorenz attractor ensemble results.}
+%    \label{fig:lorenz:perf}
+%\end{figure}
+
 % \begin{figure}
 %     \begin{center}
-%         \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
+% 	\subfigure[
+% 	NVIDIA Tesla C2070.
+% 	]{\label{fig:lorenz:perf:tesla}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tesla}}
+% 	\subfigure[
+% 	AMD Radeon HD 7970 (Tahiti).
+% 	]{\label{fig:lorenz:perf:tahiti}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tahiti}}
 %     \end{center}
 %     \caption{Lorenz attractor ensemble results.}
 %     \label{fig:lorenz:perf}
 % \end{figure}
-
-
 
 In general, all our experiments show up to $10\times$ to $20\times$ acceleration
 when run on a GPU as compared to the CPU path. This is the expected acceleration

@@ -55,11 +55,11 @@ struct oscillator
 
     void operator()( const state_type &x , state_type &dxdt , value_type t )
     {
-        viennacl::vector< value_type > &X = const_cast<viennacl::vector<value_type>&>(fusion::at_c< 0 >( x ));
-        viennacl::vector< value_type > &Y = const_cast<viennacl::vector<value_type>&>(fusion::at_c< 1 >( x ));
+        auto &X = fusion::at_c< 0 >( x );
+        auto &Y = fusion::at_c< 1 >( x );
 
-        viennacl::vector< value_type > &dX = fusion::at_c< 0 >( dxdt );
-        viennacl::vector< value_type > &dY = fusion::at_c< 1 >( dxdt );
+        auto &dX = fusion::at_c< 0 >( dxdt );
+        auto &dY = fusion::at_c< 1 >( dxdt );
 
         value_type eps = m_offset + m_amp * cos( m_omega_d * t );
 
