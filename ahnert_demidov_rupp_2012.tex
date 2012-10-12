@@ -223,6 +223,9 @@ discretization of the spatial coordinates.
 % [KR] This is probably the most common case
 % [KA] PDEs have very often other methods then the methods here
 % Denis, or Karl: Can you add reference to PDEs?
+% [DD] Sorry, I've never used anything but simple Euler method for the purpose
+% of solving non-stationary PDEs. Usually implicit methods show better
+% stability and require less time steps.
 
 
 Odeint solves % [KR]: 'usually solves' is a bit too fuzzy. Does it support other types (implicit ODEs, higher-order ODEs)? If yes, we should state that here.  It is advisable to define the scope properly in a SIAM Journal. %[KA] implicit ODEs are differential algebraic equations, which can not be solved odeint, high order ODEs can always be transformed to be first-order. But odeint only solves the IVP.
