@@ -240,8 +240,19 @@ $t$ is the independent variable. We will refer to $t$ as the time throughout the
 denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$ is
 the system function and defines the ODE.
 
+%% [KR]: This paragraph is mostly a duplication of what has been said in the introduction...
+Typical use cases for solving ODEs on GPUs are large systems of
+coupled ODEs which occur as discretizations of PDEs, or in ODEs
+defined on lattices or graphs. Another use case are parameter studies,
+where one wants to study the dependence of an ODE on some
+parameters. Here, one creates one large ODE which consists of many
+small uncoupled ODEs, each with a different parameter set. This one
+large system is then solved at once, hence all small ODEs are solved
+simultaneously.
+
+
 Numerous methods for solving ODEs exist \cite{Press-92,HairerSolvingODEI,
-  HairerSolvingODEII}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer), % These are the standard books
+  HairerSolvingODEII}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer), % [KA] These are the standard books
 which are usually categorized in the field of numerical analysis.
 Odeint
 implements the most prominent of these methods, for example the
@@ -283,7 +294,7 @@ class euler {
     }
 };
 \end{lstlisting}
-The state type, the algebra, and the operations enter the euler method  % [KR]: It is not yet defined what a 'stepper'... [KA±: right
+The state type, the algebra, and the operations enter the euler method  % [KR]: It is not yet defined what a 'stepper'... [KA]: right
 as template parameter, hence they are exchangeable. The function object
 \code{ode} represents the ODE and must be provided by the user. It calculates
 the right hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in
@@ -295,11 +306,47 @@ In the code-snippet above, the call to \code{for_each3} is thus equivalent to th
  x = 1.0 * x + dt * m_dxdt
 \end{lstlisting}
 which is just Eq.~\eqref{eq:euler}, since \code{m_dxdt} holds the values of $f(x(t), t)$.
-The main reason for the separation of algebra and operations is that all arithmetic calculations and
-iterations are completely encapsulated into the algebra and the
-operations which must be provided by the user. Note, that algebra and
-the operations must be chosen such that they interact correctly with
-the state type.
+Each of these algebras is a class consisting of \code{for_each1},
+\dots, \code{for_eachN} methods. For example the \code{for_each3}
+method in the \code{range_algebra} -- the default algebra for most vector types -- is similar to
+\begin{lstlisting}
+struct range_algebra {
+    // ...
+    template< class R1, class R2, class R3, class Op >
+    void for_each3(R1 &r1, R2 &r2, R3 &r3, Op op) {
+        auto it1 = boost::begin(r1);
+        auto it2 = boost::begin(r2);
+        auto it3 = boost::begin(r3);
+        while( it1 != boost::end(r1) ) op(*it1++, *it2++; *it3++);
+    }
+    // ...
+};
+\end{lstlisting}
+The operations are represented by a struct with public member classes defining the
+operations which are used by the algebras. There is only one default
+operations class implementation in odeint
+\begin{lstlisting}
+struct default_algebra {
+    // ...
+    template< class Fac1, class Fac2 >
+    struct scale_sum2 {
+        Fac1 m_fac1;
+        Fac2 m_fac2;
+        scale_sum2( Fac1 fac1, Fac2 fac2 ) : m_fac1(fac1), m_fac2(fac2) { }
+        template< class S1, class S2, class S3 >
+        void operator()( S1 &s1, const S2 &s2, const S3 &s3 ) const {
+            s1 = m_fac1 * s2 + m_fac2 * s3;
+        }
+    };
+    // ...
+};
+\end{lstlisting}
+
+The main reason for the separation of algebra and operations is that
+all arithmetic calculations and iterations are completely encapsulated
+into the algebra and the operations which must be provided by the
+user. Note, that algebra and the operations must be chosen such that
+they interact correctly with the state type.
 
 % [KA]: Maybe the paragraph above explains the functioning a bit better.
 % The paragraph is not finished and
@@ -320,49 +367,6 @@ the state type.
 % as an immediate example?
 
 
-% Odeint provides a set of predefined algebras, which includes:
-% \begin{remunerate}
-% \item \code{range_algebra}: default algebra which works on Boost.Ranges;
-% \item \code{array_algebra}: specialized algebra for \code{boost::array};
-% \item \code{fusion_algebra}: algebra for compile-time sequences like
-%   \code{boost::fusion::vector}, \code{std::tuple}, etc.;
-% \item \code{vector_space_algebra}: algebra for vector space types that
-%   provide overloaded arithmetic operators for elementwise operations.
-% \end{remunerate}
-% Each of these algebras is a class consisting of \code{for_each1},
-% \dots, \code{for_eachN} methods. For example the \code{for_each3}
-% method in the \code{range_algebra} is similar to
-% \begin{lstlisting}
-% struct range_algebra {
-%     // ...
-%     template< class R1, class R2, class Op >
-%     void for_each2(R1 &r1, R2 &r2, Op op) {
-%         auto it1 = boost::begin(r1);
-%         auto it2 = boost::begin(r2);
-%         while(it1 != boost::end(r1)) op( *it1++, *it2++ );
-%     }
-%     // ...
-% };
-% \end{lstlisting}
-% The operations are represented by a struct with public member classes defining the
-% operations which are used by the algebras. There is only one default
-% operations class implementation in odeint
-% \begin{lstlisting}
-% struct default_algebra {
-%     // ...
-%     template< class Fac1, class Fac2 >
-%     struct scale_sum2 {
-%         Fac1 m_fac1;
-%         Fac2 m_fac2;
-%         scale_sum2( Fac1 fac1, Fac2 fac2 ) : m_fac1(fac1), m_fac2(fac2) { }
-%         template< class S1, class S2, class S3 >
-%         void operator()( S1 &s1, const S2 &s2, const S3 &s3 ) const {
-%             s1 = m_fac1 * s2 + m_fac2 * s3;
-%         }
-%     };
-%     // ...
-% };
-% \end{lstlisting}
 
 % [KR]: Rephrased the following paragraph a bit to account for the removal of the previous paragraph
 Many libraries for vector and matrix types provide expression
@@ -492,26 +496,11 @@ in the first call of the \code{operator()} and then reused for all subsequent ca
 %
 \section{Numerical Experiments}
 
-As shown in the previous section, all three GPGPU libraries considered in our comparison
-could be adapted to odeint without getting in contact with low-level CUDA or OpenCL code.
-The purpose of this section is to evaluate the performance of the GPGPU libraries and whether there is a price to pay for the high-level interface.
-
-%% [KR]: This paragraph is mostly a duplication of what has been said in the introduction...
-%Typical use cases for solving ODEs on GPUs are large systems of
-%coupled ODEs which occur as discretizations of PDEs, or in ODEs
-%defined on lattices or graphs. Another use case are parameter studies,
-%where one wants to study the dependence of an ODE on some
-%parameters. Here, one creates one large ODE which consists of many
-%small uncoupled ODEs, each with a different parameter set. This one
-%large system is then solved at once, hence all small ODEs are solved
-%simultaneously.
-
-% [KA]: The paragraph can be removed
-In this section we will show four examples and study their
-performance. Two examples are of the first type, namely a
-one-dimensional lattice of simple phase oscillators and a
-two-dimensional Hamiltonian lattice. The other two examples are
-parameter studies.
+As shown in the previous section, all three GPGPU libraries considered
+in our comparison could be adapted to odeint without getting in
+contact with low-level CUDA or OpenCL code.  The purpose of this
+section is to evaluate the performance of the GPGPU libraries and
+whether there is a price to pay for the high-level interface.
 
 
 
