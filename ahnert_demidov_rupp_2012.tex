@@ -312,6 +312,10 @@ the state type.
 % [KA]: Hmm, I think the listing for the algebras is not needed, but I think
 %       a implementation of for_each and scale_sum is interesting for the reader.
 
+% [DD]: May be move the for_each and scale_sum implementations right after the
+% sentence 'The call of \code{for_each3} iterates over all elements...' above
+% as an immediate example?
+
 
 % Odeint provides a set of predefined algebras, which includes:
 % \begin{remunerate}
@@ -490,14 +494,14 @@ could be adapted to odeint without getting in contact with low-level CUDA or Ope
 The purpose of this section is to evaluate the performance of the GPGPU libraries and whether there is a price to pay for the high-level interface.
 
 %% [KR]: This paragraph is mostly a duplication of what has been said in the introduction...
-Typical use cases for solving ODEs on GPUs are large systems of
-coupled ODEs which occur as discretizations of PDEs, or in ODEs
-defined on lattices or graphs. Another use case are parameter studies,
-where one wants to study the dependence of an ODE on some
-parameters. Here, one creates one large ODE which consists of many
-small uncoupled ODEs, each with a different parameter set. This one
-large system is then solved at once, hence all small ODEs are solved
-simultaneously.
+%Typical use cases for solving ODEs on GPUs are large systems of
+%coupled ODEs which occur as discretizations of PDEs, or in ODEs
+%defined on lattices or graphs. Another use case are parameter studies,
+%where one wants to study the dependence of an ODE on some
+%parameters. Here, one creates one large ODE which consists of many
+%small uncoupled ODEs, each with a different parameter set. This one
+%large system is then solved at once, hence all small ODEs are solved
+%simultaneously.
 
 % [KA]: The paragraph can be removed
 In this section we will show four examples and study their
@@ -627,7 +631,7 @@ For the ViennaCL version of the damped harmonic oscillator ensemble example a
 single type. Individual components are instances of the
 \code{viennacl::vector<double>} type.
 
-ViennaCL, as well as VexCL, supports expression templates for a limited set of    %[KR]: Denis, isn't VexCL supporting arbitrary vector operations? Are you referring with 'as well as VexCL' to expression templates only?
+ViennaCL supports expression templates for a limited set of    %[KR]: Denis, isn't VexCL supporting arbitrary vector operations? Are you referring with 'as well as VexCL' to expression templates only? 
 vector operations (closely corresponding to Level 1 BLAS routines).
 Thus, one can use similar code as for the first version of VexCL presented above,
 yet obtain suboptimal performance due to two kernel launches per step.
@@ -653,12 +657,12 @@ for the oscillator implementation usnig ViennaCL is given by
 %
 % [KR] Stripped this snippet, because symbolic types have been used in Section 2 already.
 \begin{lstlisting}
-    oscillator(double omega, double amp, double offset, double omega_d)
-        : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
-          op(sym_dx = sym_eps * sym_x + sym_omega * sym_y,
-             sym_dy = sym_eps * sym_y - sym_omega * sym_x,
-             "oscillator")
-    { }
+oscillator::oscillator(double omega, double amp, double offset, double omega_d)
+    : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
+      op(sym_dx = sym_eps * sym_x + sym_omega * sym_y,
+	 sym_dy = sym_eps * sym_y - sym_omega * sym_x,
+	 "oscillator")
+{ }
 \end{lstlisting}
 %
 %    void operator()( const state_type &x, state_type &dxdt, double t );
@@ -671,7 +675,10 @@ carries explicit information of whether two terminals represent the same vector
 instance. This in principle allows generation of more effective code. The
 \code{operator()} unpacks the \code{fusion::vector} container and launches
 the generated kernel:
+% [DD]: Added definition for the state_type:
 \begin{lstlisting}
+typedef fusion::vector<viennacl::vector<double>, viennacl::vector<double>> state_type;
+
 void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
     auto &X  = fusion::at_c<0>(x);
     auto &Y  = fusion::at_c<1>(x);
@@ -694,7 +701,7 @@ void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
 As a second example we consider a chain of coupled phase
 oscillators. A phase oscillator describes the dynamics of an
 autonomous oscillator \cite{PhaseOscillator}. Its evolution is
-governed by the phase $\varphi$, which is a $2\pi$ -eriodic variable growing linearly
+governed by the phase $\varphi$, which is a $2\pi$~-- periodic variable growing linearly
 in time, i.e.~$\dot{\varphi} = \omega$, where $\omega$ is the phase
 velocity. The amplitude of the oscillator does not occur in this
 equation, so interesting behavior can only be observed if many
@@ -704,6 +711,9 @@ formation, phase chaos, or oscillation death
 \cite{Synchronization-Pikovsky,Kuramoto-84}. It is a prominent example
 of an emergent system where the coupled system shows a more complex
 behavior than its constitutes.
+
+% [DD]: Is it ok to say that periodic variable grows linearly in time? Is it
+% the amplitude that grows in this case?
 
 
 The concrete example we analyze here is a chain of nearest-neighbor
@@ -866,7 +876,10 @@ Thrust with the CUSPARSE library in order to implement this example. CUSPARSE   
 contains a set of basic linear algebra subroutines used for handling sparse
 matrices and is included in the CUDA Toolkit distribution as well as in the Thrust
 library. As an alternative, the open-source Cusp library \cite{CuspRef} for sparse linear algebra
-and graph computations on CUDA could have been used, yet we decided to go with the first option. % [KA] : is it neccessary to mention Cusp?
+and graph computations on CUDA could have been used, yet we decided to go with the first option.
+
+% [KA] : is it neccessary to mention Cusp?
+% [DD] : I think not. This is not the only alternative.
 
 For better comparison, all libraries considered in our study use the hybrid
 ELL format for storing the sparse matrix, which is one of the most efficient
@@ -910,7 +923,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-ViennaCL does not supports elementwise vector products and only provides
+ViennaCL does not support elementwise vector products and only provides
 math functions using the kernel generator. Therefore,
 \code{operator()} had to be split into two parts: the first part computes
 the sparse matrix-vector product, while the second part uses a hand-coded kernel to
@@ -996,10 +1009,16 @@ All the libraries tested in this paper allow for the use of both CPU and
 GPU devices.  Thrust supports an OpenMP-based execution on the CPU, which is enabled
 by a compilation switch, while OpenCL libraries natively support CPUs provided that the respective runtime is installed.
 The timings provided were obtained for two GPUs, namely an Nvidia Tesla C2070 and
-an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU.      % [KR]: Which SDK was used for the CPU computations? We should definitely consider a comparison of Intel vs. AMD SDKs. There could be quite a number of interesting differences.
+an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU.
 All reported values are median values of execution times taken for ten runs.
 %For each of the experiments, 10 runs were made and median time was selected as a
 %representative value.
+
+% [KR]: Which SDK was used for the CPU computations? We should definitely
+% consider a comparison of Intel vs. AMD SDKs. There could be quite a number of
+% interesting differences.
+
+% [DD]: I am running the experiments now, will add data when its ready.
 
 Figures \ref{fig:damped:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.
@@ -1154,17 +1173,26 @@ kernels when run on a CPU device. Moreover, both of the libraries are primarily
 aimed at GPU performance and do not use CPU-specific optimizations, such as
 employing OpenCL vector data types that facilitate use of SSE instructions.
 Still, the overhead of OpenCL for small problem sizes is tremendous, if not embarrasing,
-hence OpenCL cannot be considered to be a competitive CPU programming model for a large area of applications in its present state. % [KR]: Please let me know whether you agree with this sentence. It is a rather bold statement, yet the only reasonable one when looking at the benchmark results. [KA]: I think this statement is to hard.
+hence OpenCL cannot be considered to be a competitive CPU programming model for a large area of applications in its present state.
+
+% [KR]: Please let me know whether you agree with this sentence. It is a rather
+% bold statement, yet the only reasonable one when looking at the benchmark
+% results.
+
+% [KA]: I think this statement is to hard.
 
 Finally, results for multi-GPU usage as provided by VexCL in a transparent way are considered.
 \figref{fig:scaling} shows scaling results for up to three Tesla C2070 GPUs.
 It can be seen that a notable speed-up of several GPUs over a single GPU is only obtained for problem sizes
 larger than $10^6$.
-\figref{fig:scaling:damped} also shows scaling results for the system with three Tahiti GPUs. % [KR]: What about results for Tahiti? Either include results for all examples, or for none.
+\figref{fig:scaling:damped} also shows scaling results for the system with three Tahiti GPUs.
 It seems that AMDs OpenCL
 implementation does not work very well with multiple GPUs employed. Still,
 combined memory of several GPUs allows to solve proportionally larger problems
 on the same system.
+
+% [KR]: What about results for Tahiti? Either include results for all examples, or for none.
+% [DD]: I'll add the rest of the Tahiti results.
 
 % [KR]:
 \begin{figure}
