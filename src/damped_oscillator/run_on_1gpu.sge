@@ -6,14 +6,18 @@
 #$ -l cores=4,tesla_2070=1
 #$ -t 1:10
 
+thrust_exe=thrust_oscillator
+vexcl_exe=vexcl_oscillator
+viennacl_exe=viennacl_oscillator
+
 export OCL_PLATFORM=NVIDIA
 export OCL_DEVICE=2070
 export OCL_MAX_DEVICES=1
 
 # warming runs
-./thrust_oscillator
-./vexcl_oscillator
-./viennacl_oscillator
+./${thrust_exe}
+./${vexcl_exe}
+./${viennacl_exe}
 
 rm -f thrust_gpu_${SGE_TASK_ID}.dat
 rm -f vexcl_1gpu_${SGE_TASK_ID}.dat
@@ -23,13 +27,13 @@ for ((a=256;a<=4194304;a*=2)); do
     echo "$a "
 
     echo -n "$a " >> thrust_gpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o thrust_gpu_${SGE_TASK_ID}.dat -a ./thrust_oscillator $a > /dev/null
+    /usr/bin/time -f %e -o thrust_gpu_${SGE_TASK_ID}.dat -a ./${thrust_exe} $a > /dev/null
 
     echo -n "$a " >> vexcl_1gpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o vexcl_1gpu_${SGE_TASK_ID}.dat -a ./vexcl_oscillator $a > /dev/null
+    /usr/bin/time -f %e -o vexcl_1gpu_${SGE_TASK_ID}.dat -a ./${vexcl_exe} $a > /dev/null
 
     echo -n "$a " >> viennacl_gpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./viennacl_oscillator $a > /dev/null
+    /usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
 
     echo ""
 done
