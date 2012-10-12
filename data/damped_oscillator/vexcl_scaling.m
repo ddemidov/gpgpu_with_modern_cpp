@@ -11,7 +11,7 @@ fcolor = {'w', 'w', 'w', 'k', 'k', 'k'};
 msize  = 4;
 
 figure(1)
-set(gca, 'FontSize', 18);
+set(gca, 'FontSize', 26);
 
 idx = 0;
 for t = test
@@ -38,8 +38,7 @@ xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T(1 GPU) / T');
-h = legend(lgnd, 'location', 'NorthWest');
-set(h, 'FontSize', 18);
+legend(lgnd, 'location', 'NorthWest');
 legend boxoff
 axis square
 
