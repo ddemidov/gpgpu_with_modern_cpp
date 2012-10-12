@@ -55,7 +55,7 @@ Argonne National Laboratory,
     We found that OpenCL and CUDA work equally well for problems
     of large sizes, while OpenCL has higher overhead for smaller problems.
     Furthermore, we show that modern high-level libraries allow to effectively
-    use the computational resources of manycore GPUs or multicore CPUs without much
+    use the computational resources of many-core GPUs or multi-core CPUs without much
     knowledge of the underlying technologies.
 \end{abstract}
 
@@ -141,7 +141,7 @@ are Thrust, VexCL, and ViennaCL:
         http://thrust.github.com }{ http://thrust.github.com }} which resembles
         the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
         high-level interface greatly enhances developer productivity while
-        enabling performance portability between GPUs and multicore CPUs.
+        enabling performance portability between GPUs and multi-core CPUs.
         Thrust is distributed with the NVIDIA CUDA Toolkit since version 4.1.
     \item[VexCL] is a vector expression template
         library\footnote{ \href{ https://github.com/ddemidov/vexcl }{
@@ -217,7 +217,7 @@ such diverse fields as biology
 \cite{izhikevich_dynamical_2006}, chemistry
 \cite{atkins_physical_2001}, and social sciences
 \cite{Helbing01}. Furthermore, ODEs are also encountered in the
-context of the numerical solution of nonstationary partial
+context of the numerical solution of non-stationary partial
 differential equations (PDEs), where they occur after the
 discretization of the spatial coordinates.
 % [KR] This is probably the most common case
@@ -257,7 +257,7 @@ which are usually categorized in the field of numerical analysis.
 Odeint
 implements the most prominent of these methods, for example the
 classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods,
-multistep methods (Adams-Bashforth-Moulton), symplectic
+multi-step methods (Adams-Bashforth-Moulton), symplectic
 Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
 implicit Euler). All of these methods work iteratively, starting
 from a given initial value $x(t_0)$ to calculate the next value
@@ -294,7 +294,7 @@ class euler {
     }
 };
 \end{lstlisting}
-The state type, the algebra, and the operations enter the euler method  % [KR]: It is not yet defined what a 'stepper'... [KA]: right
+The state type, the algebra, and the operations enter the Euler method  % [KR]: It is not yet defined what a 'stepper'... [KA]: right
 as template parameter, hence they are exchangeable. The function object
 \code{ode} represents the ODE and must be provided by the user. It calculates
 the right hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in
@@ -396,8 +396,8 @@ algorithms. All of these operations follow the same pattern,
 so we consider \code{for_each3} only:
 \begin{lstlisting}
 struct thrust_algebra {
-    template<class StateType1, class StateType2, class StateType3, class Oper>
-    static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Oper op) {
+    template<class StateType1, class StateType2, class StateType3, class Op>
+    static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Op op) {
         thrust::for_each(
                 thrust::make_zip_iterator( thrust::make_tuple(
  		    s1.begin(), s2.begin(), s3.begin() ) ),
@@ -609,9 +609,9 @@ struct oscillator {
 
 However, the drawback of this variant is that it leads
 to two kernel launches (one per each vector assignment), resulting in
-suboptimal performance. A direct use of multivector arithmetic
+suboptimal performance. A direct use of multi-vectors arithmetic
 operations is not possible due to mixed components in the right hand side expressions.
-But, the additional kernel launch can be eliminated in VexCL by assigning a tuple of expressions to a multivector.
+But, the additional kernel launch can be eliminated in VexCL by assigning a tuple of expressions to a multi-vector.
 The required notation is only slightly more cumbersome than the above variant:
 \begin{lstlisting}[firstnumber=11]
         double eps = offset + amp * cos(omega_d * t);
@@ -632,7 +632,7 @@ Similar to VexCL, ViennaCL offers a mechanism to get rid of the second kernel la
 with the help of the ViennaCL kernel generator interface, which supports kernels with single and multiple operations.
 Here, OpenCL kernels are generated from symbolic expressions involving explicit symbolic types,
 which is a bit more cumbersome than with VexCL. In particular, the constructor
-for the oscillator implementation usnig ViennaCL is given by
+for the oscillator implementation using ViennaCL is given by
 %\begin{lstlisting}
 %typedef viennacl::vector<double> vector_type;
 %typedef fusion::vector<vector_type, vector_type> state_type;
@@ -916,7 +916,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-ViennaCL does not support elementwise vector products and only provides
+ViennaCL does not support element-wise vector products and only provides
 math functions using the kernel generator. Therefore,
 \code{operator()} had to be split into two parts: the first part computes
 the sparse matrix-vector product, while the second part uses a hand-coded kernel to
@@ -1001,7 +1001,7 @@ https://github.com/ddemidov/vexcl\_odeint\_paper } }.
 All the libraries tested in this paper allow for the use of both CPU and
 GPU devices.  Thrust supports an OpenMP-based execution on the CPU, which is enabled
 by a compilation switch, while OpenCL libraries natively support CPUs provided that the respective runtime is installed.
-The timings provided were obtained for two GPUs, namely an Nvidia Tesla C2070 and
+The timings provided were obtained for two GPUs, namely an NVIDIA Tesla C2070 and
 an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU.
 All reported values are median values of execution times taken for ten runs.
 %For each of the experiments, 10 runs were made and median time was selected as a
@@ -1115,7 +1115,7 @@ which is mostly due to the additional kernel management logic required by the Op
 
 Performance-wise, all of the considered libraries are close to each other when
 run on a GPU.  Thrust performs slightly better in most cases except for the phase oscillator chain example,
-where the permutation iterators require the use of an auxilary index vector.
+where the permutation iterators require the use of an auxiliary index vector.
 VexCL and ViennaCL are in general slower than Thrust by a few percent, which is usually negligible in practice.
 Apparently, the CUSPARSE implementation of the sparse matrix-vector product is more efficient than that of the OpenCL
 libraries, since VexCL and ViennaCL are slower than Thrust/CUSPARSE combination
@@ -1158,14 +1158,14 @@ The only exception is again the phase oscillator test, where ViennaCL outperform
 
 
 The difference between Thrust and the OpenCL libraries can be explained by the fact
-that Thrust uses an OpenMP backend when run on a CPU. Thus, it does not have any
+that Thrust uses an OpenMP back end when run on a CPU. Thus, it does not have any
 overhead such as OpenCL initialization and kernel compilation.  The gap
-between OpenCL libraries may be attributed to the different workgroup sizes
+between OpenCL libraries may be attributed to the different work-group sizes
 used in their kernels and the fact that VexCL generates slightly different
 kernels when run on a CPU device. Moreover, both of the libraries are primarily
 aimed at GPU performance and do not use CPU-specific optimizations, such as
 employing OpenCL vector data types that facilitate use of SSE instructions.
-Still, the overhead of OpenCL for small problem sizes is tremendous, if not embarrasing,
+Still, the overhead of OpenCL for small problem sizes is tremendous, if not embarrassing,
 hence OpenCL cannot be considered to be a competitive CPU programming model for a large area of applications in its present state.
 
 % [KR]: Please let me know whether you agree with this sentence. It is a rather
@@ -1244,7 +1244,7 @@ and can be integrated without a lot of effort.
 The OpenCL libraries we looked at demonstrated that they are able to
 provide more convenient interface for a scientific programmer than a direct
 implementation in CUDA or OpenCL.
-VexCL has a richer set of elementwise vector operations and allows for the
+VexCL has a richer set of element-wise vector operations and allows for the
 shortest implementations in the context of ODEs considered in this work.
 ViennaCL required a few additional lines of code including small custom OpenCL kernels for our examples.
 Still, this extra effort is acceptable considering that the library's focus is on sparse linear systems solvers,
