@@ -209,16 +209,23 @@ users.
 
 Ordinary differential equations play a major role in many scientific
 disciplines. They occur naturally in the context of mechanical
-systems, like granular and molecular dynamics. In fact, the Newtonian
-and Hamiltonian mechanics are formulated as ODEs.
-Many other applications can be found in such diverse
-fields as biology and neuroscience, chemistry, and social sciences. % [KR] Citations required here!
-Furthermore, ODEs are also encountered in the context of the numerical solution of nonstationary partial
-differential equations (PDEs), where they occur after the discretization of the spatial coordinates.
+systems, like granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the Newtonian
+and Hamiltonian mechanics are formulated as ODEs
+\cite{landau_mechanics_1976}.  Many other applications can be found in
+such diverse fields as biology
+\cite{brauer_mathematical_2001,Murray-93} and neuroscience
+\cite{izhikevich_dynamical_2006}, chemistry
+\cite{atkins_physical_2001}, and social sciences
+\cite{Helbing01}. Furthermore, ODEs are also encountered in the
+context of the numerical solution of nonstationary partial
+differential equations (PDEs), where they occur after the
+discretization of the spatial coordinates.
 % [KR] This is probably the most common case
 % [KA] PDEs have very often other methods then the methods here
+% Denis, or Karl: Can you add reference to PDEs?
 
-Odeint solves % [KR]: 'usually solves' is a bit too fuzzy. Does it support other types (implicit ODEs, higher-order ODEs)? If yes, we should state that here.  It is advisable to define the scope properly in a SIAM Journal. %[KA] implicit ODEs are differential algebra equations, which can not be solved odeint, high order ODEs can always be transformed to be first-order. But odeint only solves the IVP.
+
+Odeint solves % [KR]: 'usually solves' is a bit too fuzzy. Does it support other types (implicit ODEs, higher-order ODEs)? If yes, we should state that here.  It is advisable to define the scope properly in a SIAM Journal. %[KA] implicit ODEs are differential algebraic equations, which can not be solved odeint, high order ODEs can always be transformed to be first-order. But odeint only solves the IVP.
 the initial value problem (IVP) of ordinary differential equations.
 \begin{equation}
 \frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) =
@@ -230,8 +237,8 @@ $t$ is the independent variable. We will refer to $t$ as the time throughout the
 denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$ is
 the system function and defines the ODE.
 
-Numerous methods for solving ODEs exist \cite{HairerSolvingODEI,
-  HairerSolvingODEII, HairerGeometricNumericalIntegration2006}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer), % These are the standard books
+Numerous methods for solving ODEs exist \cite{Press-92,HairerSolvingODEI,
+  HairerSolvingODEII}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer), % These are the standard books
 which are usually categorized in the field of numerical analysis.
 Odeint
 implements the most prominent of these methods, for example the
@@ -700,7 +707,7 @@ behavior than its constitutes.
 
 
 The concrete example we analyze here is a chain of nearest-neighbor
-coupled phase oscillators:
+coupled phase oscillators \cite{Cohen-Rand-Holmes-82}:
 \begin{equation} \label{eq:phasesystem}
     \dot{\varphi}_i = \omega_i + \sin( \varphi_{i+1} - \varphi_i) + \sin( \varphi_i
     - \varphi_{i-1}).
@@ -826,8 +833,8 @@ struct phase_oscillators {
 \subsection{Disordered Hamiltonian Lattice}
 
 
-Another example for our performance and usage study is a strongly
-nonlinear disordered Hamiltonian lattice. Its equations of motion are
+Another example for our performance and usage study is a 
+nonlinear disordered Hamiltonian lattice\cite{mulansky_scaling_2012}. Its equations of motion are
 governed by
 \begin{equation}
 \dot{q}_{i,j} = p_{i,j}, \quad \quad
@@ -838,7 +845,7 @@ Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discrete Laplacian
 $\Delta_d
 q_{i,j}=q_{i+1,j}+q_{i-1,j}+q_{i,j+1}+q_{i,j-1}-4q_{i,j}$. Such
 systems are widely used in theoretical physics to study phenomena
-like Anderson localization or thermalization.  % [KR]: Add references here.
+like Anderson localization \cite{Sheng-06} or thermalization \cite{FPUScholarpedia}. 
 
 An important property of \eqref{eq:disordered_ham} is its Hamiltonian
 nature. It can be obtained from the Hamilton equations and it can be
@@ -846,7 +853,7 @@ shown that the energy and phase volume are conserved during the time
 evolution. To account for these properties, a special class of solvers
 exists, namely symplectic solvers. Odeint implements three different
 variants of such solvers, all being of the Runge-Kutta-Nystr\"om
-type. The implementation of this solvers requires only the second part
+type \cite{HairerGeometricNumericalIntegration2006,Leimkuhler-Reich-04}. The implementation of this solvers requires only the second part
 of \eqref{eq:disordered_ham} with $\dot{p}_{i,j}$ to be specified by
 the user.
 
