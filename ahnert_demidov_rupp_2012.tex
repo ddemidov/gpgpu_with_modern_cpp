@@ -306,6 +306,7 @@ In the code-snippet above, the call to \code{for_each3} is thus equivalent to th
  x = 1.0 * x + dt * m_dxdt
 \end{lstlisting}
 which is just Eq.~\eqref{eq:euler}, since \code{m_dxdt} holds the values of $f(x(t), t)$.
+% [KA] I put the paragraph about algebra and reference example again into the text. I think it is ok to have them here, altough later we will show other implementations.
 Each of these algebras is a class consisting of \code{for_each1},
 \dots, \code{for_eachN} methods. For example the \code{for_each3}
 method in the \code{range_algebra} -- the default algebra for most vector types -- is similar to
