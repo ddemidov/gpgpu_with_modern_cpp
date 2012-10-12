@@ -6,28 +6,44 @@
 #$ -l cores=4
 #$ -t 1:10
 
-export OCL_PLATFORM=AMD
+thrust_exe=thrust_lorenz_openmp
+vexcl_exe=vexcl_lorenz
+viennacl_exe=viennacl_lorenz
 
 # warming run
-./thrust_lorenz_openmp
-./vexcl_lorenz
-./viennacl_lorenz
+./${thrust_exe}
+OCL_PLATFORM=AMD ./${vexcl_exe}
+OCL_PLATFORM=AMD ./${viennacl_exe}
+OCL_PLATFORM=Intel ./${vexcl_exe}
+OCL_PLATFORM=Intel ./${viennacl_exe}
 
 rm -f thrust_cpu_${SGE_TASK_ID}.dat
-rm -f vexcl_cpu_${SGE_TASK_ID}.dat
-rm -f viennacl_cpu_${SGE_TASK_ID}.dat
+rm -f vexcl_cpu_amd_${SGE_TASK_ID}.dat
+rm -f viennacl_cpu_amd_${SGE_TASK_ID}.dat
+rm -f vexcl_cpu_intel_${SGE_TASK_ID}.dat
+rm -f viennacl_cpu_intel_${SGE_TASK_ID}.dat
 
 for ((a=256;a<=4194304;a*=2)); do
     echo "$a"
 
     echo -n "$a " >> thrust_cpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o thrust_cpu_${SGE_TASK_ID}.dat -a ./thrust_lorenz_openmp $a > /dev/null
+    /usr/bin/time -f %e -o thrust_cpu_${SGE_TASK_ID}.dat -a ./${thrust_exe} $a > /dev/null
 
-    echo -n "$a " >> vexcl_cpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o vexcl_cpu_${SGE_TASK_ID}.dat -a ./vexcl_lorenz $a > /dev/null
+    export OCL_PLATFORM=AMD
 
-    echo -n "$a " >> viennacl_cpu_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o viennacl_cpu_${SGE_TASK_ID}.dat -a ./viennacl_lorenz $a > /dev/null
+    echo -n "$a " >> vexcl_cpu_amd_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o vexcl_cpu_${SGE_TASK_ID}.dat -a ./${vexcl_exe} $a > /dev/null
+
+    echo -n "$a " >> viennacl_cpu_amd_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_cpu_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
+
+    export OCL_PLATFORM=Intel
+
+    echo -n "$a " >> vexcl_cpu_intel_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o vexcl_cpu_intel_${SGE_TASK_ID}.dat -a ./${vexcl_exe} $a > /dev/null
+
+    echo -n "$a " >> viennacl_cpu_intel_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_cpu_intel_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
 
     echo ""
 done
