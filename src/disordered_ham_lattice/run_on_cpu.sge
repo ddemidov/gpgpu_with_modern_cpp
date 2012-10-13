@@ -26,7 +26,7 @@ for ((a=16;a<=2048;a*=2)); do
     export OCL_PLATFORM=AMD
 
     echo -n "$a " >> vexcl_cpu_amd_${SGE_TASK_ID}.dat
-    /usr/bin/time -f %e -o vexcl_cpu_${SGE_TASK_ID}.dat -a ./${vexcl_exe} $a > /dev/null
+    /usr/bin/time -f %e -o vexcl_cpu_amd_${SGE_TASK_ID}.dat -a ./${vexcl_exe} $a > /dev/null
 
     echo -n "$a " >> viennacl_cpu_amd_${SGE_TASK_ID}.dat
     /usr/bin/time -f %e -o viennacl_cpu_amd_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
