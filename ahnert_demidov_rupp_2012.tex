@@ -558,7 +558,7 @@ void lorenz_system::operator()(const state_type &x, state_type &dxdt, double t) 
                         x.begin(), x.begin() + N, x.begin() + 2 * N,
                         dxdt.begin(), dxdt.begin() + N, dxdt.begin() + 2 * N ) ),
                 thrust::make_zip_iterator( thrust::make_tuple(
-                        R.begin(),
+                        R.end(),
                         x.begin() + N, x.begin() + 2 * N, x.end(),
                         dxdt.begin() + N, dxdt.begin() + 2 * N, dxdt.end() ) ),
                 lorenz_functor() );
