@@ -1,6 +1,7 @@
 dat=$(wildcard *.dat)
 
-all: perfcmp.eps scaling.eps tahiti_vs_tesla.eps tahiti_scaling.eps genkernel.eps
+all: perfcmp.eps scaling.eps tahiti_vs_tesla.eps tahiti_scaling.eps genkernel.eps \
+    perfmtx.eps
 
 perfcmp.eps: process_results.m $(dat)
 	matlab -nosplash -nodesktop -r 'process_results; exit'
@@ -16,6 +17,10 @@ tahiti_vs_tesla.eps: tahiti_vs_tesla.m $(dat)
 
 tahiti_scaling.eps: vexcl_scaling_tahiti.m $(dat)
 	matlab -nosplash -nodesktop -r 'vexcl_scaling_tahiti; exit'
+	reset
+
+perfmtx.eps: perfmtx.m $(dat)
+	matlab -nosplash -nodesktop -r 'perfmtx; exit'
 	reset
 
 genkernel.eps: genkernel.m $(dat)

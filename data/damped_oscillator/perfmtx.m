@@ -56,7 +56,7 @@ ylabel('T / T(Thrust)');
 axis square
 
 pos2 = get(gca, 'Position');
-pos2(1) = pos1(1) + pos1(3) - 0.03;
+pos2(1) = pos1(1) + pos1(3) - 0.05;
 set(gca, 'Position', pos2);
 
 % GPU
@@ -110,7 +110,7 @@ ylabel('T / T(Thrust)');
 axis square
 
 pos4 = get(gca, 'Position');
-pos4(1) = pos3(1) + pos3(3) - 0.03;
+pos4(1) = pos3(1) + pos3(3) - 0.05;
 pos4(2) = pos2(2) - pos4(4) - 0.05;
 set(gca, 'Position', pos4);
 
