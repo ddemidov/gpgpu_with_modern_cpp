@@ -94,9 +94,6 @@ available on NVIDIA hardware only. OpenCL is supported on a wide range of hardwa
 but its native API requires a much larger amount of boilerplate code from the
 developer.
 
-% [KA]: The top 500 list is written as TOP500, in wikipedia an on the webpage.
-
-
 Both technologies are able to provide scientists with the vast computational
 resources of modern GPUs at the price of a steep learning curve.
 Programmers need to familiarize
@@ -115,15 +112,6 @@ odeint, a modern C++ library for solving ordinary differential equations (ODEs) 
 been accepted for inclusion into the Boost libraries\footnote{ \href{ http://boost.org }
   { http://boost.org } }.  The GPGPU libraries considered in this work
 are Thrust, VexCL, and ViennaCL:
-
-% [KR]: We need to define the scope of this work. We are investigating ODEs
-% only, which we have to clarify.  There is a lot of GPGPU for dense linear
-% algebra, sparse solvers, and molecular dynamics approaches. We don't consider
-% any of these.
-
-% [DD]: Is `the context of solving ordinary differential equations` not enough
-% for this purpose? Or should we explicitly state that we are not intersted in
-% the topics you mentioned?
 
 \begin{description}
     \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com }{
@@ -508,181 +496,178 @@ whether there is a price to pay for the high-level interface.
 
 
 
-
 %
-% DAMPED OSCILLATOR
+% LORENZ ATTRACTOR
 %
-\subsection{Damped Harmonic Oscillator Ensemble}
 
-The first example is a set of damped driven oscillators as described by the system
-\begin{equation} \label{eq:dampedsystem}
-    \dot{x} =  \varepsilon x + \omega y , \quad \quad
-    \dot{y} =  \varepsilon y - \omega x
+\subsection{Lorenz Attractor Ensemble}
+
+In the first example we consider the Lorenz system \cite{Lorenz-63}. The
+Lorenz system is a system of three coupled ODEs which shows chaotic
+behavior for a large range of parameters. It is one of the most frequently
+used ODE for evaluation purposes in the nonlinear dynamics community.   % [KR]: Justification (citation) required
+The ODE of the Lorenz system reads
+\begin{equation}
+    \dot{x} = -\sigma \left( x - y \right), \quad
+    \dot{y} = R x - y - xz, \quad
+    \dot{z} = -bz + xy.
+    \label{eq:lorenz}
 \end{equation}
-with $\varepsilon = \varepsilon_0 + \varepsilon_a \cos \left( \omega_d    % [KR]: We should give \varepsilon a name here. Is it a 'damping function'? [KA]: it already has a name, see next sentence
-t \right)$. $\omega$ is the natural frequency of the oscillator and
-$\varepsilon$ is the time dependent damping constant.  Note that this form is
-not the classical form of an oscillator but can easily be derived from the complex-value oscillator $\ii \dot{\Psi} = \omega \Psi + \ii \varepsilon \Psi$ by setting $\Psi = x + \ii y$.
 
 
-The Thrust version of the system functor for the damped harmonic oscillator
-ensemble example is presented below. The functor holds model parameters and
-provides a \code{operator()} with a signature required by the odeint library. The
-state type is represented by \code{thrust::device_vector<double>}:
+Solutions of the Lorenz system usually furnish a very interesting
+behavior in dependence on one of its parameters.  For example, one
+might want to study the dependence on the chaoticity on the parameter
+$R$. Therefore, one would create a large set of Lorenz systems (each
+with a different parameter $R$), pack them all into one system and
+solve them simultaneously. (In a real study of chaoticity one would
+usually calculate the Lyapunov exponents \cite{Ott-book-02}, which
+require to solve the Lorenz system and their linear perturbations.)
+
+% [KR] The paragraph right above is probably not of interest for the reader in
+% its current form. Either shorten, or extend.
+
+The Thrust version of the system functor for the Lorenz attractor ensemble
+example is presented below. The functor holds model parameters and provides a
+\code{operator()} with a signature required by the odeint library. The state
+type is represented by \code{thrust::device_vector<double>}:
 \begin{lstlisting}
 typedef thrust::device_vector<double> state_type;
 
-struct oscillator {
+struct lorenz_system {
     size_t N;
-    double omega, amp, offset, omega_d;
+    const state_type &R;
 
-    oscillator(size_t N, double omega, double amp, double offset, double omega_d)
-        : N(N), omega(omega), amp(amp), offset(offset), omega_d(omega_d) { }
+    lorenz_system(size_t N, const state_type &R) : N(N), R(R) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const;
 };
 \end{lstlisting}
-The $X$ and $Y$ components of the state are held in the first and second halves of the
-vector.  \code{operator()} uses the standard technique of
+The $X$, $Y$, and $Z$ components of the state are held in the continuous
+partitions of the vector.  \code{operator()} uses the standard technique of
 packing the state components into a zip iterator and passes the composite
-sequence to the \code{thrust::for_each} algorithm together with the provided device
-functor:
+sequence to the \code{thrust::for_each} algorithm together with the provided
+device functor:
 \begin{lstlisting}[firstnumber=12]
-struct oscillator_functor;
+struct lorenz_functor;
 
-void oscillator::operator()(const state_type &x, state_type &dxdt, double t) const {
-    double eps = offset + amp * cos(omega_d * t);
-    thrust::for_each(
-        thrust::make_zip_iterator(
-            thrust::make_tuple( x.begin(), x.begin() + N,
-                                dxdt.begin(), dxdt.begin() + N ) ),
-        thrust::make_zip_iterator(
-            thrust::make_tuple( x.begin() + N, x.end(),
-                                dxdt.begin() + N, dxdt.end() ) ),
-        oscillator_functor(omega, eps) );
+void lorenz_system::operator()(const state_type &x, state_type &dxdt, double t) const {
+        thrust::for_each(
+                thrust::make_zip_iterator( thrust::make_tuple(
+			R.begin(),
+                        x.begin(), x.begin() + N, x.begin() + 2 * N,
+                        dxdt.begin(), dxdt.begin() + N, dxdt.begin() + 2 * N ) ),
+                thrust::make_zip_iterator( thrust::make_tuple(
+                        R.begin(),
+                        x.begin() + N, x.begin() + 2 * N, x.end(),
+                        dxdt.begin() + N, dxdt.begin() + 2 * N, dxdt.end() ) ),
+                lorenz_functor() );
 }
 \end{lstlisting}
 The device functor unpacks the individual components and applies the required
-operations to the derivative part, essentially leading to a one-to-one translation of \eqref{eq:dampedsystem} into code:
+operations to the derivative part, essentially leading to a one-to-one
+translation of \eqref{eq:lorenz} into code:
 \begin{lstlisting}[firstnumber=last]
-struct oscillator_functor {
-    double eps, omega;
-
-    oscillator_functor(double omega, double eps) : omega(omega), eps(eps) {}
-
+struct lorenz_functor {
     template< class T >
-    __host__ __device__ void operator()(T t) const {
-        double x = thrust::get< 0 >( t );
-        double y = thrust::get< 1 >( t );
-        thrust::get<2>(t) = eps * x + omega * y;
-        thrust::get<3>(t) = eps * y - omega * x;
+    __host__ __device__ void operator()( T t ) const {
+	value_type R = thrust::get< 0 >( t );
+	value_type x = thrust::get< 1 >( t );
+	value_type y = thrust::get< 2 >( t );
+	value_type z = thrust::get< 3 >( t );
+	thrust::get< 4 >( t ) = sigma * ( y - x );
+	thrust::get< 5 >( t ) = R * x - y - x * z;
+	thrust::get< 6 >( t ) = -b * z + x * y ;
+
     }
 };
 \end{lstlisting}
 
 
-The system functor for the VexCL version of the damped harmonic oscillator
-example is much simpler than the Thrust variant because VexCL supports a rich
-set of vector expressions. The state is represented by the
-\code{vex::multivector<double,2>} type, which holds two instances of
+The system functor for the VexCL version of the Lorenz attractor example is
+much simpler than the Thrust variant because VexCL supports a rich set of
+vector expressions. The state is represented by the
+\code{vex::multivector<double,3>} type, which holds three instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
 underlying components. The code for \code{operator()} body practically
-coincides with the problem statement \eqref{eq:dampedsystem}:
+coincides with the problem statement \eqref{eq:lorenz}:
 \begin{lstlisting}
-typedef vex::vector<double> vector_type;
-typedef vex::multivector<double, 2> state_type;
+typedef vex::multivector<double, 3> state_type;
 
-struct oscillator {
-    double omega, amp, offset, omega_d;
+struct lorenz_system {
+    const vex::vector<double> &R;
 
-    oscillator(double omega, double amp, double offset, double omega_d)
-        : omega(omega), amp(amp), offset(offset), omega_d(omega_d) { }
+    lorenz_system(const vex::vector<double> &R) : R(R) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        double eps = offset + amp * cos(omega_d * t);
-        dxdt(0) = eps * x(0) + omega * x(1);
-        dxdt(1) = eps * x(1) - omega * x(0);
+	dxdt(0) = sigma * (x(1) - x(0));
+	dxdt(1) = R * x(0) - x(1) - x(0) * x(2);
+	dxdt(2) = x(0) * x(1) - b * x(2);
     }
 };
 \end{lstlisting}
 
 
-However, the drawback of this variant is that it leads
-to two kernel launches (one per each vector assignment), resulting in
-suboptimal performance. A direct use of multi-vectors arithmetic
-operations is not possible due to mixed components in the right hand side expressions.
-But, the additional kernel launch can be eliminated in VexCL by assigning a tuple of expressions to a multi-vector.
-The required notation is only slightly more cumbersome than the above variant:
-\begin{lstlisting}[firstnumber=11]
-        double eps = offset + amp * cos(omega_d * t);
-        dxdt = std::make_tuple(     eps * x(0) + omega * x(1),
-                                    eps * x(1) - omega * x(0)   );
+However, the drawback of this variant is that it leads to three kernel launches
+(one per each vector assignment), resulting in suboptimal performance. A direct
+use of multi-vectors arithmetic operations is not possible due to mixed
+components in the right hand side expressions.  But, the additional kernel
+launch can be eliminated in VexCL by assigning a tuple of expressions to a
+multi-vector.  The required notation is only slightly more cumbersome than the
+above variant:
+\begin{lstlisting}[firstnumber=9]
+    dxdt = std::make_tuple(   sigma * (x(1) - x(0)),
+	                      R * x(0) - x(1) - x(0) * x(2),
+	                      x(0) * x(1) - b * x(2)          );
 \end{lstlisting}
 
-For the ViennaCL version of the damped harmonic oscillator ensemble example a
-\code{boost::fusion::vector} is used to pack the coordinate components of the state vector into a
-single type. Individual components are instances of the
+For the ViennaCL version of the Lorenz attractor example a
+\code{boost::fusion::vector} is used to pack the coordinate components of the
+state vector into a single type. Individual components are instances of the
 \code{viennacl::vector<double>} type.
 
-ViennaCL supports expression templates for a limited set of    %[KR]: Denis, isn't VexCL supporting arbitrary vector operations? Are you referring with 'as well as VexCL' to expression templates only? 
-vector operations (closely corresponding to Level 1 BLAS routines).
-Thus, one can use similar code as for the first version of VexCL presented above,
-yet obtain suboptimal performance due to two kernel launches per step.
-Similar to VexCL, ViennaCL offers a mechanism to get rid of the second kernel launch
-with the help of the ViennaCL kernel generator interface, which supports kernels with single and multiple operations.
-Here, OpenCL kernels are generated from symbolic expressions involving explicit symbolic types,
-which is a bit more cumbersome than with VexCL. In particular, the constructor
-for the oscillator implementation using ViennaCL is given by
-%\begin{lstlisting}
-%typedef viennacl::vector<double> vector_type;
-%typedef fusion::vector<vector_type, vector_type> state_type;
-%
-%struct oscillator {
-%    double omega, amp, offset, omega_d;
-%
-%    viennacl::generator::symbolic_vector<0, double> sym_dx;
-%    viennacl::generator::symbolic_vector<1, double> sym_dy;
-%    viennacl::generator::symbolic_vector<2, double> sym_x;
-%    viennacl::generator::symbolic_vector<3, double> sym_y;
-%    viennacl::generator::cpu_symbolic_scalar<4, double> sym_eps;
-%    viennacl::generator::cpu_symbolic_scalar<5, double> sym_omega;
-%    viennacl::generator::custom_operation op;
-%
-% [KR] Stripped this snippet, because symbolic types have been used in Section 2 already.
+ViennaCL supports expression templates for a limited set of vector operations
+(closely corresponding to Level 1 BLAS routines). But, the element-wise
+expressions used in \eqref{eq:lorenz} are unavailable.  Therefore, we had to
+encode the required operations into a custom OpenCL kernel which is omitted here
+for brevity.  Even though a hand-written OpenCL kernel needs to be used for this
+example, ViennaCL provides convenient mechanisms for the compilation and launch
+of custom kernels, avoiding tedious interactions with the low-level OpenCL API.
+As a consequence, the performance of ViennaCL for this example is comparable to
+a hand-tuned code.  The actual implementation of the \code{lorenz_system} class
+consequently consists of the compilation of the kernel residing in a string
+object \code{lorenz_source} in the constructor, and the launch of the
+respective kernel in \code{operator()}:
 \begin{lstlisting}
-oscillator::oscillator(double omega, double amp, double offset, double omega_d)
-    : omega(omega), amp(amp), offset(offset), omega_d(omega_d),
-      op(sym_dx = sym_eps * sym_x + sym_omega * sym_y,
-	 sym_dy = sym_eps * sym_y - sym_omega * sym_x,
-	 "oscillator")
-{ }
+typedef fusion::vector<
+    viennacl::vector<double>, viennacl::vector<double>, viennacl::vector<double>
+    > state_type;
+
+struct lorenz_system {
+    const viennacl::vector<value_type> &R;
+
+    lorenz_system( const viennacl::vector<value_type> &R ) : R(R) {
+	viennacl::ocl::current_context().add_program(
+		lorenz_source, "lorenz_program").add_kernel("lorenz");
+    }
+
+    void operator()(const state_type &x, state_type &dxdt, value_type t) const {
+        auto &X = fusion::at_c<0>(x);
+        auto &Y = fusion::at_c<1>(x);
+        auto &Z = fusion::at_c<2>(x);
+
+	auto &dX = fusion::at_c<0>(dxdt);
+	auto &dY = fusion::at_c<1>(dxdt);
+	auto &dZ = fusion::at_c<2>(dxdt);
+
+	viennacl::ocl::kernel &step = viennacl::ocl::current_context().get_program(
+		    "lorenz_program").get_kernel("lorenz");
+
+	viennacl::ocl::enqueue( step(cl_uint(X.size()),
+	    dX, dY, dZ, X, Y, Z, R, sigma, b) );
+    }
+};
 \end{lstlisting}
-%
-%    void operator()( const state_type &x, state_type &dxdt, double t );
-%};
-%\end{lstlisting}
-The symbolic types \code{sym_dx}, \code{sym_dy}, etc.~are instantiated in the same way
-as in the code snippet given at the end of Sec.~\ref{sec:adapting-odeint}.
-Even though more boilerplate code is required, the resulting expression
-carries explicit information of whether two terminals represent the same vector
-instance. This in principle allows generation of more effective code. The
-\code{operator()} unpacks the \code{fusion::vector} container and launches
-the generated kernel:
-% [DD]: Added definition for the state_type:
-\begin{lstlisting}
-typedef fusion::vector<viennacl::vector<double>, viennacl::vector<double>> state_type;
-
-void oscillator::operator()( const state_type &x, state_type &dxdt, double t ) {
-    auto &X  = fusion::at_c<0>(x);
-    auto &Y  = fusion::at_c<1>(x);
-    auto &dX = fusion::at_c<0>(dxdt);
-    auto &dY = fusion::at_c<1>(dxdt);
-
-    double eps = offset + amp * cos(omega_d * t);
-    viennacl::ocl::enqueue( op(dX, dY, X, Y, eps, omega) );
-}
-\end{lstlisting}
-
 
 
 
@@ -719,7 +704,7 @@ The index $i$ denotes here the $i$-th phase in the chain. Note, that
 the phase velocity is different for each oscillator.
 
 The Thrust version for the coupled phase oscillator chain looks very similar to
-the damped oscillator example. Again, a zip iterator is used to pack the required
+the Lorenz attractor example. Again, a zip iterator is used to pack the required
 components and to process the resulting sequence with a single sweep of the
 \code{for_each} algorithm. The only difference here is that values of
 neighboring vector elements are needed. In order to provide the values, we use Thrust's
@@ -780,52 +765,11 @@ struct phase_oscillators {
 
 ViennaCL, being oriented at iterative solution of large systems of equations,
 does not provide stencil operations required for the problem at hand, so we had
-to fallback to the use of a hand-coded OpenCL kernel, which is omitted for reasons of brevity.
-%\begin{lstlisting}
-%static const char phase_oscillator_source[] =
-%    "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-%    "kernel void oscillator(\n"
-%    "        uint n,\n"
-%    "        global double *dx,\n"
-%    "        global const double *x,\n"
-%    "        global const double *omega\n"
-%    "        )\n"
-%    "{\n"
-%    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-%    "        double X0 = x[i];\n"
-%    "        double Xl = i > 0 ? x[i - 1] : X0;\n"
-%    "        double Xr = i + 1 < n ? x[i + 1] : X0;\n"
-%    "        dx[i] = omega[i] + sin(Xl - X0) + sin(X0 - Xr);\n"
-%    "    }\n"
-%    "}\n";
-%\end{lstlisting}
-Even though a custom OpenCL kernel needs to be used for this example,
-ViennaCL provides convenient mechanisms for the compilation and launch of custom
-kernels, avoiding tedious interactions with the low-level OpenCL API.
-As a consequence, the performance of ViennaCL for this example is comparable to hand-tuned code.
-The actual implementation of the \code{phase_oscillators} class consequently consists
-of the compilation of the kernel residing in a string object \code{phase_oscillator_source} in the constructor,
-and the launch of the respective kernel in \code{operator()}:
-\begin{lstlisting}
-typedef viennacl::vector<double> state_type;
-
-struct phase_oscillators {
-    const state_type &omega;
-    sys_func(const state_type &omega) : omega(omega) {
-        viennacl::ocl::current_context().add_program(phase_oscillator_source,
-            "oscillator_program").add_kernel("oscillator");
-    }
-    void operator()(const state_type &x, state_type &dxdt, double t) const {
-        viennacl::ocl::kernel &step = viennacl::ocl::current_context().get_program(
-            "oscillator_program").get_kernel("oscillator");
-        viennacl::ocl::enqueue( step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
-    }
-};
-\end{lstlisting}
-
-
-
-
+to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
+reasons of brevity. The kernel is compiled in the constructor of the system
+functor and is launched in the \code{operator()} in the same way we did this
+for the Lorenz attractor ensemple example. Therefore, we omit the actual
+implementation.
 
 
 
@@ -943,44 +887,6 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 
 
 
-%
-% LORENZ ATTRACTOR, OPTIONAL
-%
-
-% [KR]: I comment the Lorenz attractor for the moment, it does not add anything to the paper in the present form.
-
-%\subsection{Lorenz Attractor Ensemble}
-
-%In the fourth example we consider the Lorenz system \cite{Lorenz-63}. The
-%Lorenz system is a system of three coupled ODEs which shows chaotic
-%behavior for a large range of parameters. It is one of the most frequently
-%used ODE for evaluation purposes in the nonlinear dynamics community.        % [KR]: Justification (citation) required
-%The ODE of the Lorenz system reads
-%\begin{equation}
-%  \dot{x} = -\sigma \left( x - y \right), \quad
-%  \dot{y} = R x - y - xz, \quad
-%   \dot{z} = -bz + xy.
-%   \label{eq:lorenz}
-% \end{equation}
-%
-%
-% Solutions of the Lorenz system usually furnish a very interesting
-% behavior in dependence on one of its parameters.  For example, one
-% might want to study the dependence on the chaoticity on the parameter
-% $R$. Therefore, one would create a large set of Lorenz systems (each
-% with a different parameter $R$), pack them all into one system and
-% solve them simultaneously. (In a real study of chaoticity one would
-% usually calculate the Lyapunov exponents \cite{Ott-book-02}, which
-% require to solve the Lorenz system and their linear perturbations.)
-%
-% % [KR] The paragraph right above is probably not of interest for the reader in
-% % its current form. Either shorten, or extend.
-%
-% The implementation of the Lorenz attractor ensemble example is very close to
-% that of the damped harmonic oscillator ensemble and we omit it for the sake of
-% conciseness.
-
-
 
 \section{Results}
 
@@ -1004,8 +910,6 @@ by a compilation switch, while OpenCL libraries natively support CPUs provided t
 The timings provided were obtained for two GPUs, namely an NVIDIA Tesla C2070 and
 an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU.
 All reported values are median values of execution times taken for ten runs.
-%For each of the experiments, 10 runs were made and median time was selected as a
-%representative value.
 
 % [KR]: Which SDK was used for the CPU computations? We should definitely
 % consider a comparison of Intel vs. AMD SDKs. There could be quite a number of
@@ -1013,36 +917,25 @@ All reported values are median values of execution times taken for ten runs.
 
 % [DD]: I am running the experiments now, will add data when its ready.
 
-Figures \ref{fig:damped:perf} through \ref{fig:lattice:perf} show performance
+Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.
 The plots on the left show absolute time against the size of the problem being solved, while right hand side plots   % [KR]: I don't see much added value on the plots on the right hand side. Consider dropping them?
 show relative performance with respect to the Thrust GPU version.
 Absolute execution times for the largest
 problem size for all of the considered libraries are given in Table~\ref{tab:abstimes}.
 
-% \begin{figure}
-%     \begin{center}
-%         \includegraphics[width=\textwidth]{data/damped_oscillator/perfcmp}
-%     \end{center}
-%     \caption{Damped harmonic oscillator ensemble results.}
-%     \label{fig:damped:perf}
-% \end{figure}
-
 \begin{figure}
     \begin{center}
-        \includegraphics[width=\textwidth]{data/damped_oscillator/perfmtx}
+      \subfigure[
+      NVIDIA Tesla C2070.
+      ]{\label{fig:lorenz:perf:tesla}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tesla}}
+      \subfigure[
+      AMD Radeon HD 7970 (Tahiti).
+      ]{\label{fig:lorenz:perf:tahiti}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tahiti}}
     \end{center}
-    \caption{Damped harmonic oscillator ensemble results.} 
-    \label{fig:damped:perf}
+    \caption{Lorenz attractor ensemble results.}
+    \label{fig:lorenz:perf}
 \end{figure}
-
-%\begin{figure}
-%    \begin{center}
-%        \includegraphics[width=\textwidth]{data/phase_oscillator_chain/perfcmp}
-%    \end{center}
-%    \caption{Coupled phase oscillator chain results.}
-%    \label{fig:phase:perf}
-%\end{figure}
 
 \begin{figure}
     \begin{center}
@@ -1057,14 +950,6 @@ problem size for all of the considered libraries are given in Table~\ref{tab:abs
     \label{fig:phase:perf}
 \end{figure}
 
-%\begin{figure}
-%    \begin{center}
-%        \includegraphics[width=\textwidth]{data/disordered_ham_lattice/perfcmp}
-%    \end{center}
-%    \caption{Disordered Hamiltonian lattice results.}
-%    \label{fig:lattice:perf}
-%\end{figure}
-
 \begin{figure}
     \begin{center}
         \subfigure[
@@ -1078,27 +963,6 @@ problem size for all of the considered libraries are given in Table~\ref{tab:abs
     \label{fig:lattice:perf}
 \end{figure}
 
-
-%\begin{figure}
-%    \begin{center}
-%        \includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp}
-%    \end{center}
-%    \caption{Lorenz attractor ensemble results.}
-%    \label{fig:lorenz:perf}
-%\end{figure}
-
-% \begin{figure}
-%     \begin{center}
-%       \subfigure[
-%       NVIDIA Tesla C2070.
-%       ]{\label{fig:lorenz:perf:tesla}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tesla}}
-%       \subfigure[
-%       AMD Radeon HD 7970 (Tahiti).
-%       ]{\label{fig:lorenz:perf:tahiti}\includegraphics[width=\textwidth]{data/lorenz_ensemble/perfcmp_tahiti}}
-%     \end{center}
-%     \caption{Lorenz attractor ensemble results.}
-%     \label{fig:lorenz:perf}
-% \end{figure}
 
 In general, all our experiments show up to $10\times$ to $20\times$ acceleration
 when run on a GPU as compared to the CPU path. This is the expected acceleration
@@ -1133,20 +997,20 @@ The only exception is again the phase oscillator test, where ViennaCL outperform
     \label{tab:abstimes}
     \begin{tabular}{|lc|rrr|}
         \hline
-        & & \em Damped      & \em Coupled       & \em Disordered  \\ %  & \em Lorenz    \\
-        & & \em harmonic    & \em phase         & \em Hamiltonian \\ %  & \em attractor \\
-        & & \em oscillators & \em oscillators   & \em lattice     \\ %  & \em ensemble  \\
+        & & \em Lorenz    & \em Coupled     & \em Disordered  \\
+        & & \em attractor & \em phase       & \em Hamiltonian \\
+        & & \em ensemble  & \em oscillators & \em lattice     \\
         \hline
-        \em Thrust   &\em Tesla & 153.53 & 263.99 & 319.54 \\ %  & 242.75 \\
-        \em VexCL    &\em Tesla & 154.76 & 189.38 & 401.31 \\ %  & 255.06 \\
-        \em ViennaCL &\em Tesla & 164.52 & 165.21 & 433.24 \\ %  & 259.82 \\
+        \em Thrust   &\em Tesla & 242.75 & 263.99 & 319.54 \\
+        \em VexCL    &\em Tesla & 255.06 & 189.38 & 401.31 \\
+        \em ViennaCL &\em Tesla & 259.82 & 165.21 & 433.24 \\
         \hline
-        \em VexCL    &\em Tahiti &  94.97 & 108.83 & 228.93 \\ %  & 149.20 \\
-        \em ViennaCL &\em Tahiti &  91.73 &  83.61 & 213.22 \\ %  & 148.62 \\
+        \em VexCL    &\em Tahiti & 149.20 & 108.83 & 228.93 \\
+        \em ViennaCL &\em Tahiti & 148.62 &  83.61 & 213.22 \\
         \hline
-        \em Thrust   &\em CPU   & 1~454.81 & 5~172.84 &      N/A \\ %  & 2~339.33 \\
-        \em VexCL    &\em CPU   & 1~678.26 & 5~015.02 & 3~152.92 \\ %  & 3~206.17 \\
-        \em ViennaCL &\em CPU   & 2~574.70 & 4~605.93 & 5~485.99 \\ %  & 4~127.98 \\
+        \em Thrust   &\em CPU   & 2~339.33 & 5~172.84 &      N/A \\
+        \em VexCL    &\em CPU   & 3~206.17 & 5~015.02 & 3~152.92 \\
+        \em ViennaCL &\em CPU   & 4~127.98 & 4~605.93 & 5~485.99 \\
         \hline
     \end{tabular}
 \end{table}
@@ -1169,55 +1033,29 @@ hence OpenCL cannot be considered to be a competitive CPU programming model for 
 
 % [KA]: I think this statement is to hard.
 
-Finally, results for multi-GPU usage as provided by VexCL in a transparent way are considered.
-\figref{fig:scaling} shows scaling results for up to three Tesla C2070 GPUs.
-It can be seen that a notable speed-up of several GPUs over a single GPU is only obtained for problem sizes
-larger than $10^6$.
-\figref{fig:scaling:damped} also shows scaling results for the system with three Tahiti GPUs.
-It seems that AMDs OpenCL
-implementation does not work very well with multiple GPUs employed. Still,
-combined memory of several GPUs allows to solve proportionally larger problems
-on the same system.
+Finally, results for multi-GPU usage as provided by VexCL in a transparent way
+are considered. \figref{fig:scaling} shows scaling results for up to three
+GPUs. It can be seen that a notable speed-up for several Tesla GPUs over a
+single card is only obtained for problem sizes larger than $10^6$.  It seems
+that AMDs OpenCL implementation does not work very well with multiple GPUs
+employed. Still, combined memory of several GPUs allows to solve proportionally
+larger problems on the same system.
 
-% [KR]: What about results for Tahiti? Either include results for all examples, or for none.
-% [DD]: I'll add the rest of the Tahiti results.
-
-% [KR]:
 \begin{figure}
     \begin{center}
         \subfigure[
-        Damped harmonic oscillator ensemble.
-        ]{\label{fig:scaling:damped}\includegraphics[width=0.32\textwidth]{data/damped_oscillator/scaling}}$\;$
+        Lorenz attractor ensemble.
+        ]{\includegraphics[width=0.32\textwidth]{data/lorenz_ensemble/scaling}}$\;$
         \subfigure[
         Coupled phase oscillator chain.
         ]{\includegraphics[width=0.32\textwidth]{data/phase_oscillator_chain/scaling}}$\;$
         \subfigure[
         Disordered Hamiltonian lattice.
         ]{\includegraphics[width=0.32\textwidth]{data/disordered_ham_lattice/scaling}}
-        %\subfigure[
-        %Lorenz attractor ensemble.
-        %]{\includegraphics[width=0.45\textwidth]{data/lorenz_ensemble/scaling}}
     \end{center}
     \caption{VexCL scaling with multigpu computation.}
     \label{fig:scaling}
 \end{figure}
-
-
-% [KR]: I integrated the following paragraph in the conclusions. Please double-check.
-%
-%VexCL was the only library that managed to stay at high level and did not need
-%help of third party libraries in all of our examples. ViennaCL lacks some
-%elementwise vector operations and stencil convolution operation, so we had to
-%provide hand-written kernels for those; Thrust version of coupled phase
-%oscillator chain example needed help of CUSPARSE library for implemetation of
-%sparse matrix~-- vector product.
-
-
-
-
-
-
-
 
 
 %
@@ -1255,14 +1093,6 @@ Another aspect that has not been studied in this work is the ability to generate
 optimized for the problem at hand at runtime. This allows, for example, to generate
 optimized kernels for a certain set of parameters supplied, eliminating any otherwise spurious reads from global memory.
 An in-depth study of such an approach is, however, left for future work.
-
-% [DD]: OpenCL libraries showed excelent functional portability but not so good
-% performance portability.
-
-% [DD]: Some words about odeint generality that allowed us to run the set of
-% experiments.
-
-
 
 \section{Acknowledgments}
 
