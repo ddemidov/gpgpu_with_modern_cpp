@@ -13,3 +13,8 @@ scaling.eps: vexcl_scaling.m $(dat)
 tahiti_vs_tesla.eps: tahiti_vs_tesla.m $(dat)
 	matlab -nosplash -nodesktop -r 'tahiti_vs_tesla; exit'
 	reset
+
+perfmtx.eps: perfmtx.m $(dat)
+	matlab -nosplash -nodesktop -r 'perfmtx; exit'
+	reset
+
