@@ -1,7 +1,7 @@
 close all
 clear all
 
-ms = 4;
+ms = 6;
 lw = 0.5;
 fs = 26;
 
