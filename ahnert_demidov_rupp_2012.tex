@@ -571,13 +571,13 @@ translation of \eqref{eq:lorenz} into code:
 struct lorenz_functor {
     template< class T >
     __host__ __device__ void operator()( T t ) const {
-	value_type R = thrust::get< 0 >( t );
-	value_type x = thrust::get< 1 >( t );
-	value_type y = thrust::get< 2 >( t );
-	value_type z = thrust::get< 3 >( t );
-	thrust::get< 4 >( t ) = sigma * ( y - x );
-	thrust::get< 5 >( t ) = R * x - y - x * z;
-	thrust::get< 6 >( t ) = -b * z + x * y ;
+	double R = thrust::get<0>(t);
+	double x = thrust::get<1>(t);
+	double y = thrust::get<2>(t);
+	double z = thrust::get<3>(t);
+	thrust::get<4>(t) = sigma * ( y - x );
+	thrust::get<5>(t) = R * x - y - x * z;
+	thrust::get<6>(t) = -b * z + x * y ;
 
     }
 };
@@ -644,14 +644,14 @@ typedef fusion::vector<
     > state_type;
 
 struct lorenz_system {
-    const viennacl::vector<value_type> &R;
+    const viennacl::vector<double> &R;
 
-    lorenz_system( const viennacl::vector<value_type> &R ) : R(R) {
+    lorenz_system( const viennacl::vector<double> &R ) : R(R) {
 	viennacl::ocl::current_context().add_program(
 		lorenz_source, "lorenz_program").add_kernel("lorenz");
     }
 
-    void operator()(const state_type &x, state_type &dxdt, value_type t) const {
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
         auto &X = fusion::at_c<0>(x);
         auto &Y = fusion::at_c<1>(x);
         auto &Z = fusion::at_c<2>(x);
