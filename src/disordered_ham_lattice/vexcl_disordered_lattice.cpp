@@ -22,64 +22,27 @@ using namespace std;
 extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
 vex::UserFunction<pow3_body, value_type(value_type)> pow3;
 
-struct ham_lattice
-{
-    ham_lattice( const std::vector< cl::CommandQueue > &queue ,
-	    size_t n1 , size_t n2 , value_type K , value_type beta, std::vector< double > disorder )
-        : m_n1( 0 ) , m_n2( 0 ) , m_N( 0 ) , m_K( 0.0 ) , m_beta(beta) , m_A()
-    {
-        m_n1 = n1;
-        m_n2 = n2;
-        m_N = m_n1 * m_n2;
-        m_K = K;
+struct ham_lattice {
+    ham_lattice(value_type beta, const vex::SpMat<double> &A) : beta(beta), A(A) { }
 
-        if( disorder.size() != n1 * n2 ) throw ;
-
-        std::vector< double > val;
-        std::vector< size_t > col;
-        std::vector< size_t > row;
-
-	val.reserve(m_N * 5);
-	col.reserve(m_N * 5);
-	row.reserve(m_N + 1);
-
-        row.push_back( 0 );
-        for( size_t i=0 ; i<m_n1 ; ++i ) 
-        {
-            for( size_t j=0 ; j<m_n2 ; ++j )
-            {
-                row.push_back( row.back() + 5 );
-                size_t idx = i * m_n2 + j;
-                long ii1 = idx + 1, ii2 = idx - 1 , ii3 = idx - m_n2 , ii4 = idx + m_n2;
-                std::array< size_t , 5 > is = {{ idx , index_modulus( ii1 ) , index_modulus( ii2 ) , index_modulus( ii3 ) , index_modulus( ii4 ) }};
-                sort( is.begin() , is.end() );
-                for( size_t i=0 ; i<is.size() ; ++i )
-                {
-                    col.push_back( is[i] );
-                    if( is[i] == idx ) val.push_back( - disorder[idx]  - 4.0 * K );
-                    else val.push_back( K );
-                }
-            }
-        }
-
-        m_A.reset( new vex::SpMat< double >( queue , m_N , m_N , row.data() , col.data() , val.data() ) );
+    void operator()(const state_type &q, state_type &dp) const {
+        dp = (-beta) * pow3(q) + A * q;
     }
 
-    inline size_t index_modulus( long idx )
-    {
-        if( idx < 0 ) return size_t( idx + m_N );
-        if( idx >= m_N ) return size_t( idx - m_N );
-        return size_t( idx );
-    }
+    value_type beta;
+    const vex::SpMat< double > &A;
+};
 
-    void operator()( const state_type &q , state_type &dp ) const
-    {
-        dp = (-m_beta) * pow3(q) + (*m_A) * q;
-    }
+struct index_modulus {
+    int N;
 
-    size_t m_n1 , m_n2 , m_N ;
-    value_type m_K, m_beta;
-    std::unique_ptr< vex::SpMat< double > > m_A;
+    index_modulus(int n) : N(n) {}
+
+    inline int operator()(int idx) const {
+	if( idx <  0 ) return idx + N;
+	if( idx >= N ) return idx - N;
+	return idx;
+    }
 };
 
 
@@ -103,6 +66,35 @@ int main( int argc , char **argv )
     std::uniform_real_distribution< value_type > dist( 0.0 , 1.0 );
     for( size_t i=0 ; i<n ; ++i ) disorder[i] = dist( rng );
 
+    std::vector< double > val;
+    std::vector< size_t > col;
+    std::vector< size_t > row;
+
+    size_t N = n1 * n2;
+
+    val.reserve(N * 5);
+    col.reserve(N * 5);
+    row.reserve(N + 1);
+
+    index_modulus index(N);
+
+    row.push_back( 0 );
+    for( int i=0 ; i < n1 ; ++i ) {
+	for( int j=0 ; j < n2 ; ++j ) {
+	    row.push_back( row.back() + 5 );
+	    int idx = i * n2 + j;
+	    int is[5] = { idx , index( idx + 1 ) , index( idx - 1 ) , index( idx - n2 ) , index( idx + n2 ) };
+	    std::sort( is , is + 5 );
+	    for( int i=0 ; i < 5 ; ++i ) {
+		col.push_back( is[i] );
+		if( is[i] == idx ) val.push_back( - disorder[idx]  - 4.0 * K );
+		else val.push_back( K );
+	    }
+	}
+    }
+
+    vex::SpMat<double> A(ctx.queue(), N, N, row.data(), col.data(), val.data());
+
     std::pair< state_type , state_type > X( state_type( ctx.queue() , n1 * n2 ) , state_type( ctx.queue() , n1 * n2 ) );
     X.first = 0.0;
     X.second = 0.0;
@@ -116,7 +108,7 @@ int main( int argc , char **argv )
         odeint::vector_space_algebra , odeint::default_operations
         > stepper;
 
-    ham_lattice sys( ctx.queue() , n1 , n2 , K , beta , disorder );
+    ham_lattice sys( beta, A );
     odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
 
 
