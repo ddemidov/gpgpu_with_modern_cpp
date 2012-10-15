@@ -505,8 +505,8 @@ whether there is a price to pay for the high-level interface.
 In the first example we consider the Lorenz system \cite{Lorenz-63}. The
 Lorenz system is a system of three coupled ODEs which shows chaotic
 behavior for a large range of parameters. It is one of the most frequently
-used ODE for evaluation purposes in the nonlinear dynamics community.   % [KR]: Justification (citation) required
-The ODE of the Lorenz system reads
+used ODEs for evaluation purposes in the nonlinear dynamics community.   % [KR]: Justification (citation) required
+The equations for the Lorenz system read
 \begin{equation}
     \dot{x} = -\sigma \left( x - y \right), \quad
     \dot{y} = R x - y - xz, \quad
@@ -515,14 +515,14 @@ The ODE of the Lorenz system reads
 \end{equation}
 
 
-Solutions of the Lorenz system usually furnish a very interesting
+Solutions of the Lorenz system usually furnish very interesting
 behavior in dependence on one of its parameters.  For example, one
-might want to study the dependence on the chaoticity on the parameter
+might want to study the chaoticity in dependence on the parameter
 $R$. Therefore, one would create a large set of Lorenz systems (each
 with a different parameter $R$), pack them all into one system and
-solve them simultaneously. (In a real study of chaoticity one would
-usually calculate the Lyapunov exponents \cite{Ott-book-02}, which
-require to solve the Lorenz system and their linear perturbations.)
+solve them simultaneously. (In a real study of chaoticity one
+usually calculates the Lyapunov exponents \cite{Ott-book-02}, which
+requires to solve the Lorenz system and their linear perturbations.)
 
 % [KR] The paragraph right above is probably not of interest for the reader in
 % its current form. Either shorten, or extend.
