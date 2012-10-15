@@ -28,14 +28,14 @@
 \title{Programming OpenCL and CUDA:\\a Case Study Using Modern C++ Libraries}
 
 \author{
-Karsten Ahnert\thanks{Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,
-Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany ({\tt
-karsten.ahnert@gmx.de}) }
-\and Denis Demidov\thanks{
+Denis Demidov\thanks{
 Kazan Branch of Joint Supercomputer Center,
 Russian Academy of Sciences,
 Lobachevsky st. 2/31, 420008 Kazan, Russia
 ({\tt ddemidov@ksu.ru}) }
+\and Karsten Ahnert\thanks{Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,
+Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany ({\tt
+karsten.ahnert@gmx.de}) }
 \and Karl Rupp\thanks{Mathematics and Computer Science Division,
 Argonne National Laboratory,
 9700 South Cass Avenue, Argonne, IL 60439, USA
@@ -76,7 +76,7 @@ Argonne National Laboratory,
 \pagestyle{myheadings}
 
 \thispagestyle{plain}
-\markboth{K.~AHNERT, D.~DEMIDOV, AND K.~RUPP}{PROGRAMMING CUDA AND OPENCL\ldots}
+\markboth{D.~DEMIDOV, K.~AHNERT, AND K.~RUPP}{PROGRAMMING CUDA AND OPENCL\ldots}
 
 
 Recently, general purpose computing on graphics processing units (GPGPU) has
@@ -87,44 +87,43 @@ http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
 OpenCL.  The former is a proprietary parallel computing architecture developed
 by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
 latter is an open, royalty-free standard for cross-platform, parallel
-programming of modern processors and GPUs maintained by the Khronos group. By nature,
-the two frameworks have their distinctive pros and cons. CUDA has a more mature
-programming environment with a larger set of scientific libraries, but is
-available on NVIDIA hardware only. OpenCL is supported on a wide range of hardware,
-but its native API requires a much larger amount of boilerplate code from the
-developer.
+programming of modern processors and GPUs maintained by the Khronos group. By
+nature, the two frameworks have their distinctive pros and cons. CUDA has a
+more mature programming environment with a larger set of scientific libraries,
+but is available on NVIDIA hardware only. OpenCL is supported on a wide range
+of hardware, but its native API requires a much larger amount of boilerplate
+code from the developer.
 
 Both technologies are able to provide scientists with the vast computational
-resources of modern GPUs at the price of a steep learning curve.
-Programmers need to familiarize
-themselves with a new programming language and, more importantly, with a
-new programming paradigm. However, the entry barrier may be lowered with the help of
-specialized libraries. The CUDA Toolkit includes several such libraries (BLAS
-implementations, Fast Fourier Transform, Thrust and others). OpenCL lacks
-standard libraries, but there are a number of third-party projects aimed at
-developing both CUDA and OpenCL programs.
+resources of modern GPUs at the price of a steep learning curve.  Programmers
+need to familiarize themselves with a new programming language and, more
+importantly, with a new programming paradigm. However, the entry barrier may be
+lowered with the help of specialized libraries. The CUDA Toolkit includes
+several such libraries (BLAS implementations, Fast Fourier Transform, Thrust
+and others). OpenCL lacks standard libraries, but there are a number of
+third-party projects aimed at developing both CUDA and OpenCL programs.
 
-This paper presents a comparison of several modern C++ libraries aimed
-at ease of GPGPU development. We look at both convenience and
-performance of the libraries under consideration in the context of
-solving ordinary differential equations.  The comparison is based on
-odeint, a modern C++ library for solving ordinary differential equations (ODEs) numerically that has been recently
-been accepted for inclusion into the Boost libraries\footnote{ \href{ http://boost.org }
-  { http://boost.org } }.  The GPGPU libraries considered in this work
-are Thrust, VexCL, and ViennaCL:
+This paper presents a comparison of several modern C++ libraries aimed at ease
+of GPGPU development. We look at both convenience and performance of the
+libraries under consideration in the context of solving ordinary differential
+equations.  The comparison is based on odeint, a modern C++ library for solving
+ordinary differential equations (ODEs) numerically that has been recently been
+accepted for inclusion into the Boost libraries\footnote{ \href{
+http://boost.org } { http://boost.org } }.  The GPGPU libraries considered in
+this work are Thrust, VexCL, and ViennaCL:
 
 \begin{description}
-    \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com }{
-        http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1, OdeintRef2}.
-        It is developed in a generic
-        way using template metaprogramming techniques, which leads to extraordinary high
-        flexibility at utmost performance. The numerical algorithms are
-        implemented independently of the underlying arithmetics. This results
-        in a broad applicability of the library, especially in non-standard
-        environments.  For example, odeint supports matrix types, arbitrary
-        precision arithmetics, and can be easily adopted to use either CUDA or
-        OpenCL frameworks.  Odeint is used in this work as a framework for the
-        comparison of other libraries.
+    \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com
+	}{ http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1,
+	OdeintRef2}.  It is developed in a generic way using template
+	metaprogramming techniques, which leads to extraordinary high
+	flexibility at utmost performance. The numerical algorithms are
+	implemented independently of the underlying arithmetics. This results
+	in a broad applicability of the library, especially in non-standard
+	environments.  For example, odeint supports matrix types, arbitrary
+	precision arithmetics, and can be easily adopted to use either CUDA or
+	OpenCL frameworks.  Odeint is used in this work as a framework for the
+	comparison of other libraries.
     \item[Thrust] is a parallel algorithms library\footnote{ \href{
         http://thrust.github.com }{ http://thrust.github.com }} which resembles
         the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
@@ -156,36 +155,36 @@ are Thrust, VexCL, and ViennaCL:
 CUDA and OpenCL differ in their handling of compute kernels compilation. In
 NVIDIA's framework the compute kernels are compiled to PTX code together with
 the host program. The PTX is a pseudo-assembler language which is compiled at
-runtime for the specific NVIDIA device the kernel is launched on. Since PTX is already
-very low-level, this just-in-time kernel compilation has low overhead. In
-OpenCL the compute kernels are compiled at runtime from higher-level C-like sources.
-This adds an overhead which is particularly noticeable for smaller sized
-problems. A pre-compilation to some low-level pseudo-code as in CUDA is not feasible in
-OpenCL because of hardware agnosticism by design.
+runtime for the specific NVIDIA device the kernel is launched on. Since PTX is
+already very low-level, this just-in-time kernel compilation has low overhead.
+In OpenCL the compute kernels are compiled at runtime from higher-level C-like
+sources.  This adds an overhead which is particularly noticeable for smaller
+sized problems. A pre-compilation to some low-level pseudo-code as in CUDA is
+not feasible in OpenCL because of hardware agnosticism by design.
 
-The approach taken for the generation and compilation of the compute kernels is one of the
-main differences between the OpenCL libraries we considered.
-ViennaCL uses a set of predefined kernels, which functionally overlaps with BLAS level
-1 routines for vector operations.
-These kernels are compiled in batch at the program start to allow
-for faster initialization. However, due to this design decision each vector
-expression may result in the launch of more than one kernel.  On the other hand,
-VexCL generates and compiles an OpenCL program with a single kernel for each
-vector expression it encounters.  This leads to potentially higher
-initialization overhead, but should prove to be more effective in long
-runs. It should be noted that because of the main focus of ViennaCL being on iterative
-solvers for large sparse systems of equations, where complex vector
-expressions are rare, predefined kernels are favorable in such a setting.
-The implications of these two distinct design decisions in VexCL and ViennaCL will be further addressed in the discussion of the results.
+The approach taken for the generation and compilation of the compute kernels is
+one of the main differences between the OpenCL libraries we considered.
+ViennaCL uses a set of predefined kernels, which functionally overlaps with
+BLAS level 1 routines for vector operations.  These kernels are compiled in
+batch at the program start to allow for faster initialization. However, due to
+this design decision each vector expression may result in the launch of more
+than one kernel.  On the other hand, VexCL generates and compiles an OpenCL
+program with a single kernel for each vector expression it encounters.  This
+leads to potentially higher initialization overhead, but should prove to be
+more effective in long runs. It should be noted that because of the main focus
+of ViennaCL being on iterative solvers for large sparse systems of equations,
+where complex vector expressions are rare, predefined kernels are favorable in
+such a setting.  The implications of these two distinct design decisions in
+VexCL and ViennaCL will be further addressed in the discussion of the results.
 
-The other difference between CUDA and OpenCL is that CUDA supports a subset of the
-C++ language in compute kernels, while OpenCL kernels are written in subset of
-C99. Therefore, CUDA programmers may use template metaprogramming techniques
-which may lead to more efficient and compact code. The native OpenCL API does not
-provide such a feature, but the drawback is balanced by the ability of
-kernel source generation during runtime. Modern C++ libraries such as those considered in
-this work successfully use this approach and hide gory details from their
-users.
+The other difference between CUDA and OpenCL is that CUDA supports a subset of
+the C++ language in compute kernels, while OpenCL kernels are written in subset
+of C99. Therefore, CUDA programmers may use template metaprogramming techniques
+which may lead to more efficient and compact code. The native OpenCL API does
+not provide such a feature, but the drawback is balanced by the ability of
+kernel source generation during runtime. Modern C++ libraries such as those
+considered in this work successfully use this approach and hide gory details
+from their users.
 
 
 
@@ -196,62 +195,56 @@ users.
 \section{Adapting odeint} \label{sec:adapting-odeint}
 
 Ordinary differential equations play a major role in many scientific
-disciplines. They occur naturally in the context of mechanical
-systems, like granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the Newtonian
-and Hamiltonian mechanics are formulated as ODEs
-\cite{landau_mechanics_1976}.  Many other applications can be found in
-such diverse fields as biology
-\cite{brauer_mathematical_2001,Murray-93} and neuroscience
-\cite{izhikevich_dynamical_2006}, chemistry
-\cite{atkins_physical_2001}, and social sciences
-\cite{Helbing01}. Furthermore, ODEs are also encountered in the
-context of the numerical solution of non-stationary partial
-differential equations (PDEs), where they occur after the
-discretization of the spatial coordinates.
+disciplines. They occur naturally in the context of mechanical systems, like
+granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the
+Newtonian and Hamiltonian mechanics are formulated as ODEs
+\cite{landau_mechanics_1976}.  Many other applications can be found in such
+diverse fields as biology \cite{brauer_mathematical_2001,Murray-93} and
+neuroscience \cite{izhikevich_dynamical_2006}, chemistry
+\cite{atkins_physical_2001}, and social sciences \cite{Helbing01}. Furthermore,
+ODEs are also encountered in the context of the numerical solution of
+non-stationary partial differential equations (PDEs), where they occur after
+the discretization of the spatial coordinates \cite{Hundsdorfer2003}.
 % [KR] This is probably the most common case
 % [KA] PDEs have very often other methods then the methods here
 % Denis, or Karl: Can you add reference to PDEs?
-% [DD] Sorry, I've never used anything but simple Euler method for the purpose
-% of solving non-stationary PDEs. Usually implicit methods show better
-% stability and require less time steps.
+% [DD] Added Hundsdorfer book as a reference. It has a chapter on IMEX methods
+% for advection-diffusion equations. (IMplicit EXplicit, diffusion part is
+% solved implicitly, and advection is stepped excplicitly with a Runge-Kutta
+% method).
 
 
-Odeint solves % [KR]: 'usually solves' is a bit too fuzzy. Does it support other types (implicit ODEs, higher-order ODEs)? If yes, we should state that here.  It is advisable to define the scope properly in a SIAM Journal. %[KA] implicit ODEs are differential algebraic equations, which can not be solved odeint, high order ODEs can always be transformed to be first-order. But odeint only solves the IVP.
-the initial value problem (IVP) of ordinary differential equations.
+Odeint solves the initial value problem (IVP) of ordinary differential
+equations.
 \begin{equation}
-\frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) =
-x_0.
+\frac{\de x}{\de t } = \dot{x} = f(x , t), \quad \quad x(0) = x_0.
 \label{eq:ode}
 \end{equation}
-Here, $x$ is the dependent variable and is usually a vector of real or complex values.
-$t$ is the independent variable. We will refer to $t$ as the time throughout the article and
-denote the time derivative with $\de x / \de t = \dot{x}$. $f(x,t)$ is
-the system function and defines the ODE.
+Here, $x$ is the dependent variable and is usually a vector of real or complex
+values.  $t$ is the independent variable. We will refer to $t$ as the time
+throughout the article and denote the time derivative with $\de x / \de t =
+\dot{x}$. $f(x,t)$ is the system function and defines the ODE.
 
 %% [KR]: This paragraph is mostly a duplication of what has been said in the introduction...
-Typical use cases for solving ODEs on GPUs are large systems of
-coupled ODEs which occur as discretizations of PDEs, or in ODEs
-defined on lattices or graphs. Another use case are parameter studies,
-where one wants to study the dependence of an ODE on some
-parameters. Here, one creates one large ODE which consists of many
-small uncoupled ODEs, each with a different parameter set. This one
-large system is then solved at once, hence all small ODEs are solved
+Typical use cases for solving ODEs on GPUs are large systems of coupled ODEs
+which occur as discretizations of PDEs, or in ODEs defined on lattices or
+graphs. Another use case are parameter studies, where one wants to study the
+dependence of an ODE on some parameters. Here, one creates one large ODE which
+consists of many small uncoupled ODEs, each with a different parameter set.
+This one large system is then solved at once, hence all small ODEs are solved
 simultaneously.
 
 
 Numerous methods for solving ODEs exist \cite{Press-92,HairerSolvingODEI,
-  HairerSolvingODEII}, % [KR]: I would prefer a more diverse set of authors here (not just Hairer), % [KA] These are the standard books
-which are usually categorized in the field of numerical analysis.
-Odeint
-implements the most prominent of these methods, for example the
-classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods,
-multi-step methods (Adams-Bashforth-Moulton), symplectic
-Runge-Kutta-Nystr\"om methods, and implicit methods (Rosenbrock and
-implicit Euler). All of these methods work iteratively, starting
-from a given initial value $x(t_0)$ to calculate the next value
-$x(t+\Delta t)$.
-$\Delta t$ is the step size and many be chosen either statically or adaptively.
-For reference, we note that the simplest method is the explicit Euler scheme
+HairerSolvingODEII}, which are usually categorized in the field of numerical
+analysis.  Odeint implements the most prominent of these methods, for example
+the classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods, multi-step
+methods (Adams-Bashforth-Moulton), symplectic Runge-Kutta-Nystr\"om methods,
+and implicit methods (Rosenbrock and implicit Euler). All of these methods work
+iteratively, starting from a given initial value $x(t_0)$ to calculate the next
+value $x(t+\Delta t)$.  $\Delta t$ is the step size and many be chosen either
+statically or adaptively.  For reference, we note that the simplest method is
+the explicit Euler scheme
 \begin{equation}
 x\left(t+\Delta t\right) := x(t) + \Delta t \; f(x(t),t) .
 \label{eq:euler}
@@ -282,22 +275,23 @@ class euler {
     }
 };
 \end{lstlisting}
-The state type, the algebra, and the operations enter the Euler method  % [KR]: It is not yet defined what a 'stepper'... [KA]: right
-as template parameter, hence they are exchangeable. The function object
-\code{ode} represents the ODE and must be provided by the user. It calculates
-the right hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in
-\code{m_dxdt}. The call of \code{for_each3} iterates over all elements of three vectors in parallel and    % [KR]: This is a bit confusing. What does 'iterate three vectors' mean in this context? It is not obvious how the for_each3-scale_sum2-call equals x(t) + \Delta t \; f(x(t),t) . [KA]: ok I have change the formulation a bit
-applies on each triple \code{scale_sum2}. The operation is performed
-in-place, meaning that $x$ is updated to the new value.
-In the code-snippet above, the call to \code{for_each3} is thus equivalent to the vector operation
+The state type, the algebra, and the operations enter the Euler method as
+template parameter, hence they are exchangeable. The function object \code{ode}
+represents the ODE and must be provided by the user. It calculates the right
+hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in \code{m_dxdt}.
+The call of \code{for_each3} iterates over all elements of three vectors in
+parallel and applies on each triple \code{scale_sum2}. The operation is
+performed in-place, meaning that $x$ is updated to the new value.  In the
+code-snippet above, the call to \code{for_each3} is thus equivalent to the
+vector operation
 \begin{lstlisting}
  x = 1.0 * x + dt * m_dxdt
 \end{lstlisting}
-which is just Eq.~\eqref{eq:euler}, since \code{m_dxdt} holds the values of $f(x(t), t)$.
-% [KA] I put the paragraph about algebra and reference example again into the text. I think it is ok to have them here, altough later we will show other implementations.
-Each of these algebras is a class consisting of \code{for_each1},
-\dots, \code{for_eachN} methods. For example the \code{for_each3}
-method in the \code{range_algebra} -- the default algebra for most vector types -- is similar to
+which is just Eq.~\eqref{eq:euler}, since \code{m_dxdt} holds the values of
+$f(x(t), t)$.  Each of these algebras is a class consisting of
+\code{for_each1}, \dots, \code{for_eachN} methods. For example the
+\code{for_each3} method in the \code{range_algebra} -- the default algebra for
+most vector types -- is similar to
 \begin{lstlisting}
 struct range_algebra {
     // ...
@@ -337,46 +331,20 @@ into the algebra and the operations which must be provided by the
 user. Note, that algebra and the operations must be chosen such that
 they interact correctly with the state type.
 
-% [KA]: Maybe the paragraph above explains the functioning a bit better.
-% The paragraph is not finished and
-% it requires to put the paragraphs about ODEs in front of this paragraph.
-
-% [DD]: I like it better than the paragraph below. That I took from odeint
-% documentation and it feels out of context here. May be we should omit it.
-
-% [KR]: The paragraph below also appears to be way too much implementation
-%       It is not really relevant for what follows, so I prefer to omit it.
-%       I commented it in the meanwhile.
-
-% [KA]: Hmm, I think the listing for the algebras is not needed, but I think
-%       a implementation of for_each and scale_sum is interesting for the reader.
-
-% [DD]: May be move the for_each and scale_sum implementations right after the
-% sentence 'The call of \code{for_each3} iterates over all elements...' above
-% as an immediate example?
-
-
-
-% [KR]: Rephrased the following paragraph a bit to account for the removal of the previous paragraph
-Many libraries for vector and matrix types provide expression
-templates \cite{Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques,
+Many libraries for vector and matrix types provide expression templates
+\cite{Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques,
 Vandevoorde:CppTemplates} for the elementary operations using operator overload
-convenience.
-Such libraries do not need to define their own algebra,
-but can instead be used with a default algebra
-and a default operation set included in odeint,
-which simply call the operations directly on the matrix or vector type.
-In this case only the resizing mechanism of odeint has to be adapted for the new types.
+convenience.  Such libraries do not need to define their own algebra, but can
+instead be used with a default algebra and a default operation set included in
+odeint, which simply call the operations directly on the matrix or vector type.
+In this case only the resizing mechanism of odeint has to be adapted for the
+new types.
 
-We describe the adaptation of odeint for the GPGPU libraries under consideration
-in the following. The adaptions are now part of odeint, thus native support
-for these libraries is available.
-Implementation details such the resizing of vectors is accomplished in a straight-forward manner
-and not further addressed for the sake of conciseness.
-% [KR]: I don't think that we need to justify the discussion with the next sentence. The paper is just about this topic :-)
-%However, providing
-%adaptation examples serves our goal of comparing convenience of the
-%libraries interfaces.
+We describe the adaptation of odeint for the GPGPU libraries under
+consideration in the following. The adaptions are now part of odeint, thus
+native support for these libraries is available.  Implementation details such
+the resizing of vectors is accomplished in a straight-forward manner and not
+further addressed for the sake of conciseness.
 
 To adapt Thrust to odeint we need to provide both an algebra and
 operations. The algebra needs to define the \code{for_each} family of
@@ -395,13 +363,15 @@ struct thrust_algebra {
     }
 };
 \end{lstlisting}
-Here, \code{thrust::make_zip_iterator} is used in combination with \code{make_tuple}
-to pack several device vector iterators into a single iterable sequence.
-The sequence is then processed by the \code{thrust::for_each} algorithm, applying the function object
-\code{op} to each entry.
+Here, \code{thrust::make_zip_iterator} is used in combination with
+\code{make_tuple} to pack several device vector iterators into a single
+iterable sequence.  The sequence is then processed by the
+\code{thrust::for_each} algorithm, applying the function object \code{op} to
+each entry.
 
-The operations called via the function object \code{op} are defined in \code{thrust_operations}
-and are actually function objects executed on the respective CUDA device:
+The operations called via the function object \code{op} are defined in
+\code{thrust_operations} and are actually function objects executed on the
+respective CUDA device:
 \begin{lstlisting}
 struct thrust_operations {
     template<class Fac1 = double, class Fac2 = Fac1>
@@ -420,25 +390,23 @@ struct thrust_operations {
     };
 };
 \end{lstlisting}
-The device function object uses \code{thrust::get<>} functions to unpack the zip iterator into separate values.
-This approach is heavily used with Thrust and allows to process several vectors
-in a single efficient sweep.
-% [KR] The following sentence refers to an implementation detail and is not of importance for the performance, thus I commented it.
-%Adaptation of resizing operations is trivial and is
-%omitted here for the sake of conciseness.
+The device function object uses \code{thrust::get<>} functions to unpack the
+zip iterator into separate values.  This approach is heavily used with Thrust
+and allows to process several vectors in a single efficient sweep.
 
 
-Both VexCL and ViennaCL provide convenient expression templates that
-may be directly used with odeint's \code{vector_space_algebra} and
-\code{default_operations}. This combination proved to be
-effective with VexCL, where each expression results in a single
-kernel. For ViennaCL, however, default operations involving more than two
-terms result in multiple kernel launches.  Moreover, temporary vectors
-are allocated and deallocated for each of such composite operations, resulting in a dramatic decrease of performance.
-To address such problems, ViennaCL provides a kernel generator \cite{tillet:kernel-generator}, which is able to generate
-specialized operations for ViennaCL. These use a custom kernel
-generation mechanism provided by the library.  For example,
-the \code{scale_sum2} operation is defined as:
+Both VexCL and ViennaCL provide convenient expression templates that may be
+directly used with odeint's \code{vector_space_algebra} and
+\code{default_operations}. This combination proved to be effective with VexCL,
+where each expression results in a single kernel. For ViennaCL, however,
+default operations involving more than two terms result in multiple kernel
+launches.  Moreover, temporary vectors are allocated and deallocated for each
+of such composite operations, resulting in a dramatic decrease of performance.
+To address such problems, ViennaCL provides a kernel generator
+\cite{tillet:kernel-generator}, which is able to generate specialized
+operations for ViennaCL. These use a custom kernel generation mechanism
+provided by the library.  For example, the \code{scale_sum2} operation is
+defined as:
 \begin{lstlisting}
 struct viennacl_operations {
     template<class Fac1 = double, class Fac2 = Fac1>
@@ -468,9 +436,10 @@ struct viennacl_operations {
         }
     };
 };
-\end{lstlisting} % [KR]: The const_cast<> was necessary due to an oversight of 'const' in the operator overloads. This is now fixed.
-Here, a custom OpenCL kernel is automatically generated from symbolic vector expression
-in the first call of the \code{operator()} and then reused for all subsequent calls.
+\end{lstlisting}
+Here, a custom OpenCL kernel is automatically generated from symbolic vector
+expression in the first call of the \code{operator()} and then reused for all
+subsequent calls.
 
 
 
@@ -727,17 +696,8 @@ thrust::for_each(
     );
 \end{lstlisting}
 \code{prev} and \code{next} are vectors of type
-\code{thrust::device_vector<size_t>} and hold the indices to the left and right vector
-elements.
-% [KR]: I consider the following an implementation detail, hence commented:
-%and initialized as
-%\begin{lstlisting}
-%thrust::counting_iterator<size_t> c(0);
-%thrust::copy(c, c + N - 1, prev.begin() + 1);
-%prev[0] = 0;     // prev = { 0, 0, 1, 2, 3, ..., N-1 }
-%thrust::copy(c + 1, c + N, next.begin());
-%next[N-1] = N-1; // next = { 1, 2, 3, ..., N-1, N-1 }
-%\end{lstlisting}
+\code{thrust::device_vector<size_t>} and hold the indices to the left and right
+vector elements.
 
 The VexCL version of the example is the most
 concise variant since VexCL provides native support for the user-defined
@@ -781,8 +741,8 @@ implementation.
 
 
 Another example for our performance and usage study is a 
-nonlinear disordered Hamiltonian lattice\cite{mulansky_scaling_2012}. Its equations of motion are
-governed by
+nonlinear disordered Hamiltonian lattice\cite{mulansky_scaling_2012}. Its
+equations of motion are governed by
 \begin{equation}
 \dot{q}_{i,j} = p_{i,j}, \quad \quad
 \dot{p}_{i,j} = - \omega_{i,j}^2 q_{i,j} - \beta q_{i,j}^3 + \Delta_d q_{i,j}.
@@ -800,29 +760,32 @@ shown that the energy and phase volume are conserved during the time
 evolution. To account for these properties, a special class of solvers
 exists, namely symplectic solvers. Odeint implements three different
 variants of such solvers, all being of the Runge-Kutta-Nystr\"om
-type \cite{HairerGeometricNumericalIntegration2006,Leimkuhler-Reich-04}. The implementation of this solvers requires only the second part
+type \cite{HairerGeometricNumericalIntegration2006,Leimkuhler-Reich-04}. The
+implementation of this solvers requires only the second part
 of \eqref{eq:disordered_ham} with $\dot{p}_{i,j}$ to be specified by
 the user.
 
 
 
 The natural choice for the implementation of \eqref{eq:disordered_ham} is a
-sparse matrix~-- vector product. Since Thrust neither provides sparse
-matrix types nor sparse matrix-vector products, we had to combine
-Thrust with the CUSPARSE library in order to implement this example. CUSPARSE    % [KR]: Provide a link to CUSPARSE? Cite it in some way?
-contains a set of basic linear algebra subroutines used for handling sparse
-matrices and is included in the CUDA Toolkit distribution as well as in the Thrust
-library. As an alternative, the open-source Cusp library \cite{CuspRef} for sparse linear algebra
-and graph computations on CUDA could have been used, yet we decided to go with the first option.
+sparse matrix~-- vector product. Since Thrust neither provides sparse matrix
+types nor sparse matrix-vector products, we had to combine Thrust with the
+CUSPARSE library in order to implement this example. CUSPARSE contains a set of
+basic linear algebra subroutines used for handling sparse matrices and is
+included in the CUDA Toolkit distribution as well as in the Thrust library
+\cite{NvidiaCusparseManual}. As an alternative, the open-source Cusp library
+\cite{CuspRef} for sparse linear algebra and graph computations on CUDA could
+have been used, yet we decided to go with the first option.
 
 % [KA] : is it neccessary to mention Cusp?
 % [DD] : I think not. This is not the only alternative.
 
-For better comparison, all libraries considered in our study use the hybrid
-ELL format for storing the sparse matrix, which is one of the most efficient
-formats for sparse matrices on GPUs~\cite{BellGarland2008}.
-As the construction of the sparse matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$ is
-straight-forward, we only provide code for the system function object's
+For better comparison, all libraries considered in our study use the hybrid ELL
+format for storing the sparse matrix when run on a GPU. This is one of the most
+efficient formats for sparse matrices on GPUs~\cite{BellGarland2008}. The
+standard compressed sparse row format is used for CPU runs.  As the
+construction of the sparse matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$
+is straight-forward, we only provide code for the system function object's
 \code{operator()}.
 
 The relevant code for the Thrust version of the system functor is
@@ -840,10 +803,11 @@ void operator()(const state_type &q , state_type &dp) const {
 \end{lstlisting}
 Here, \code{handle}, \code{descr}, and \code{A} are CUSPARSE data structures
 holding the CUSPARSE context and sparse matrix data. The
-\code{thrust::transform()} algorithm is used in lines 5 and 6 to compute the scaled
-third power of the input vector \code{q}. Lines 8--10 call the sparse matrix-vector product kernel in CUSPARSE,
-where \code{thrust::raw_pointer_cast()} is used to convert the thrust device
-vector iterator to a raw device pointer.
+\code{thrust::transform()} algorithm is used in lines 5 and 6 to compute the
+scaled third power of the input vector \code{q}. Lines 8--10 call the sparse
+matrix-vector product kernel in CUSPARSE, where
+\code{thrust::raw_pointer_cast()} is used to convert the thrust device vector
+iterator to a raw device pointer.
 
 The VexCL version employs the user-defined OpenCL function \code{pow3} which
 computes the third power of its argument and is used for the sake of best performance.
@@ -890,39 +854,27 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 
 \section{Results}
 
-We present results obtained from our numerical experiments in this section. The complete
-source code for the experiments and the full set of results can be obtained from a
-GitHub repository\footnote{ \href{
+We present results obtained from our numerical experiments in this section. The
+complete source code for the experiments and the full set of results can be
+obtained from a GitHub repository\footnote{ \href{
 https://github.com/ddemidov/vexcl_odeint_paper } {
 https://github.com/ddemidov/vexcl\_odeint\_paper } }.
 
-% [DD]: May be we should rename repository to ahnert_demidov_rupp_2012 or
-% gpgpu_with_modern_cpp or to something else more sutable than the current
-% name.  Github allows to do that, but we will have to change remote urls in
-% our local clones. We can do this right before publishing to save the trouble.
-%
-% [KR]: Yes, let's adjust this right with the submission
-% [KA]: Good idea
-
-All the libraries tested in this paper allow for the use of both CPU and
-GPU devices.  Thrust supports an OpenMP-based execution on the CPU, which is enabled
-by a compilation switch, while OpenCL libraries natively support CPUs provided that the respective runtime is installed.
-The timings provided were obtained for two GPUs, namely an NVIDIA Tesla C2070 and
-an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU.
-All reported values are median values of execution times taken for ten runs.
-
-% [KR]: Which SDK was used for the CPU computations? We should definitely
-% consider a comparison of Intel vs. AMD SDKs. There could be quite a number of
-% interesting differences.
-
-% [DD]: I am running the experiments now, will add data when its ready.
+All the libraries tested in this paper allow for the use of both CPU and GPU
+devices.  Thrust supports an OpenMP-based execution on the CPU, which is
+enabled by a compilation switch, while OpenCL libraries natively support CPUs
+provided that the respective runtime is installed. Two OpenCL implementations
+for CPUs were tested: AMD's and Intel's.  The timings provided were obtained
+for two GPUs, namely an NVIDIA Tesla C2070 and an AMD Radeon HD~7970 (Tahiti),
+as well as for an Intel Core i7 930 CPU. All reported values are median values
+of execution times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
-data for the three examples discussed in the previous section.
-The plots on the left show absolute time against the size of the problem being solved, while right hand side plots   % [KR]: I don't see much added value on the plots on the right hand side. Consider dropping them?
-show relative performance with respect to the Thrust GPU version.
-Absolute execution times for the largest
-problem size for all of the considered libraries are given in Table~\ref{tab:abstimes}.
+data for the three examples discussed in the previous section.  The plots on
+the left show absolute time against the size of the problem being solved, while
+right hand side plots show relative performance with respect to the Thrust
+version.  Absolute execution times for the largest problem size for all of the
+considered libraries are given in Table~\ref{tab:abstimes}.
 
 \begin{figure}
     \begin{center}
@@ -949,32 +901,42 @@ problem size for all of the considered libraries are given in Table~\ref{tab:abs
 \end{figure}
 
 
-In general, all our experiments show up to $10\times$ to $20\times$ acceleration
-when run on a GPU as compared to the CPU path. This is the expected acceleration
-rate for the memory bandwidth bound examples that we looked at. However, both CUDA and OpenCL
-programs show considerable overhead for the smaller problem sizes,
-thus requiring problems of sizes between $10^3$ and $10^5$ to see any significant acceleration on
-a GPU at all. The overhead for OpenCL libraries is larger than that of CUDA programs,
-which is mostly due to the additional kernel management logic required by the OpenCL runtime.
+In general, all our experiments show up to $10\times$ to $20\times$
+acceleration when run on a GPU as compared to the CPU path. This is the
+expected acceleration rate for the memory bandwidth bound examples that we
+looked at. However, both CUDA and OpenCL programs show considerable overhead
+for the smaller problem sizes, thus requiring problems of sizes between $10^3$
+and $10^5$ to see any significant acceleration on a GPU at all. The overhead
+for OpenCL libraries is larger than that of CUDA programs, which is mostly due
+to the additional kernel management logic required by the OpenCL runtime.
 
 Performance-wise, all of the considered libraries are close to each other when
-run on a GPU.  Thrust performs slightly better in most cases except for the phase oscillator chain example,
-where the permutation iterators require the use of an auxiliary index vector.
-VexCL and ViennaCL are in general slower than Thrust by a few percent, which is usually negligible in practice.
-Apparently, the CUSPARSE implementation of the sparse matrix-vector product is more efficient than that of the OpenCL
-libraries, since VexCL and ViennaCL are slower than Thrust/CUSPARSE combination
-by about 30 percent for the disordered Hamiltonian lattice experiment. Both
-OpenCL libraries show very similar results on a GPU. ViennaCL is about 15 percent faster for
-phase oscillator chain example due to the use of a hand-written kernel.
-Conversely, the overhead of using high-level libraries is negligible compared to the effort spent in getting familiar with the details of CUDA or OpenCL.
-Thus, we have successfully countered productivity concerns for GPU computing raised in the past \cite{bordawekar:gpu-productivity}.
+run on a GPU.  Thrust performs slightly better in most cases except for the
+phase oscillator chain example, where the permutation iterators require the use
+of an auxiliary index vector.  VexCL and ViennaCL are in general slower than
+Thrust by a few percent, which is usually negligible in practice.  Apparently,
+the CUSPARSE implementation of the sparse matrix-vector product is more
+efficient than that of the OpenCL libraries, since VexCL and ViennaCL are
+slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
+Hamiltonian lattice experiment. Both OpenCL libraries show very similar results
+on a GPU. ViennaCL is about 15 percent faster for phase oscillator chain
+example due to the use of a hand-written kernel.  Conversely, the overhead of
+using high-level libraries is negligible compared to the effort spent in
+getting familiar with the details of CUDA or OpenCL.  Thus, we have
+successfully countered productivity concerns for GPU computing raised in the
+past \cite{bordawekar:gpu-productivity}.
 
 If we look at the performance of the experiments on the CPU, performance
-differences between the libraries are more pronounced. Thrust outperforms
-VexCL on larger problems by 15 to 40 percent, except for the phase
-oscillators example, where VexCL is faster by about 5 percent.
-The performance of ViennaCL on the CPU is poor and about 75 percent below that of Thrust and between 30 and 70 percent below that of VexCL.
-The only exception is again the phase oscillator test, where ViennaCL outperforms other libraries.
+differences between the libraries are more pronounced. Thrust outperforms VexCL
+on larger problems by 15 to 40 percent, except for the phase oscillators
+example, where VexCL is faster by about 5 percent.  The performance of ViennaCL
+on the CPU is poor and about 75 percent below that of Thrust and between 30 and
+70 percent below that of VexCL.  The only exception is again the phase
+oscillator test, where ViennaCL outperforms other libraries. The difference
+between the AMD's and the Intel's OpenCL implementations is negligible in the
+most cases. The only example where the Intel's implementation outperforms the
+AMD's one is the chain of phase oscillators. The performance difference between
+the implementations here reaches 30\%. % [DD] this needs some words.
 
 \begin{table}
  \centering
@@ -994,29 +956,35 @@ The only exception is again the phase oscillator test, where ViennaCL outperform
         \em ViennaCL &\em Tahiti & 148.62 &  83.61 & 213.22 \\
         \hline
         \em Thrust   &\em CPU   & 2~339.33 & 5~172.84 &      N/A \\
-        \em VexCL    &\em CPU   & 3~206.17 & 5~015.02 & 3~152.92 \\
-        \em ViennaCL &\em CPU   & 4~127.98 & 4~605.93 & 5~485.99 \\
+        \em VexCL    &\em CPU (AMD) & 3~206.17 & 5~015.02 & 3~152.92 \\
+        \em ViennaCL &\em CPU (AMD) & 4~127.98 & 4~605.93 & 5~485.99 \\
+        \em VexCL    &\em CPU (Intel) & N/A & N/A & N/A \\
+        \em ViennaCL &\em CPU (Intel) & N/A & N/A & N/A \\
         \hline
     \end{tabular}
 \end{table}
 
 
-The difference between Thrust and the OpenCL libraries can be explained by the fact
-that Thrust uses an OpenMP back end when run on a CPU. Thus, it does not have any
-overhead such as OpenCL initialization and kernel compilation.  The gap
-between OpenCL libraries may be attributed to the different work-group sizes
-used in their kernels and the fact that VexCL generates slightly different
-kernels when run on a CPU device. Moreover, both of the libraries are primarily
-aimed at GPU performance and do not use CPU-specific optimizations, such as
-employing OpenCL vector data types that facilitate use of SSE instructions.
-Still, the overhead of OpenCL for small problem sizes is tremendous, if not embarrassing,
-hence OpenCL cannot be considered to be a competitive CPU programming model for a large area of applications in its present state.
+The difference between Thrust and the OpenCL libraries can be explained by the
+fact that Thrust uses an OpenMP back end when run on a CPU. Thus, it does not
+have any overhead such as OpenCL initialization and kernel compilation.  The
+gap between OpenCL libraries may be attributed to the different work-group
+sizes used in their kernels and the fact that VexCL generates slightly
+different kernels when run on a CPU device. Moreover, both of the libraries are
+primarily aimed at GPU performance and do not use CPU-specific optimizations,
+such as employing OpenCL vector data types that facilitate use of SSE
+instructions.  Still, the overhead of OpenCL for small problem sizes is
+tremendous, if not embarrassing, hence OpenCL cannot be considered to be a
+competitive CPU programming model for a large area of applications in its
+present state.
 
 % [KR]: Please let me know whether you agree with this sentence. It is a rather
 % bold statement, yet the only reasonable one when looking at the benchmark
 % results.
 
 % [KA]: I think this statement is to hard.
+
+% [DD]: Let's wait for the final results.
 
 Finally, results for multi-GPU usage as provided by VexCL in a transparent way
 are considered. \figref{fig:scaling} shows scaling results for up to three
@@ -1056,34 +1024,37 @@ differences in the programming interfaces of the libraries which may be crucial
 for ones specific application.
 
 The focus of Thrust is more on providing low-level primitives with an interface
-very close to the C++ STL library.
-Special purpose functionality is available via separate libraries such as CUSPARSE
-and can be integrated without a lot of effort.
-The OpenCL libraries we looked at demonstrated that they are able to
+very close to the C++ STL library.  Special purpose functionality is available
+via separate libraries such as CUSPARSE and can be integrated without a lot of
+effort.  The OpenCL libraries we looked at demonstrated that they are able to
 provide more convenient interface for a scientific programmer than a direct
-implementation in CUDA or OpenCL.
-VexCL has a richer set of element-wise vector operations and allows for the
-shortest implementations in the context of ODEs considered in this work.
-ViennaCL required a few additional lines of code including small custom OpenCL kernels for our examples.
-Still, this extra effort is acceptable considering that the library's focus is on sparse linear systems solvers,
-which are, however, beyond the scope of this paper.
+implementation in CUDA or OpenCL.  VexCL has a richer set of element-wise
+vector operations and allows for the shortest implementations in the context of
+ODEs considered in this work.  ViennaCL required a few additional lines of code
+including small custom OpenCL kernels for our examples.  Still, this extra
+effort is acceptable considering that the library's focus is on sparse linear
+systems solvers, which are, however, beyond the scope of this paper.
 
-Regarding a comparison of CUDA versus OpenCL, the main difference observed in this work is the wider range of hardware supported.
-Although performance obtained via CUDA is a few percent better than that of OpenCL on the overall,
-the differences are mostly too small in order to make a decision in favor of CUDA based on performance only.
-Moreover, the slight performance advantage of CUDA can still turn into a disadvantage when taking the larger set of hardware supporting OpenCL into consideration.
+Regarding a comparison of CUDA versus OpenCL, the main difference observed in
+this work is the wider range of hardware supported.  Although performance
+obtained via CUDA is a few percent better than that of OpenCL on the overall,
+the differences are mostly too small in order to make a decision in favor of
+CUDA based on performance only.  Moreover, the slight performance advantage of
+CUDA can still turn into a disadvantage when taking the larger set of hardware
+supporting OpenCL into consideration.
 
 
-Another aspect that has not been studied in this work is the ability to generate kernels
-optimized for the problem at hand at runtime. This allows, for example, to generate
-optimized kernels for a certain set of parameters supplied, eliminating any otherwise spurious reads from global memory.
-An in-depth study of such an approach is, however, left for future work.
+Another aspect that has not been studied in this work is the ability to
+generate kernels optimized for the problem at hand at runtime. This allows, for
+example, to generate optimized kernels for a certain set of parameters
+supplied, eliminating any otherwise spurious reads from global memory.  An
+in-depth study of such an approach is, however, left for future work.
 
 \section{Acknowledgments}
 
 This work has been partially supported by the Russian Foundation for Basic
-Research (RFBR) grant No 12-07-0007 and the Austrian Science Fund (FWF), grant P23598.
-We also would like to thank Gradient JSC\footnote{ \href{
+Research (RFBR) grant No 12-07-0007 and the Austrian Science Fund (FWF), grant
+P23598.  We also would like to thank Gradient JSC\footnote{ \href{
 http://www.gradient-geo.com/en }{ http://www.gradient-geo.com/en } } for the
 kindly provided AMD hardware.
 
