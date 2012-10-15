@@ -51,7 +51,7 @@ xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 set(gca, 'xticklabel', [])
 set(gca, 'yaxislocation', 'right')
-ylabel('T / T(Thrust)');
+ylabel('T / T( VexCL(Intel) )');
 axis square
 
 pos2 = get(gca, 'Position');
