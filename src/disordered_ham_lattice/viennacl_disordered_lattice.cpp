@@ -111,14 +111,13 @@ int main( int argc , char **argv )
     value_type beta = 0.01;
     value_type t_max = 100.0;
     value_type dt = 0.01;
-    
+
     vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env && vex::Filter::DoublePrecision && vex::Filter::Count(1)) );
     std::vector<cl_device_id> dev_id(1, ctx.queue(0).getInfo<CL_QUEUE_DEVICE>()());
     std::vector<cl_command_queue> queue_id(1, ctx.queue(0)());
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
     std::cout << ctx << std::endl;
 
-    viennacl::io::read_kernel_parameters< viennacl::vector<value_type> >("vector_parameters.xml");
     viennacl::io::read_kernel_parameters< viennacl::compressed_matrix<value_type> >("sparse_parameters.xml");
 
     bool cpu = ctx.queue(0).getInfo<CL_QUEUE_DEVICE>().getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU;
