@@ -1,0 +1,39 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N phase_oscillator_viennacl
+#$ -cwd
+#$ -l cores=4,tesla_2070=1
+#$ -t 1:10
+
+viennacl_exe=viennacl_phase_oscillator
+
+# warming run
+OCL_PLATFORM=AMD    ./${viennacl_exe}
+OCL_PLATFORM=Intel  ./${viennacl_exe}
+OCL_PLATFORM=NVIDIA ./${viennacl_exe}
+
+rm -f viennacl_cpu_amd_${SGE_TASK_ID}.dat
+rm -f viennacl_cpu_intel_${SGE_TASK_ID}.dat
+rm -f viennacl_gpu_${SGE_TASK_ID}.dat
+
+for ((a=256;a<=4194304;a*=2)); do
+    echo "$a"
+
+    export OCL_PLATFORM=AMD
+
+    echo -n "$a " >> viennacl_cpu_amd_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_cpu_amd_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
+
+    export OCL_PLATFORM=Intel
+
+    echo -n "$a " >> viennacl_cpu_intel_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_cpu_intel_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
+
+    export OCL_PLATFORM=NVIDIA
+
+    echo -n "$a " >> viennacl_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o viennacl_gpu_${SGE_TASK_ID}.dat -a ./${viennacl_exe} $a > /dev/null
+
+    echo ""
+done

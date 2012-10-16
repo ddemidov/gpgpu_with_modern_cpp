@@ -25,7 +25,7 @@ add_executable(generated_oscillator generated_oscillator.cpp)
 target_link_libraries(generated_oscillator OpenCL)
 set_target_properties(generated_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu run_custom_kernel)
+foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
 	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge

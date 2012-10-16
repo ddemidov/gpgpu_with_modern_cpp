@@ -1,0 +1,28 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N damped_oscillator_thrust
+#$ -cwd
+#$ -l cores=4,tesla_2070=3
+#$ -t 1:10
+
+thrust_exe=thrust_oscillator
+
+# warming run
+./${thrust_exe}
+./${thrust_exe}_openmp
+
+rm -f thrust_cpu_${SGE_TASK_ID}.dat
+rm -f thrust_gpu_${SGE_TASK_ID}.dat
+
+for ((a=256;a<=4194304;a*=2)); do
+    echo "$a"
+
+    echo -n "$a " >> thrust_cpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o thrust_cpu_${SGE_TASK_ID}.dat -a ./${thrust_exe}_openmp $a > /dev/null
+
+    echo -n "$a " >> thrust_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o thrust_gpu_${SGE_TASK_ID}.dat -a ./${thrust_exe} $a > /dev/null
+
+    echo ""
+done

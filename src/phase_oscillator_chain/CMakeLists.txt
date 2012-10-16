@@ -17,7 +17,7 @@ add_executable(viennacl_phase_oscillator viennacl_phase_oscillator_chain.cpp)
 target_link_libraries(viennacl_phase_oscillator OpenCL)
 set_target_properties(viennacl_phase_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
+foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
 	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge

@@ -25,7 +25,7 @@ add_executable(generated_lorenz generated_lorenz_ensemble.cpp)
 target_link_libraries(generated_lorenz OpenCL)
 set_target_properties(generated_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
-foreach(script run_on_cpu run_on_1gpu run_on_2gpu run_on_3gpu)
+foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
 	${CMAKE_CURRENT_BINARY_DIR}/${script}.sge
