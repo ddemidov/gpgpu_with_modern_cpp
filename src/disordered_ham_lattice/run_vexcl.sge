@@ -2,6 +2,7 @@
 #$ -V
 #$ -j y
 #$ -N disordered_lattice_vexcl
+#$ -m ae -M dennis.demidov@gmail.com
 #$ -cwd
 #$ -l cores=4,tesla_2070=3
 #$ -t 1:10

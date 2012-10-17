@@ -2,6 +2,7 @@
 #$ -V
 #$ -j y
 #$ -N damped_oscillator_viennacl
+#$ -m ae -M dennis.demidov@gmail.com
 #$ -cwd
 #$ -l cores=4,tesla_2070=1
 #$ -t 1:10
