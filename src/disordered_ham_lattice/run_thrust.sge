@@ -7,7 +7,7 @@
 #$ -l cores=4,tesla_2070=3
 #$ -t 1:10
 
-thrust_exe=thrust_lorenz
+thrust_exe=thrust_disordered_lattice
 
 # warming run
 ./${thrust_exe}
