@@ -57,7 +57,7 @@ struct sys_func
 		sym_dX = sym_sigma * (sym_Y - sym_X),
 		sym_dY = element_prod(sym_R, sym_X) - sym_Y - element_prod(sym_X, sym_Z),
 		sym_dZ = element_prod(sym_X, sym_Y) - sym_b * sym_Z,
-		"Lorenz");
+		"lorenz");
 
 	const auto &X = fusion::at_c< 0 >( x );
 	const auto &Y = fusion::at_c< 1 >( x );

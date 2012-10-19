@@ -53,28 +53,6 @@ struct ham_lattice
 
 	copy(viennacl::tools::const_sparse_matrix_adapter<double>(
 		    cpu_matrix, m_N, m_N), m_A);
-
-	static const char source[] =
-	    "#if defined(cl_khr_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-	    "#elif defined(cl_amd_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
-	    "#endif\n"
-	    "kernel void scaled_pow3(\n"
-	    "        uint n,\n"
-	    "        global double *dx,\n"
-	    "        global const double *x,\n"
-	    "        double beta\n"
-	    "        )\n"
-	    "{\n"
-	    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-	    "        double X = x[i];\n"
-	    "        dx[i] -= beta * X * X * X;\n"
-	    "    }\n"
-	    "}\n";
-
-	viennacl::ocl::current_context().add_program(
-		source, "pow3_program").add_kernel("scaled_pow3");
     }
 
     inline long index_modulus( long idx )
@@ -84,15 +62,18 @@ struct ham_lattice
         return idx;
     }
 
-    void operator()( const state_type &q , state_type &dp ) const
-    {
+    void operator()( const state_type &q , state_type &dp ) const {
+	using namespace viennacl::generator;
+	static symbolic_vector<0, value_type> sym_dp;
+	static symbolic_vector<1, value_type> sym_q;
+	static cpu_symbolic_scalar<2, value_type> sym_beta;
+
+	static custom_operation lattice_op(
+		sym_dp -= sym_beta * element_prod(sym_q, element_prod(sym_q, sym_q)),
+		"hamiltonian");
+
         dp = viennacl::linalg::prod(m_A, q);
-
-	viennacl::ocl::kernel &scaled_pow3 =
-	    viennacl::ocl::current_context().get_program(
-		    "pow3_program").get_kernel("scaled_pow3");
-
-	viennacl::ocl::enqueue( scaled_pow3(cl_uint(q.size()), dp, q, m_beta) );
+	viennacl::ocl::enqueue( lattice_op(dp, q, m_beta) );
     }
 
     long m_N ;
