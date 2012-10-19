@@ -114,16 +114,16 @@ this work are Thrust, VexCL, and ViennaCL:
 
 \begin{description}
     \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com
-	}{ http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1,
-	OdeintRef2}.  It is developed in a generic way using template
-	metaprogramming techniques, which leads to extraordinary high
-	flexibility at utmost performance. The numerical algorithms are
-	implemented independently of the underlying arithmetics. This results
-	in a broad applicability of the library, especially in non-standard
-	environments.  For example, odeint supports matrix types, arbitrary
-	precision arithmetics, and can be easily adopted to use either CUDA or
-	OpenCL frameworks.  Odeint is used in this work as a framework for the
-	comparison of other libraries.
+        }{ http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1,
+        OdeintRef2}.  It is developed in a generic way using template
+        metaprogramming techniques, which leads to extraordinary high
+        flexibility at utmost performance. The numerical algorithms are
+        implemented independently of the underlying arithmetics. This results
+        in a broad applicability of the library, especially in non-standard
+        environments.  For example, odeint supports matrix types, arbitrary
+        precision arithmetics, and can be easily adopted to use either CUDA or
+        OpenCL frameworks.  Odeint is used in this work as a framework for the
+        comparison of other libraries.
     \item[Thrust] is a parallel algorithms library\footnote{ \href{
         http://thrust.github.com }{ http://thrust.github.com }} which resembles
         the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
@@ -356,9 +356,9 @@ struct thrust_algebra {
     static void for_each3(StateType1 &s1, StateType2 &s2, StateType3 &s3, Op op) {
         thrust::for_each(
                 thrust::make_zip_iterator( thrust::make_tuple(
- 		    s1.begin(), s2.begin(), s3.begin() ) ),
+                    s1.begin(), s2.begin(), s3.begin() ) ),
                 thrust::make_zip_iterator( thrust::make_tuple(
-		    s1.end(), s2.end(), s3.end() ) ),
+                    s1.end(), s2.end(), s3.end() ) ),
                 op);
     }
 };
@@ -523,7 +523,7 @@ struct lorenz_functor;
 void lorenz_system::operator()(const state_type &x, state_type &dxdt, double t) const {
         thrust::for_each(
                 thrust::make_zip_iterator( thrust::make_tuple(
-			R.begin(),
+                        R.begin(),
                         x.begin(), x.begin() + N, x.begin() + 2 * N,
                         dxdt.begin(), dxdt.begin() + N, dxdt.begin() + 2 * N ) ),
                 thrust::make_zip_iterator( thrust::make_tuple(
@@ -540,13 +540,13 @@ translation of \eqref{eq:lorenz} into code:
 struct lorenz_functor {
     template< class T >
     __host__ __device__ void operator()( T t ) const {
-	double R = thrust::get<0>(t);
-	double x = thrust::get<1>(t);
-	double y = thrust::get<2>(t);
-	double z = thrust::get<3>(t);
-	thrust::get<4>(t) = sigma * ( y - x );
-	thrust::get<5>(t) = R * x - y - x * z;
-	thrust::get<6>(t) = -b * z + x * y ;
+        double R = thrust::get<0>(t);
+        double x = thrust::get<1>(t);
+        double y = thrust::get<2>(t);
+        double z = thrust::get<3>(t);
+        thrust::get<4>(t) = sigma * ( y - x );
+        thrust::get<5>(t) = R * x - y - x * z;
+        thrust::get<6>(t) = -b * z + x * y ;
 
     }
 };
@@ -569,9 +569,9 @@ struct lorenz_system {
     lorenz_system(const vex::vector<double> &R) : R(R) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-	dxdt(0) = sigma * (x(1) - x(0));
-	dxdt(1) = R * x(0) - x(1) - x(0) * x(2);
-	dxdt(2) = x(0) * x(1) - b * x(2);
+        dxdt(0) = sigma * (x(1) - x(0));
+        dxdt(1) = R * x(0) - x(1) - x(0) * x(2);
+        dxdt(2) = x(0) * x(1) - b * x(2);
     }
 };
 \end{lstlisting}
@@ -586,8 +586,8 @@ multi-vector.  The required notation is only slightly more cumbersome than the
 above variant:
 \begin{lstlisting}[firstnumber=9]
     dxdt = std::make_tuple(   sigma * (x(1) - x(0)),
-	                      R * x(0) - x(1) - x(0) * x(2),
-	                      x(0) * x(1) - b * x(2)          );
+                              R * x(0) - x(1) - x(0) * x(2),
+                              x(0) * x(1) - b * x(2)          );
 \end{lstlisting}
 
 For the ViennaCL version of the Lorenz attractor example a
@@ -595,18 +595,11 @@ For the ViennaCL version of the Lorenz attractor example a
 state vector into a single type. Individual components are instances of the
 \code{viennacl::vector<double>} type.
 
-ViennaCL supports expression templates for a limited set of vector operations
-(closely corresponding to Level 1 BLAS routines). But, the element-wise
-expressions used in \eqref{eq:lorenz} are unavailable.  Therefore, we had to
-encode the required operations into a custom OpenCL kernel which is omitted here
-for brevity.  Even though a hand-written OpenCL kernel needs to be used for this
-example, ViennaCL provides convenient mechanisms for the compilation and launch
-of custom kernels, avoiding tedious interactions with the low-level OpenCL API.
-As a consequence, the performance of ViennaCL for this example is comparable to
-a hand-tuned code.  The actual implementation of the \code{lorenz_system} class
-consequently consists of the compilation of the kernel residing in a string
-object \code{lorenz_source} in the constructor, and the launch of the
-respective kernel in \code{operator()}:
+The ViennaCL version of the Lorenz attractor example uses ViennaCL's mechanism
+for custom kernel generation that was described in
+Sec.~\ref{sec:adapting-odeint}. The symbolic variables and the custom operation
+are defined as static variables, so the corresponding OpenCL kernel is compiled
+once in the first call of the system functor:
 \begin{lstlisting}
 typedef fusion::vector<
     viennacl::vector<double>, viennacl::vector<double>, viennacl::vector<double>
@@ -615,25 +608,29 @@ typedef fusion::vector<
 struct lorenz_system {
     const viennacl::vector<double> &R;
 
-    lorenz_system( const viennacl::vector<double> &R ) : R(R) {
-	viennacl::ocl::current_context().add_program(
-		lorenz_source, "lorenz_program").add_kernel("lorenz");
-    }
+    lorenz_system(const viennacl::vector<double> &R ) : R(R) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        auto &X = fusion::at_c<0>(x);
-        auto &Y = fusion::at_c<1>(x);
-        auto &Z = fusion::at_c<2>(x);
+        using namespace viennacl::generator;
 
-	auto &dX = fusion::at_c<0>(dxdt);
-	auto &dY = fusion::at_c<1>(dxdt);
-	auto &dZ = fusion::at_c<2>(dxdt);
+        // ... Definition of static symbolic values ...
 
-	viennacl::ocl::kernel &step = viennacl::ocl::current_context().get_program(
-		    "lorenz_program").get_kernel("lorenz");
+        static custom_operation lorenz_op(
+                sym_dX = sym_sigma * (sym_Y - sym_X),
+                sym_dY = element_prod(sym_R, sym_X) - sym_Y
+                        - element_prod(sym_X, sym_Z),
+                sym_dZ = element_prod(sym_X, sym_Y) - sym_b * sym_Z,
+                "lorenz");
 
-	viennacl::ocl::enqueue( step(cl_uint(X.size()),
-	    dX, dY, dZ, X, Y, Z, R, sigma, b) );
+        const auto &X = fusion::at_c<0>(x);
+        const auto &Y = fusion::at_c<1>(x);
+        const auto &Z = fusion::at_c<2>(x);
+
+        auto &dX = fusion::at_c<0>(dxdt);
+        auto &dY = fusion::at_c<1>(dxdt);
+        auto &dZ = fusion::at_c<2>(dxdt);
+
+        viennacl::ocl::enqueue(lorenz_op(dX, dY, dZ, X, Y, Z, R, sigma, b));
     }
 };
 \end{lstlisting}
@@ -726,10 +723,30 @@ struct phase_oscillators {
 ViennaCL, being oriented at iterative solution of large systems of equations,
 does not provide stencil operations required for the problem at hand, so we had
 to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
-reasons of brevity. The kernel is compiled in the constructor of the system
-functor and is launched in the \code{operator()} in the same way we did this
-for the Lorenz attractor ensemple example. Therefore, we omit the actual
-implementation.
+reasons of brevity.  Even though a custom OpenCL kernel needs to be used for
+this example, ViennaCL provides convenient mechanisms for the compilation and
+launch of custom kernels, avoiding tedious interactions with the low-level
+OpenCL API.  As a consequence, the performance of ViennaCL for this example is
+comparable to hand-tuned code.  The actual implementation of the
+\code{phase_oscillators} class consequently consists of the compilation of the
+kernel residing in a string object \code{phase_oscillator_source} in the
+constructor, and the launch of the respective kernel in \code{operator()}:
+\begin{lstlisting}
+typedef viennacl::vector<double> state_type;
+
+struct phase_oscillators {
+    const state_type &omega;
+    sys_func(const state_type &omega) : omega(omega) {
+        viennacl::ocl::current_context().add_program(phase_oscillator_source,
+            "oscillator_program").add_kernel("oscillator");
+    }
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
+        viennacl::ocl::kernel &step = viennacl::ocl::current_context().get_program(
+            "oscillator_program").get_kernel("oscillator");
+        viennacl::ocl::enqueue( step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
+    }
+};
+\end{lstlisting}
 
 
 
@@ -824,22 +841,23 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-ViennaCL does not support element-wise vector products and only provides
-math functions using the kernel generator. Therefore,
-\code{operator()} had to be split into two parts: the first part computes
-the sparse matrix-vector product, while the second part uses a hand-coded kernel to
-add the non-linear term $-\beta q^3$ to the result:
+The ViennaCL version of the system functor is split into two parts: first, the
+sparse matrix~-- vector product $Aq$ is computed; second, the non-linear term
+$-\beta q^3$ is added to the result by means of a custom operation:
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
-    dp = viennacl::linalg::prod(A, q);
+    using namespace viennacl::generator;
 
-    viennacl::ocl::kernel &scaled_pow3 =
-        viennacl::ocl::current_context().get_kernel("pow3_program", "scaled_pow3");
+    // ... Definition of static symbolic values ...
 
-    viennacl::ocl::enqueue(
-        scaled_pow3(static_cast<cl_uint>(q.size()), dp, q, beta) );
+    static custom_operation lattice_op(
+            sym_dp -= sym_beta * element_prod(sym_q, element_prod(sym_q, sym_q)),
+            "hamiltonian");
+
+    dp = viennacl::linalg::prod(m_A, q);
+    viennacl::ocl::enqueue( lattice_op(dp, q, m_beta) );
 }
 \end{lstlisting}
 
