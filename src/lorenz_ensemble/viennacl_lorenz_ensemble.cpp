@@ -34,61 +34,40 @@ struct sys_func
     const viennacl::vector<value_type> &R;
 
     sys_func( const viennacl::vector<value_type> &_R ) : R( _R ) {
-	static const char source[] =
-	    "#if defined(cl_khr_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-	    "#elif defined(cl_amd_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
-	    "#endif\n"
-	    "kernel void lorenz(\n"
-	    "        uint n,\n"
-	    "        global double *dx,\n"
-	    "        global double *dy,\n"
-	    "        global double *dz,\n"
-	    "        global const double *x,\n"
-	    "        global const double *y,\n"
-	    "        global const double *z,\n"
-	    "        global const double *r,\n"
-	    "        double sigma,\n"
-	    "        double b\n"
-	    "        )\n"
-	    "{\n"
-	    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-	    "        double X = x[i];\n"
-	    "        double Y = y[i];\n"
-	    "        double Z = z[i];\n"
-	    "        double R = r[i];\n"
-	    "        dx[i] = sigma * (Y - X);\n"
-	    "        dy[i] = R * X - Y - X * Z;\n"
-	    "        dz[i] = X * Y - b * Z;\n"
-	    "    }\n"
-	    "}\n";
-
-	viennacl::ocl::current_context().add_program(
-		source, "lorenz_program").add_kernel("lorenz");
     }
 
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const
     {
-        const viennacl::vector< value_type > &X = fusion::at_c< 0 >( x );
-        const viennacl::vector< value_type > &Y = fusion::at_c< 1 >( x );
-        const viennacl::vector< value_type > &Z = fusion::at_c< 2 >( x );
+	using namespace viennacl::generator;
 
-	viennacl::vector< value_type > &dX = fusion::at_c<0>( dxdt );
-	viennacl::vector< value_type > &dY = fusion::at_c<1>( dxdt );
-	viennacl::vector< value_type > &dZ = fusion::at_c<2>( dxdt );
+	static symbolic_vector<0,value_type> sym_dX;
+	static symbolic_vector<1,value_type> sym_dY;
+	static symbolic_vector<2,value_type> sym_dZ;
 
-	viennacl::ocl::kernel &step =
-	    viennacl::ocl::current_context().get_program(
-		    "lorenz_program").get_kernel("lorenz");
+	static symbolic_vector<3,value_type> sym_X;
+	static symbolic_vector<4,value_type> sym_Y;
+	static symbolic_vector<5,value_type> sym_Z;
 
-	viennacl::ocl::enqueue(
-		step(cl_uint(X.size()),
-		     dX, dY, dZ,
-		     X, Y, Z,
-		     R, sigma, b
-		     )
-		);
+	static symbolic_vector<6,value_type> sym_R;
+
+	static cpu_symbolic_scalar<7,value_type> sym_sigma;
+	static cpu_symbolic_scalar<8,value_type> sym_b;
+
+	static custom_operation lorenz_op(
+		sym_dX = sym_sigma * (sym_Y - sym_X),
+		sym_dY = element_prod(sym_R, sym_X) - sym_Y - element_prod(sym_X, sym_Z),
+		sym_dZ = element_prod(sym_X, sym_Y) - sym_b * sym_Z,
+		"Lorenz");
+
+	const auto &X = fusion::at_c< 0 >( x );
+	const auto &Y = fusion::at_c< 1 >( x );
+        const auto &Z = fusion::at_c< 2 >( x );
+
+	auto &dX = fusion::at_c<0>( dxdt );
+	auto &dY = fusion::at_c<1>( dxdt );
+	auto &dZ = fusion::at_c<2>( dxdt );
+
+	viennacl::ocl::enqueue(lorenz_op(dX, dY, dZ, X, Y, Z, R, sigma, b));
     }
 };
 
