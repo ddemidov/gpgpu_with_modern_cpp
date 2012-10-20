@@ -52,9 +52,7 @@ struct sys_func
     }
 
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const {
-	viennacl::ocl::kernel &step =
-	    viennacl::ocl::current_context().get_program(
-		    "oscillator_program").get_kernel("oscillator");
+	viennacl::ocl::kernel &step = viennacl::ocl::get_kernel("oscillator_program", "oscillator");
 
 	viennacl::ocl::enqueue( step(cl_uint(x.size()), dxdt, x, omega) );
     }
