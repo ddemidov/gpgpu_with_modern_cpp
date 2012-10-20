@@ -1,12 +1,12 @@
 function relperf()
-cpu_data = {'thrust_cpu', 'vexcl_cpu',  'viennacl_cpu'};
+cpu_data = {'thrust_cpu', 'vexcl_cpu_amd', 'vexcl_cpu_intel', 'viennacl_cpu_amd', 'viennacl_cpu_intel'};
 gpu_data = {'thrust_gpu', 'vexcl_1gpu', 'viennacl_gpu'};
 tahiti_data = {'thrust_gpu', 'vexcl_1gpu_tahiti', 'viennacl_gpu_tahiti'};
 
 fprintf('--- CPU ----------------------------------------\n');
 get_stat(cpu_data)
 
-fprintf('--- GPU ----------------------------------------\n');
+fprintf('--- Tesla ----------------------------------------\n');
 get_stat(gpu_data)
 
 fprintf('--- Tahiti -------------------------------------\n');
@@ -14,8 +14,8 @@ get_stat(tahiti_data)
 
 function get_stat(dev_data)
 
-folder = {'damped_oscillator', 'disordered_ham_lattice', ...
-          'lorenz_ensemble',   'phase_oscillator_chain'};
+%folder = {'lorenz_ensemble', 'phase_oscillator_chain', 'disordered_ham_lattice'};
+folder = {'lorenz_ensemble'};
 
 min_time = [];
 max_time = [];
