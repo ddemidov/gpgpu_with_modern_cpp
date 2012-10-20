@@ -1,300 +1,150 @@
-7.38
-8.25
-9.39
-9.54
-9.71
-9.97
-10.03
-10.04
-10.05
-10.07
-10.98
-11.01
-11.11
-11.15
-11.42
-11.60
-12.11
-12.46
-13.07
-13.16
-13.22
-13.38
-13.46
-14.03
-14.37
-16.50
-16.86
-17.10
-17.38
-17.69
-17.97
-18.06
-18.51
-18.51
-18.80
-18.87
-19.16
-19.27
-19.36
-19.50
-19.67
-19.77
-20.02
-20.08
-20.29
-20.75
-20.87
-20.94
-21.29
-21.29
-21.36
-21.38
-21.46
-21.47
-21.47
-21.47
-21.50
-21.71
-21.78
-21.86
-22.06
-22.11
-22.86
-22.88
-22.96
-23.16
-23.81
-23.85
-24.01
-24.16
-24.19
-24.56
-24.69
-25.24
-26.14
-26.20
-26.45
-26.71
-27.66
-27.84
-28.27
-28.72
-29.65
-36.91
-37.37
-37.82
-37.89
-37.96
-38.74
-40.82
-76.32
-78.67
-78.93
-86.12
-86.84
-86.90
-86.90
-86.99
-87.63
-87.99
-167.48
-168.83
-169.47
-176.30
-176.83
-176.88
-177.05
-177.48
-177.67
-178.26
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-256 Command terminated by signal 11
-327.68
-327.90
-329.21
-335.00
-335.11
-336.07
-336.08
-336.98
-337.25
-337.70
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-512 Command terminated by signal 11
-643.58
-643.65
-644.18
-649.28
-650.46
-651.18
-651.53
-651.79
-652.06
-652.47
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1024 Command terminated by signal 11
-1280.21
-1285.26
-1291.98
-1296.25
-1296.61
-1296.88
-1301.64
-1305.30
-1318.21
-1325.57
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2048 Command terminated by signal 11
-2651.02
-2654.84
-2660.08
-2660.83
-2667.12
-2673.72
-2694.30
-2707.30
-2708.63
-2851.02
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-4096 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-8192 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-16384 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-32768 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-65536 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-131072 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-262144 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-524288 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-1048576 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-2097152 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
-4194304 Command terminated by signal 11
+256 6.20
+256 6.21
+256 6.22
+256 6.22
+256 6.23
+256 6.26
+256 6.30
+256 6.34
+256 6.36
+256 6.39
+512 5.01
+512 5.02
+512 5.05
+512 5.05
+512 5.06
+512 5.07
+512 5.07
+512 5.09
+512 5.12
+512 5.19
+1024 2.58
+1024 2.59
+1024 2.60
+1024 2.61
+1024 2.61
+1024 2.62
+1024 2.63
+1024 2.67
+1024 2.68
+1024 2.70
+2048 2.77
+2048 2.81
+2048 2.82
+2048 2.82
+2048 2.83
+2048 2.83
+2048 2.85
+2048 2.85
+2048 2.86
+2048 2.90
+4096 3.50
+4096 3.50
+4096 3.53
+4096 3.53
+4096 3.53
+4096 3.53
+4096 3.54
+4096 3.57
+4096 3.57
+4096 3.57
+8192 4.41
+8192 4.45
+8192 4.45
+8192 4.46
+8192 4.47
+8192 4.48
+8192 4.49
+8192 4.50
+8192 4.54
+8192 4.66
+16384 6.59
+16384 6.61
+16384 6.61
+16384 6.63
+16384 6.63
+16384 6.64
+16384 6.66
+16384 6.67
+16384 6.73
+16384 6.74
+32768 10.54
+32768 10.55
+32768 10.55
+32768 10.56
+32768 10.56
+32768 10.56
+32768 10.57
+32768 10.58
+32768 10.59
+32768 10.59
+65536 22.51
+65536 22.54
+65536 22.74
+65536 22.75
+65536 22.79
+65536 22.85
+65536 22.87
+65536 22.89
+65536 22.89
+65536 22.96
+131072 69.52
+131072 69.78
+131072 69.97
+131072 70.19
+131072 70.30
+131072 70.30
+131072 70.52
+131072 70.59
+131072 70.76
+131072 70.79
+262144 157.24
+262144 157.36
+262144 157.41
+262144 157.51
+262144 157.51
+262144 157.69
+262144 157.85
+262144 158.07
+262144 158.12
+262144 158.97
+524288 315.89
+524288 316.30
+524288 316.49
+524288 317.17
+524288 317.77
+524288 317.92
+524288 318.08
+524288 318.09
+524288 318.35
+524288 318.47
+1048576 633.50
+1048576 634.12
+1048576 634.17
+1048576 634.85
+1048576 635.46
+1048576 635.61
+1048576 635.88
+1048576 636.27
+1048576 636.28
+1048576 636.68
+2097152 1330.97
+2097152 1331.85
+2097152 1360.20
+2097152 1364.85
+2097152 1371.95
+2097152 1380.90
+2097152 1391.76
+2097152 1394.43
+2097152 1394.44
+2097152 1404.83
+4194304 3155.73
+4194304 3157.94
+4194304 3227.73
+4194304 3236.00
+4194304 3238.99
+4194304 3329.36
+4194304 3388.71
+4194304 3395.77
+4194304 3396.86
+4194304 3397.77
