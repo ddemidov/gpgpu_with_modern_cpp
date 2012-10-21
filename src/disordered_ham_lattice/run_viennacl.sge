@@ -18,7 +18,7 @@ rm -f viennacl_cpu_amd_${SGE_TASK_ID}.dat
 rm -f viennacl_cpu_intel_${SGE_TASK_ID}.dat
 rm -f viennacl_gpu_${SGE_TASK_ID}.dat
 
-for ((a=256;a<=4194304;a*=2)); do
+for ((a=16;a<=2048;a*=2)); do
     echo "$a"
 
     export OCL_PLATFORM=AMD
