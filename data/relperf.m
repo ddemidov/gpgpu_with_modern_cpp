@@ -15,7 +15,7 @@ get_stat(tahiti_data)
 function get_stat(dev_data)
 
 %folder = {'lorenz_ensemble', 'phase_oscillator_chain', 'disordered_ham_lattice'};
-folder = {'lorenz_ensemble'};
+folder = {'lorenz_ensemble', 'phase_oscillator_chain'};
 
 min_time = [];
 max_time = [];
