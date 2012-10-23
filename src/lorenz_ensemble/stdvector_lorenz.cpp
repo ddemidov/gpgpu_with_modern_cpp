@@ -46,10 +46,9 @@ int main( int argc , char **argv )
 	    odeint::array_algebra , odeint::default_operations
 	    > stepper;
 
-    for(double t = 0; t < t_max; t += dt)
 #pragma omp parallel for private(stepper)
 	for(int i = 0; i < n; i++)
-	    stepper.do_step(std::ref(sys[i]), X[i], t, dt);
+	    odeint::integrate_const(stepper, std::ref(sys[i]), X[i], double(0), t_max, dt);
 
     cout << X[0][0] << " " << X[0][1] << " " << X[0][2] << endl;
 
