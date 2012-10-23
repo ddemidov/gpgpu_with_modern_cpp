@@ -3,13 +3,13 @@ cpu_data = {'thrust_cpu', 'vexcl_cpu_amd', 'vexcl_cpu_intel', 'viennacl_cpu_amd'
 gpu_data = {'thrust_gpu', 'vexcl_1gpu', 'viennacl_gpu'};
 tahiti_data = {'thrust_gpu', 'vexcl_1gpu_tahiti', 'viennacl_gpu_tahiti'};
 
-fprintf('--- CPU ----------------------------------------\n');
+fprintf('--- CPU ---------------------------------------------------------\n');
 get_stat(cpu_data)
 
-fprintf('--- Tesla ----------------------------------------\n');
+fprintf('--- Tesla -------------------------------------------------------\n');
 get_stat(gpu_data)
 
-fprintf('--- Tahiti -------------------------------------\n');
+fprintf('--- Tahiti ------------------------------------------------------\n');
 get_stat(tahiti_data)
 
 function get_stat(dev_data)
@@ -31,7 +31,7 @@ for lib = dev_data
 	tm = [tm avg];
     end
 
-    fprintf('%s: ', cell2mat(lib));
+    fprintf('%18s: ', cell2mat(lib));
     fprintf('\t%8.2f', tm);
     fprintf('\n');
 
@@ -47,8 +47,8 @@ for lib = dev_data
 end
 
 fprintf('\n');
-for idx = 1:3
-    fprintf('%s: ', dev_data{idx});
+for idx = 1:length(dev_data)
+    fprintf('%18s: ', dev_data{idx});
     fprintf('\t%8.2f', time{idx} ./ min_time);
     fprintf('\n');
 end

@@ -947,14 +947,54 @@ past \cite{bordawekar:gpu-productivity}.
 If we look at the performance of the experiments on the CPU, performance
 differences between the libraries are more pronounced. Thrust outperforms VexCL
 on larger problems by 15 to 40 percent, except for the phase oscillators
-example, where VexCL is faster by about 5 percent.  The performance of ViennaCL
-on the CPU is poor and about 75 percent below that of Thrust and between 30 and
-70 percent below that of VexCL.  The only exception is again the phase
-oscillator test, where ViennaCL outperforms other libraries. The difference
+example, where ViennaCL is the fastest library. The performance of ViennaCL for
+the rest of the examples on the CPU is poor and is about 75 percent below that
+of Thrust and between 30 and 70 percent below that of VexCL.  The difference
 between the AMD's and the Intel's OpenCL implementations is negligible in the
 most cases. The only example where the Intel's implementation outperforms the
-AMD's one is the chain of phase oscillators. The performance difference between
-the implementations here reaches 30\%. % [DD] this needs some words.
+AMD's one is again the chain of phase oscillators for ViennaCL library. The
+performance difference between the implementations here reaches 50\%. This
+probably has something to do with the fact that this example was hand-coded for
+ViennaCL and Intel's OpenCL compiler was able to apply some effective
+optimizations.
+% [DD] Karl, do you have any other ideas? Faster sines? better work with caches?
+
+% Here is absolute/relative data for the largest problems (as output by
+% data/relperf.m script):
+% 
+% --- CPU ---------------------------------------------------------
+%         thrust_cpu: 	 2336.14	 5182.55	 N/A
+%      vexcl_cpu_amd: 	 3203.47	 5011.66	 3152.31
+%    vexcl_cpu_intel: 	 3284.18	 4463.24	 3182.94
+%   viennacl_cpu_amd: 	 4073.66	 4612.23	 5480.03
+% viennacl_cpu_intel: 	 3943.59	 3040.05	 5437.47
+% 
+%         thrust_cpu: 	    1.00	    1.70	    N/A
+%      vexcl_cpu_amd: 	    1.37	    1.65	    1.00
+%    vexcl_cpu_intel: 	    1.41	    1.47	    1.01
+%   viennacl_cpu_amd: 	    1.74	    1.52	    1.74
+% viennacl_cpu_intel: 	    1.69	    1.00	    1.72
+% 
+% --- Tesla -------------------------------------------------------
+%         thrust_gpu: 	  242.78	  240.87	  319.60
+%         vexcl_1gpu: 	  246.58	  189.38	  401.39
+%       viennacl_gpu: 	  259.85	  166.20	  433.50
+% 
+%         thrust_gpu: 	    1.00	    1.45	    1.00
+%         vexcl_1gpu: 	    1.02	    1.14	    1.26
+%       viennacl_gpu: 	    1.07	    1.00	    1.36
+% 
+% --- Tahiti ------------------------------------------------------
+%         thrust_gpu: 	  242.78	  240.87	  319.60
+%  vexcl_1gpu_tahiti: 	  149.49	   91.60	  225.41
+% viennacl_gpu_tahiti: 	  148.69	   76.55	  214.87
+% 
+%         thrust_gpu: 	    1.63	    3.15	    1.49
+%  vexcl_1gpu_tahiti: 	    1.01	    1.20	    1.05
+% viennacl_gpu_tahiti: 	    1.00	    1.00	    1.00
+% 
+% First group of lines in each section are absolute times; second group is
+% relative times wrt fastest imlementation.
 
 \begin{table}
  \centering
