@@ -47,6 +47,7 @@ int main( int argc , char **argv )
 	    > stepper;
 
     for(double t = 0; t < t_max; t += dt)
+#pragma omp parallel for private(stepper)
 	for(int i = 0; i < n; i++)
 	    stepper.do_step(std::ref(sys[i]), X[i], t, dt);
 

@@ -26,7 +26,8 @@ target_link_libraries(generated_lorenz OpenCL)
 set_target_properties(generated_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(stdvector_lorenz stdvector_lorenz.cpp)
-set_target_properties(stdvector_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
+set_target_properties(stdvector_lorenz PROPERTIES COMPILE_FLAGS "-std=c++0x -fopenmp")
+target_link_libraries(stdvector_lorenz gomp)
 
 foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
