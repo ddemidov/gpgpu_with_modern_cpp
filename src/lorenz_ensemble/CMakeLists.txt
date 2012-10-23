@@ -25,6 +25,9 @@ add_executable(generated_lorenz generated_lorenz_ensemble.cpp)
 target_link_libraries(generated_lorenz OpenCL)
 set_target_properties(generated_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
+add_executable(stdvector_lorenz stdvector_lorenz.cpp)
+set_target_properties(stdvector_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
+
 foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
