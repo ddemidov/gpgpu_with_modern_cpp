@@ -107,13 +107,13 @@ This paper presents a comparison of several modern C++ libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
 libraries under consideration in the context of solving ordinary differential
 equations.  The comparison is based on odeint, a modern C++ library for solving
-ordinary differential equations (ODEs) numerically that has been recently been
+ordinary differential equations (ODEs) numerically that has been recently 
 accepted for inclusion into the Boost libraries\footnote{ \href{
 http://boost.org } { http://boost.org } }.  The GPGPU libraries considered in
 this work are Thrust, VexCL, and ViennaCL:
 
 \begin{description}
-    \item[Odeint] is a modern C++ library \footnote{ \href{ http://odeint.com
+    \item[Odeint] is a modern C++ libraryfootnote{ \href{ http://odeint.com
         }{ http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1,
         OdeintRef2}.  It is developed in a generic way using template
         metaprogramming techniques, which leads to extraordinary high
@@ -136,7 +136,7 @@ this work are Thrust, VexCL, and ViennaCL:
         been created for ease of OpenCL development with C++.  VexCL strives to
         reduce the amount of boilerplate code needed to develop OpenCL
         applications. The library provides a convenient and intuitive notation
-        for vector arithmetic, reduction, and sparse matrix-vector
+        for vector arithmetic, reduction, and sparse matrix~-- vector
         multiplication.  Multi-device and even multi-platform computations are
         supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
@@ -242,7 +242,7 @@ the classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods, multi-step
 methods (Adams-Bashforth-Moulton), symplectic Runge-Kutta-Nystr\"om methods,
 and implicit methods (Rosenbrock and implicit Euler). All of these methods work
 iteratively, starting from a given initial value $x(t_0)$ to calculate the next
-value $x(t+\Delta t)$.  $\Delta t$ is the step size and many be chosen either
+value $x(t+\Delta t)$.  $\Delta t$ is the step size and may be chosen either
 statically or adaptively.  For reference, we note that the simplest method is
 the explicit Euler scheme
 \begin{equation}
@@ -276,7 +276,7 @@ class euler {
 };
 \end{lstlisting}
 The state type, the algebra, and the operations enter the Euler method as
-template parameter, hence they are exchangeable. The function object \code{ode}
+template parameters, hence they are exchangeable. The function object \code{ode}
 represents the ODE and must be provided by the user. It calculates the right
 hand side $f(x,t)$ of \eqref{eq:ode} and stores the result in \code{m_dxdt}.
 The call of \code{for_each3} iterates over all elements of three vectors in
@@ -288,10 +288,10 @@ vector operation
  x = 1.0 * x + dt * m_dxdt
 \end{lstlisting}
 which is just Eq.~\eqref{eq:euler}, since \code{m_dxdt} holds the values of
-$f(x(t), t)$.  Each of these algebras is a class consisting of
+$f(x(t), t)$.  An odeint algebra is a class consisting of
 \code{for_each1}, \dots, \code{for_eachN} methods. For example the
-\code{for_each3} method in the \code{range_algebra} -- the default algebra for
-most vector types -- is similar to
+\code{for_each3} method in the \code{range_algebra} --- the default algebra for
+most vector types --- is similar to
 \begin{lstlisting}
 struct range_algebra {
     // ...
@@ -581,7 +581,7 @@ However, the drawback of this variant is that it leads to three kernel launches
 (one per each vector assignment), resulting in suboptimal performance. A direct
 use of multi-vectors arithmetic operations is not possible due to mixed
 components in the right hand side expressions.  But, the additional kernel
-launch can be eliminated in VexCL by assigning a tuple of expressions to a
+launches can be eliminated in VexCL by assigning a tuple of expressions to a
 multi-vector.  The required notation is only slightly more cumbersome than the
 above variant:
 \begin{lstlisting}[firstnumber=9]
@@ -593,11 +593,9 @@ above variant:
 For the ViennaCL version of the Lorenz attractor example a
 \code{boost::fusion::vector} is used to pack the coordinate components of the
 state vector into a single type. Individual components are instances of the
-\code{viennacl::vector<double>} type.
-
-The ViennaCL version of the Lorenz attractor example uses ViennaCL's mechanism
+\code{viennacl::vector<double>} type.  The ViennaCL's mechanism
 for custom kernel generation that was described in
-Sec.~\ref{sec:adapting-odeint}. The symbolic variables and the custom operation
+Sec.~\ref{sec:adapting-odeint} is used here. The symbolic variables and the custom operation
 are defined as static variables, so the corresponding OpenCL kernel is compiled
 once in the first call of the system functor:
 \begin{lstlisting}
@@ -786,10 +784,10 @@ the user.
 
 The natural choice for the implementation of \eqref{eq:disordered_ham} is a
 sparse matrix~-- vector product. Since Thrust neither provides sparse matrix
-types nor sparse matrix-vector products, we had to combine Thrust with the
+types nor sparse matrix~-- vector products, we had to combine Thrust with the
 CUSPARSE library in order to implement this example. CUSPARSE contains a set of
 basic linear algebra subroutines used for handling sparse matrices and is
-included in the CUDA Toolkit distribution as well as in the Thrust library
+included in the CUDA Toolkit distribution together with the Thrust library
 \cite{NvidiaCusparseManual}. As an alternative, the open-source Cusp library
 \cite{CuspRef} for sparse linear algebra and graph computations on CUDA could
 have been used, yet we decided to go with the first option.
@@ -822,7 +820,7 @@ Here, \code{handle}, \code{descr}, and \code{A} are CUSPARSE data structures
 holding the CUSPARSE context and sparse matrix data. The
 \code{thrust::transform()} algorithm is used in lines 5 and 6 to compute the
 scaled third power of the input vector \code{q}. Lines 8--10 call the sparse
-matrix-vector product kernel in CUSPARSE, where
+matrix~-- vector product kernel in CUSPARSE, where
 \code{thrust::raw_pointer_cast()} is used to convert the thrust device vector
 iterator to a raw device pointer.
 
@@ -889,7 +887,7 @@ of execution times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.  The plots on
-the left show absolute time against the size of the problem being solved, while
+the left show absolute solution time against the size of the problem being solved, while
 right hand side plots show relative performance with respect to the Thrust
 version.  Absolute execution times for the largest problem size for all of the
 considered libraries are given in Table~\ref{tab:abstimes}.
@@ -933,7 +931,7 @@ run on a GPU.  Thrust performs slightly better in most cases except for the
 phase oscillator chain example, where the permutation iterators require the use
 of an auxiliary index vector.  VexCL and ViennaCL are in general slower than
 Thrust by a few percent, which is usually negligible in practice.  Apparently,
-the CUSPARSE implementation of the sparse matrix-vector product is more
+the CUSPARSE implementation of the sparse matrix~-- vector product is more
 efficient than that of the OpenCL libraries, since VexCL and ViennaCL are
 slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
 Hamiltonian lattice experiment. Both OpenCL libraries show very similar results
@@ -944,19 +942,18 @@ getting familiar with the details of CUDA or OpenCL.  Thus, we have
 successfully countered productivity concerns for GPU computing raised in the
 past \cite{bordawekar:gpu-productivity}.
 
-If we look at the performance of the experiments on the CPU, performance
-differences between the libraries are more pronounced. Thrust outperforms VexCL
-on larger problems by 15 to 40 percent, except for the phase oscillators
-example, where ViennaCL is the fastest library. The performance of ViennaCL for
-the rest of the examples on the CPU is poor and is about 75 percent below that
-of Thrust and between 30 and 70 percent below that of VexCL.  The difference
+If we look at the performance of the experiments on the CPU, then
+differences between the libraries become more pronounced. For larger problems Thrust outperforms VexCL
+by 15 to 40 percent and ViennaCL by about 75 percent. The only exception is the phase oscillators
+example, where ViennaCL is the fastest library. The difference
 between the AMD's and the Intel's OpenCL implementations is negligible in the
 most cases. The only example where the Intel's implementation outperforms the
 AMD's one is again the chain of phase oscillators for ViennaCL library. The
-performance difference between the implementations here reaches 50\%. This
-probably has something to do with the fact that this example was hand-coded for
-ViennaCL and Intel's OpenCL compiler was able to apply some effective
-optimizations.
+performance difference between the implementations here reaches 50\%. We
+believe that this may be explained by more effective implementation of the sine
+function in Intel OpenCL SDK.
+% [DD] If I replace sine with erfc in system function, then Intel and AMD
+% perform similarly.
 % [DD] Karl, do you have any other ideas? Faster sines? better work with caches?
 
 % Here is absolute/relative data for the largest problems (as output by
