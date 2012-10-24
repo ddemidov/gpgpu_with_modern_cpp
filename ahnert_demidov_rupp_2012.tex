@@ -949,11 +949,12 @@ example, where ViennaCL is the fastest library. The difference
 between the AMD's and the Intel's OpenCL implementations is negligible in the
 most cases. The only example where the Intel's implementation outperforms the
 AMD's one is again the chain of phase oscillators for ViennaCL library. The
-performance difference between the implementations here reaches 50\%. We
-believe that this may be explained by more effective implementation of the sine
-function in Intel OpenCL SDK.
+performance difference between the implementations here reaches 50\%.
+%We believe that this may be explained by more effective implementation of the
+%sine function in Intel OpenCL SDK.
 % [DD] If I replace sine with erfc in system function, then Intel and AMD
 % perform similarly.
+% [DD] erfc does not help with viennacl (Intel is still much faster there), so..
 % [DD] Karl, do you have any other ideas? Faster sines? better work with caches?
 
 % Here is absolute/relative data for the largest problems (as output by
