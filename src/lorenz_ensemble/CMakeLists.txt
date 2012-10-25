@@ -29,6 +29,9 @@ add_executable(stdvector_lorenz stdvector_lorenz.cpp)
 set_target_properties(stdvector_lorenz PROPERTIES COMPILE_FLAGS "-std=c++0x -fopenmp")
 target_link_libraries(stdvector_lorenz gomp)
 
+add_executable(cpu_stepper_functor cpu_stepper_functor.cpp)
+set_target_properties(cpu_stepper_functor PROPERTIES COMPILE_FLAGS -std=c++0x)
+
 foreach(script run_thrust run_vexcl run_viennacl)
     configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/${script}.sge
