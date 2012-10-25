@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 
+#define DECORATE_CALLS
 #include <boost/numeric/odeint.hpp>
 #include <thrust/device_vector.h>
 #include <thrust/for_each.h>
