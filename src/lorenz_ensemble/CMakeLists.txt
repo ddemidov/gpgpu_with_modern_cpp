@@ -3,6 +3,7 @@ project(lorenz_ensemble)
 
 if (CUDA_FOUND)
     cuda_add_executable(thrust_lorenz thrust_lorenz_ensemble.cu)
+    cuda_add_executable(gpu_stepper_functor gpu_stepper_functor.cu)
 
     cuda_add_executable(thrust_lorenz_openmp thrust_lorenz_ensemble.cu
 	OPTIONS "-Xcompiler;-fopenmp;-DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP")
