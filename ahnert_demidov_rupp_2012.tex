@@ -106,24 +106,24 @@ third-party projects aimed at developing both CUDA and OpenCL programs.
 This paper presents a comparison of several modern C++ libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
 libraries under consideration in the context of solving ordinary differential
-equations.  The comparison is based on odeint, a modern C++ library for solving
-ordinary differential equations (ODEs) numerically that has been      %[KR]: This is repeated in the first item below.
-accepted for inclusion into the Boost libraries\footnote{ \href{
-http://boost.org } { http://boost.org } } recently.  The GPGPU libraries considered in
-this work are Thrust, VexCL, and ViennaCL:
+equations.  The comparison is based on odeint\footnote{ \href{
+http://odeint.com }{ http://odeint.com } }, a modern C++ library for solving
+ordinary differential equations (ODEs) numerically  \cite{OdeintRef1,
+OdeintRef2} that has been accepted for inclusion into the Boost
+libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
+It is developed in a generic way using template metaprogramming techniques,
+which leads to extraordinary high flexibility at utmost performance. The
+numerical algorithms are implemented independently of the underlying
+arithmetics. This results in a broad applicability of the library, especially
+in non-standard environments.  For example, odeint supports matrix types,
+arbitrary precision arithmetics, and can be easily adopted to use either CUDA
+or OpenCL frameworks.  The GPGPU libraries considered in this work are Thrust,
+VexCL, and ViennaCL:
+
+% [DD] How do you like it this way? The complete odeint description is above
+% and what follows is the list of the libraries we tested.
 
 \begin{description}
-    \item[Odeint] is a modern C++ library\footnote{ \href{ http://odeint.com
-        }{ http://odeint.com } } for solving ODEs numerically \cite{OdeintRef1,
-        OdeintRef2}.  It is developed in a generic way using template
-        metaprogramming techniques, which leads to extraordinary high
-        flexibility at utmost performance. The numerical algorithms are
-        implemented independently of the underlying arithmetics. This results
-        in a broad applicability of the library, especially in non-standard
-        environments.  For example, odeint supports matrix types, arbitrary
-        precision arithmetics, and can be easily adopted to use either CUDA or
-        OpenCL frameworks.  Odeint is used in this work as a framework for the
-        comparison of other libraries.
     \item[Thrust] is a parallel algorithms library\footnote{ \href{
         http://thrust.github.com }{ http://thrust.github.com }} which resembles
         the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
