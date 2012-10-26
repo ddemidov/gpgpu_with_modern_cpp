@@ -499,7 +499,7 @@ struct lorenz_system {
     size_t N;
     const state_type &R;
 
-    lorenz_system(size_t N, const state_type &R) : N(N), R(R) { }
+    lorenz_system(size_t n, const state_type &r) : N(n), R(r) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const;
 };
@@ -559,7 +559,7 @@ typedef vex::multivector<double, 3> state_type;
 struct lorenz_system {
     const vex::vector<double> &R;
 
-    lorenz_system(const vex::vector<double> &R) : R(R) {}
+    lorenz_system(const vex::vector<double> &r) : R(r) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         dxdt(0) = sigma * (x(1) - x(0));
@@ -599,7 +599,7 @@ typedef fusion::vector<
 struct lorenz_system {
     const viennacl::vector<double> &R;
 
-    lorenz_system(const viennacl::vector<double> &R ) : R(R) {}
+    lorenz_system(const viennacl::vector<double> &r) : R(r) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         using namespace viennacl::generator;
@@ -702,8 +702,8 @@ extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1
 struct phase_oscillators {
     const state_type &omega;
     vex::StencilOperator< double, 3, 1, oscillator_body > S;
-    phase_oscillators(const state_type &omega)
-        : omega(omega), S(omega.queue_list()) { }
+    phase_oscillators(const state_type &w)
+        : omega(w), S(w.queue_list()) { }
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         dxdt = omega + S(x);
     }
@@ -727,7 +727,7 @@ typedef viennacl::vector<double> state_type;
 
 struct phase_oscillators {
     const state_type &omega;
-    sys_func(const state_type &omega) : omega(omega) {
+    sys_func(const state_type &w) : omega(w) {
         viennacl::ocl::current_context().add_program(phase_oscillator_source,
             "oscillator_program").add_kernel("oscillator");
     }
@@ -993,22 +993,22 @@ producing better code for the underlying Intel CPU, for which there are no optim
     \label{tab:abstimes}
     \begin{tabular}{|lc|rrr|}
         \hline
-        & & \em Lorenz    & \em Coupled     & \em Disordered  \\
-        & & \em attractor & \em phase       & \em Hamiltonian \\
-        & & \em ensemble  & \em oscillators & \em lattice     \\
+        & & Lorenz    & Coupled     & Disordered  \\
+        & & attractor & phase       & Hamiltonian \\
+        & & ensemble  & oscillators & lattice     \\
         \hline
-        \em Thrust   &\em Tesla & 242.78 & 240.87 & 319.60 \\
-        \em VexCL    &\em Tesla & 246.58 & 189.38 & 401.39 \\
-        \em ViennaCL &\em Tesla & 259.85 & 166.20 & 433.50 \\
+        Thrust   &Tesla & 242.78 & 240.87 & 319.60 \\
+        VexCL    &Tesla & 246.58 & 189.38 & 401.39 \\
+        ViennaCL &Tesla & 259.85 & 166.20 & 433.50 \\
         \hline
-        \em VexCL    &\em Tahiti & 149.49 & 91.60 & 225.41 \\
-        \em ViennaCL &\em Tahiti & 148.69 & 76.55 & 214.87 \\
+        VexCL    &Tahiti & 149.49 & 91.60 & 225.41 \\
+        ViennaCL &Tahiti & 148.69 & 76.55 & 214.87 \\
         \hline
-        \em Thrust   &\em CPU         & 2~336.14 & 5~182.55 & N/A \\
-        \em VexCL    &\em CPU (AMD)   & 3~203.47 & 5~011.66 & 3~152.31 \\
-        \em VexCL    &\em CPU (Intel) & 3~284.18 & 4~463.24 & 3~182.94 \\
-        \em ViennaCL &\em CPU (AMD)   & 4~073.66 & 4~612.23 & 5~480.03 \\
-        \em ViennaCL &\em CPU (Intel) & 3~943.59 & 3~040.05 & 5~437.47 \\
+        Thrust   &CPU         & 2~336.14 & 5~182.55 & N/A \\
+        VexCL    &CPU (AMD)   & 3~203.47 & 5~011.66 & 3~152.31 \\
+        VexCL    &CPU (Intel) & 3~284.18 & 4~463.24 & 3~182.94 \\
+        ViennaCL &CPU (AMD)   & 4~073.66 & 4~612.23 & 5~480.03 \\
+        ViennaCL &CPU (Intel) & 3~943.59 & 3~040.05 & 5~437.47 \\
         \hline
     \end{tabular}
 \end{table}
