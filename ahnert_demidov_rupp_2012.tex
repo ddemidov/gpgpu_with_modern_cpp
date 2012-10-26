@@ -636,7 +636,7 @@ struct lorenz_system {
 As a second example we consider a chain of coupled phase
 oscillators. A phase oscillator describes the dynamics of an
 autonomous oscillator \cite{PhaseOscillator}. Its evolution is
-governed by the phase $\varphi$, which is a $2\pi$~-- periodic variable growing linearly
+governed by the phase $\varphi$, which is a $2\pi$-periodic variable growing linearly
 in time, i.e.~$\dot{\varphi} = \omega$, where $\omega$ is the phase
 velocity. The amplitude of the oscillator does not occur in this
 equation, so interesting behavior can only be observed if many
@@ -811,7 +811,7 @@ Here, \code{handle}, \code{descr}, and \code{A} are CUSPARSE data structures
 holding the CUSPARSE context and sparse matrix data. The
 \code{thrust::transform()} algorithm is used in lines 5 and 6 to compute the
 scaled third power of the input vector \code{q}. Lines 8--10 call the sparse
-matrix~-- vector product kernel in CUSPARSE, where
+matrix-vector product kernel in CUSPARSE, where
 \code{thrust::raw_pointer_cast()} is used to convert the thrust device vector
 iterator to a raw device pointer.
 
@@ -831,7 +831,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 \end{lstlisting}
 
 The ViennaCL version of the system function object is split into two parts: first, the
-sparse matrix~-- vector product $Aq$ is computed; second, the non-linear term
+sparse matrix-vector product $Aq$ is computed; second, the non-linear term
 $-\beta q^3$ is added to the result by means of a custom operation:
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
@@ -922,7 +922,7 @@ run on a GPU.  Thrust performs slightly better in most cases except for the
 phase oscillator chain example, where the permutation iterators require the use
 of an auxiliary index vector.  VexCL and ViennaCL are in general slower than
 Thrust by a few percent, which is usually negligible in practice.  Apparently,
-the CUSPARSE implementation of the sparse matrix~-- vector product is more
+the CUSPARSE implementation of the sparse matrix-vector product is more
 efficient than that of the OpenCL libraries, since VexCL and ViennaCL are
 slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
 Hamiltonian lattice experiment. Both OpenCL libraries show very similar results
