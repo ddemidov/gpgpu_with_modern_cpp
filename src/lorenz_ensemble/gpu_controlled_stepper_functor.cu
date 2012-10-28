@@ -25,6 +25,21 @@ __host__ __device__ point3d<T> operator+(point3d<T> a, point3d<T> b) {
     return c;
 }
 
+template< typename T>
+__host__ __device__ point3d<T> operator+(T a, point3d<T> b)
+{
+    point3d<T> c={a + b.x, a + b.y, a + b.z};
+    return c;
+}
+
+template< typename T>
+__host__ __device__ point3d<T> operator+(point3d<T> b, T a)
+{
+    point3d<T> c={a + b.x, a + b.y, a + b.z};
+    return c;
+}
+
+
 template <typename T>
 __host__ __device__ point3d<T> operator-(point3d<T> a, point3d<T> b) {
     point3d<T> c = {a.x - b.x, a.y - b.y, a.z - b.z};
@@ -35,6 +50,23 @@ template <typename T>
 __host__ __device__ point3d<T> operator*(T a, point3d<T> b) {
     point3d<T> c = {a * b.x, a * b.y, a * b.z};
     return c;
+}
+
+template <typename T>
+__host__ __device__ point3d<T> operator/(point3d<T> a, point3d<T> b) {
+    point3d<T> c = {a.x / b.x, a.y / b.y, a.z / b.z};
+    return c;
+}
+
+
+template <typename T>
+__host__ __device__ point3d<T> abs(point3d<T> p)
+{
+    point3d<T> ret;
+    ret.x = abs( p.x );
+    ret.y = abs( p.y );
+    ret.z = abs( p.z );
+    return ret;
 }
 
 namespace boost { namespace numeric { namespace odeint { 
