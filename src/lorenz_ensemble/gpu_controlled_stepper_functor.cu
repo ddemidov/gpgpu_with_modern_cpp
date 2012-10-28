@@ -46,14 +46,14 @@ namespace boost { namespace numeric { namespace odeint {
 template<typename T>
 struct vector_space_reduce< point3d< T > >
 {
-  template< class Op >
-  __host__ __device__ T operator()( const point3d<T> &x , Op op , T init ) const
-  {
-      init = op( init , x.x );
-      init = op( init , x.y );
-      init = op( init , x.z );
-      return init;
-  }
+    template< class Op >
+    __host__ __device__ T operator()( const point3d<T> &x , Op op , T init ) const
+    {
+        init = op( init , x.x );
+        init = op( init , x.y );
+        init = op( init , x.z );
+        return init;
+    }
 };
 } } } 
 //---------------------------------------------------------------------------
@@ -125,6 +125,7 @@ struct stepper_functor
     }
 };
 
+
 //---------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream &os, state_type s) {
     return os << "[" << s.x << " " << s.y << " " << s.z << "]";
@@ -154,5 +155,5 @@ int main(int argc, char *argv[])
             thrust::make_tuple(x.end(), ensemble.end())),
         step);
 
-    std::cout << x[0] << std::endl;
+    std::cout << x[(n-1)/2] << std::endl;
 }
