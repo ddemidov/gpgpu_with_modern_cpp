@@ -7,7 +7,7 @@ find_package(Boost)
 find_package(CUDA QUIET)
 
 if (CUDA_FOUND)
-    set(CUDA_NVCC_FLAGS "-arch=sm_13")
+    set(CUDA_NVCC_FLAGS "-arch=sm_13;-Xptxas;-v")
 endif (CUDA_FOUND)
 
 set(ODEINT_ROOT    $ENV{ODEINT_ROOT}   CACHE STRING "odeint root")
