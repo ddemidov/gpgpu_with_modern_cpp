@@ -17,10 +17,10 @@ set(VIENNACL_ROOT  $ENV{VIENNACL_ROOT} CACHE STRING "ViennaCL root")
 MESSAGE(STATUS "odeint found in ${ODEINT_ROOT}")
 MESSAGE(STATUS "VexCL found in ${VEXCL_ROOT}")
 MESSAGE(STATUS "ViennaCL found in ${VIENNACL_ROOT}")
-MESSAGE(STATUS "Boost found in ${BOOST_ROOT}")
+MESSAGE(STATUS "Boost found in ${Boost_INCLUDE_DIRS}")
 
 include_directories(
-    ${BOOST_ROOT}
+    ${Boost_INCLUDE_DIRS}
     ${ODEINT_ROOT}
     ${VEXCL_ROOT}
     ${VIENNACL_ROOT}
