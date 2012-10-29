@@ -7,6 +7,9 @@
 #include <thrust/for_each.h>
 #include <thrust/iterator/zip_iterator.h>
 
+#include <stdio.h>
+#include <cuda_runtime.h>
+
 namespace odeint = boost::numeric::odeint;
 
 
@@ -95,9 +98,15 @@ struct vector_space_reduce< point3d< T > >
 typedef double value_type;
 typedef point3d<value_type> state_type;
 
+//---------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream &os, const state_type &s) {
+    return os << "[" << s.x << " " << s.y << " " << s.z << "]";
+}
+
+
 const value_type sigma = 10.0;
 const value_type b = 8.0 / 3.0;
-const value_type t_max = 100.0;
+const value_type t_max = 1.0;
 
 struct lorenz_system {
     value_type R;
@@ -158,21 +167,18 @@ struct stepper_functor
 };
 
 
-//---------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream &os, state_type s) {
-    return os << "[" << s.x << " " << s.y << " " << s.z << "]";
-}
 
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+    using namespace std;
+
     size_t n = argc > 1 ? atoi(argv[1]) : 1024;
 
     std::vector<lorenz_system> ensemble_host(n);
-    value_type Rmin = 0.1 , Rmax = 50.0 , dR = ( Rmax - Rmin ) / value_type( n - 1 );
+    value_type Rmin = 0.1 , Rmax = 50.0 , dR = ( n > 1 ) ? ( Rmax - Rmin ) / value_type( n - 1 ) : 0.0;
     for( size_t i=0 ; i<n ; ++i )
-	ensemble_host[i] = lorenz_system(Rmin + dR * value_type( i ));
-
+        ensemble_host[i] = lorenz_system(Rmin + dR * value_type( i ));
     thrust::device_vector<lorenz_system> ensemble = ensemble_host;
 
     state_type seed = {10, 10, 10};
@@ -187,5 +193,78 @@ int main(int argc, char *argv[])
             thrust::make_tuple(x.end(), ensemble.end())),
         step);
 
-    std::cout << x[(n-1)/2] << std::endl;
+//        odeint::integrate_const(stepper, std::ref(sys[i]), X[i], double(0), t_max, dt);
+
+
+
+    for( size_t i=0 ; i<n ; ++i )
+        std::cout << ensemble_host[i].R << "\t" << x[i] << std::endl;
+
+
+
+
+    // DEBUG STUFF
+    //
+    // lorenz_system l( 28.0 );
+    // odeint::controlled_runge_kutta<
+    //     odeint::runge_kutta_cash_karp54_classic<
+    //         state_type, value_type, state_type, value_type,
+    //         odeint::vector_space_algebra, odeint::default_operations,
+    //         odeint::never_resizer
+    //         > > stepper2;
+    // state_type xx = { 10.0 , 10.0 , 10.0 };
+    // double t = 0.0 , dt = 0.01;
+    // odeint::controlled_step_result res = stepper2.try_step( l , xx , t , dt );
+    // cout << 28.0 << "\t" << t << "\t" << dt << "\t" << int( res) << "\t" << xx << endl;
+
+
+    // state_type x_old = { 10.0 , 10.0 , 10.0 } , x_new;
+    // state_type dxdt_old;
+    // state_type x_err;
+    // value_type dt = 0.01;
+    // lorenz_system l( 28.0 );
+
+
+    // odeint::runge_kutta_cash_karp54_classic<
+    //     state_type, value_type, state_type, value_type,
+    //     odeint::vector_space_algebra, odeint::default_operations,
+    //     odeint::never_resizer
+    //     > stepper;
+
+    // l( x_old , dxdt_old , 0.0 );
+    // stepper.do_step( l , x_old , dxdt_old , 0.0 , x_new , dt , x_err );
+
+    // // cout << x_old << endl;
+    // // cout << dxdt_old << endl;
+    // // cout << x_new << endl;
+    // // cout << x_err << endl;
+    
+    // // value_type eps_abs = 1.0e-6 , eps_rel = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
+
+    // // using namespace odeint;
+    // // vector_space_algebra algebra;
+    // // algebra.for_each3( x_err , x_old , dxdt_old ,
+    // //                    default_operations::rel_error< value_type >( eps_abs , eps_rel , a_x , a_dxdt * dt ) );
+
+    // // value_type res = algebra.reduce( x_err , default_operations::maximum< value_type >() , 0.0 );
+
+    // // cout << x_err << endl;
+    // // cout << res << endl;
+
+    // odeint::controlled_runge_kutta<
+    //     odeint::runge_kutta_cash_karp54_classic<
+    //         state_type, value_type, state_type, value_type,
+    //         odeint::vector_space_algebra, odeint::default_operations,
+    //         odeint::never_resizer
+    //         > > stepper2;
+
+
+    // double t = 0.0;
+    // odeint::controlled_step_result res = stepper2.try_step( l , x_old , dxdt_old , t , x_new , dt );
+
+    // cout << int( res ) << " " << t << " " << dt << endl;
+    // cout << x_old << endl;
+    // cout << dxdt_old << endl;
+    // cout << x_new << endl;
+
 }
