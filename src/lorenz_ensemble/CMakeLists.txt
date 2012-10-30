@@ -9,7 +9,7 @@ if (CUDA_FOUND)
     target_link_libraries(thrust_lorenz_openmp gomp)
 
     cuda_add_executable(gmtl_lorenz gmtl_lorenz_ensemble.cu
-	OPTIONS "-DMTL_WITH_SHORT_ELE_PROD;-DMTL_HAS_ODEINT")
+	OPTIONS "-DMTL_WITH_SHORT_ELE_PROD;-DMTL_HAS_ODEINT;-DMTL_HAS_CUDA")
 endif (CUDA_FOUND)
 
 add_executable(vexcl_lorenz vexcl_lorenz_ensemble.cpp)
