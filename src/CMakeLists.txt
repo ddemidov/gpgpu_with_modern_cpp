@@ -13,10 +13,12 @@ endif (CUDA_FOUND)
 set(ODEINT_ROOT    $ENV{ODEINT_ROOT}   CACHE STRING "odeint root")
 set(VEXCL_ROOT     $ENV{VEXCL_ROOT}    CACHE STRING "VexCL root")
 set(VIENNACL_ROOT  $ENV{VIENNACL_ROOT} CACHE STRING "ViennaCL root")
+set(MTL4_ROOT      $ENV{MTL4_ROOT}     CACHE STRING "MTL4 root")
 
 MESSAGE(STATUS "odeint found in ${ODEINT_ROOT}")
 MESSAGE(STATUS "VexCL found in ${VEXCL_ROOT}")
 MESSAGE(STATUS "ViennaCL found in ${VIENNACL_ROOT}")
+MESSAGE(STATUS "MTL4 found in ${MTL4_ROOT}")
 MESSAGE(STATUS "Boost found in ${Boost_INCLUDE_DIRS}")
 
 include_directories(
@@ -24,6 +26,8 @@ include_directories(
     ${ODEINT_ROOT}
     ${VEXCL_ROOT}
     ${VIENNACL_ROOT}
+    ${MTL4_ROOT}
+    ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
 add_subdirectory(damped_oscillator)
