@@ -25,7 +25,7 @@
 \newcommand {\ii} {\mathop{i}}
 \newcommand {\rem}[1]{}
 
-\title{Programming OpenCL and CUDA:\\a Case Study Using Modern C++ Libraries}
+\title{Programming CUDA and OpenCL:\\a Case Study Using Modern C++ Libraries}
 
 \author{
 Denis Demidov\thanks{
@@ -47,12 +47,12 @@ Argonne National Laboratory,
 
 \begin{abstract}
     We present a comparison of several modern C++ libraries providing high-level interfaces
-    for programming multi- and many-core architectures on top of OpenCL or CUDA.
+    for programming multi- and many-core architectures on top of CUDA or OpenCL.
     The comparison focuses on the solution of ordinary differential equations and is based on odeint,
     a framework for the solution of ordinary differential equations. Odeint is designed in a
     very flexible way and may be easily adapted for effective use of libraries such
-    as VexCL, ViennaCL, or Thrust using OpenCL or CUDA technologies.
-    We found that OpenCL and CUDA work equally well for problems
+    as Thrust, VexCL, or ViennaCL, using CUDA or OpenCL technologies.
+    We found that CUDA and OpenCL work equally well for problems
     of large sizes, while OpenCL has higher overhead for smaller problems.
     Furthermore, we show that modern high-level libraries allow to effectively
     use the computational resources of many-core GPUs or multi-core CPUs without much
@@ -60,7 +60,7 @@ Argonne National Laboratory,
 \end{abstract}
 
 \begin{keywords}
-    GPGPU, OpenCL, CUDA, Modern C++ libraries, odeint, VexCL, ViennaCL, Thrust
+    GPGPU, OpenCL, CUDA, Modern C++ libraries, odeint, Thrust, VexCL, ViennaCL
 \end{keywords}
 
 \begin{AMS}
@@ -164,14 +164,15 @@ not feasible in OpenCL because of hardware agnosticism by design.
 
 The approach taken for the generation and compilation of the compute kernels is
 one of the main differences between the OpenCL libraries we considered.
-ViennaCL uses a set of predefined kernels, which functionally overlaps with
-BLAS level 1 routines for vector operations.  These kernels are compiled in
-batch at the program start to allow for faster initialization. However, due to
-this design decision vector expressions with several operands may result in the launch of more
-than one kernel.  On the other hand, VexCL generates and compiles an OpenCL
+VexCL generates and compiles an OpenCL
 program with a single kernel for each vector expression it encounters.  This
 leads to potentially higher initialization overhead, but should prove to be
-more effective in long runs. It should be noted that because of the main focus
+more effective in long runs. On the other hand, 
+ViennaCL uses a set of predefined kernels, which functionally overlaps with
+BLAS level 1 routines for vector operations. These kernels are compiled in
+batch at the program start to allow for faster initialization. However, due to
+this design decision vector expressions with several operands may result in the launch
+of more than one kernel. It should be noted that because of the main focus
 of ViennaCL being on iterative solvers for large sparse systems of equations,
 where complex vector expressions are rare, predefined kernels are favorable in
 such a setting.  The implications of these two distinct design decisions in
@@ -711,8 +712,7 @@ struct phase_oscillators {
 \end{lstlisting}
 
 
-ViennaCL, being oriented at iterative solution of large systems of equations,
-does not provide stencil operations required for the problem at hand, so we had
+ViennaCL does not provide stencil operations required for the problem at hand, so we had
 to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
 reasons of brevity.  Even though a custom OpenCL kernel needs to be used for
 this example, ViennaCL provides convenient mechanisms for the compilation and
