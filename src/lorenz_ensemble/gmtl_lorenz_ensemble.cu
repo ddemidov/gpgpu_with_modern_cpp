@@ -59,9 +59,14 @@ struct sys_func
 
   private:
     const vector_type &R;
-    static const value_type sigma = 10.0, b = 8.0 / 3.0;
+    static const value_type sigma, b;
 };
 
+template <typename value_type>
+const value_type sys_func<value_type>::sigma = 10.0;
+
+template <typename value_type>
+const value_type sys_func<value_type>::b = 8.0 / 3.0;
 
 int main(int argc, char* argv[])
 {
