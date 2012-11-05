@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include <vexcl/vexcl.hpp>
-#include <vexcl/exclusive.hpp>
 
 static const char source[] = 
     "#if defined(cl_khr_fp64)\n"

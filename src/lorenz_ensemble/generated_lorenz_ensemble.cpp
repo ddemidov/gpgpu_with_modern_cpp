@@ -7,8 +7,6 @@
 
 //#define VEXCL_SHOW_KERNELS
 #include <vexcl/vexcl.hpp>
-#include <vexcl/exclusive.hpp>
-#include <vexcl/generator.hpp>
 
 #include <boost/numeric/odeint.hpp>
 

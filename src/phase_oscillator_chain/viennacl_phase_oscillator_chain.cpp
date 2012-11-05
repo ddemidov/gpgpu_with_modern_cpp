@@ -4,7 +4,6 @@
 #include <tuple>
 
 #include <vexcl/vexcl.hpp>
-#include <vexcl/exclusive.hpp>
 #include <viennacl/vector.hpp>
 
 #include <boost/array.hpp>

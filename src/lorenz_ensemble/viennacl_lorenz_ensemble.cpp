@@ -12,7 +12,6 @@
 #include <boost/numeric/odeint/external/viennacl/viennacl_resize.hpp>
 
 #include <vexcl/vexcl.hpp>
-#include <vexcl/exclusive.hpp>
 #include <viennacl/vector.hpp>
 
 namespace odeint = boost::numeric::odeint;
