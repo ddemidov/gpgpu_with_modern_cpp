@@ -40,6 +40,8 @@ struct oscillator
 
     void operator()( const sym_state &x , sym_state &dxdt , value_type t )
     {
+	using namespace vex;
+
         sym_value eps;
 	// This function would be run for the first iteration only.
 	// Integrattion step there begins at time=0, so value of parameter t
