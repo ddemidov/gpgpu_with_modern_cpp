@@ -4,16 +4,16 @@
 #include <tuple>
 #include <memory>
 
-#include <vexcl/vexcl.hpp>
-#include <vexcl/exclusive.hpp>
-#include <viennacl/vector.hpp>
-
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/fusion_algebra.hpp>
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
 
 #include <boost/numeric/odeint/external/viennacl/viennacl_operations.hpp>
 #include <boost/numeric/odeint/external/viennacl/viennacl_resize.hpp>
+
+#include <vexcl/vexcl.hpp>
+#include <vexcl/exclusive.hpp>
+#include <viennacl/vector.hpp>
 
 namespace odeint = boost::numeric::odeint;
 namespace fusion = boost::fusion;
