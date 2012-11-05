@@ -27,7 +27,7 @@ struct sys_func
 
     void operator()( const state_type &x , state_type &dxdt , value_type t )
     {
-	dxdt = std::make_tuple(
+	dxdt = std::tie(
 		sigma * (x(1) - x(0)),
 		R * x(0) - x(1) - x(0) * x(2),
 		x(0) * x(1) - b * x(2)

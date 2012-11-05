@@ -35,7 +35,7 @@ struct oscillator
     {
         value_type eps = m_offset + m_amp * cos( m_omega_d * t );
 
-	dxdt = std::make_tuple(
+	dxdt = std::tie(
 		eps * x(0) + m_omega * x(1),
 		eps * x(1) - m_omega * x(0)
 		);
