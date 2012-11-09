@@ -130,9 +130,9 @@ struct stepper_functor
 	    odeint::never_resizer
 	    > > stepper;
 
-    value_type t , dt;
+//    value_type t , dt;
 
-    stepper_functor( void ) : t( 0.0 ) , dt( 0.01 ) { }
+    stepper_functor( void ) /*: t( 0.0 ) , dt( 0.01 ) */ { }
 
     template <class T>
     __host__ __device__ void operator()(T s)
@@ -141,6 +141,9 @@ struct stepper_functor
 
         state_type    &state = thrust::get<0>(s);
         lorenz_system &sys   = thrust::get<1>(s);
+        value_type &t = thrust::get<2>(s);
+        value_type &dt = thrust::get<3>(s);
+        
 
         const size_t max_attempts = 1000;
 
@@ -183,14 +186,18 @@ int main(int argc, char *argv[])
 
     state_type seed = {10, 10, 10};
     thrust::device_vector<state_type> x(n);
+    thrust::device_vector< value_type > t(n) , dt(n);
     thrust::fill(x.begin(), x.end(), seed);
+    thrust::fill(t.begin(), t.end(), 0.0);
+    thrust::fill(dt.begin(), dt.end(), 0.01);
+
 
     stepper_functor step;
     thrust::for_each(
         thrust::make_zip_iterator(
-            thrust::make_tuple(x.begin(), ensemble.begin())),
+            thrust::make_tuple(x.begin(), ensemble.begin(), t.begin(), dt.begin() )),
         thrust::make_zip_iterator(
-            thrust::make_tuple(x.end(), ensemble.end())),
+            thrust::make_tuple(x.end(), ensemble.end(), t.end(), dt.end() )),
         step);
 
 //        odeint::integrate_const(stepper, std::ref(sys[i]), X[i], double(0), t_max, dt);
@@ -198,7 +205,7 @@ int main(int argc, char *argv[])
 
 
     for( size_t i=0 ; i<n ; ++i )
-        std::cout << ensemble_host[i].R << "\t" << x[i] << std::endl;
+        std::cout << ensemble_host[i].R << "\t" << x[i] << "\t" << t[i] << "\t" << dt[i] << std::endl;
 
 
 
