@@ -17,15 +17,7 @@
 #include <boost/fusion/algorithm.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include <boost/numeric/mtl/cuda/config.cu>
-#include <boost/numeric/mtl/cuda/vector_cuda.cu>
-#include <boost/numeric/mtl/cuda/dot.cu>
-#include <boost/numeric/mtl/vector/all_vec_expr.hpp>
-#include <boost/numeric/mtl/operation/operators.hpp>
-#include <boost/numeric/mtl/vector/dense_vector.hpp>
-#include <boost/numeric/mtl/vector/crtp_base_vector.hpp>
-#include <boost/numeric/mtl/matrix/multi_vector.hpp>
-#include <boost/numeric/mtl/utility/category.hpp>
+#include <boost/numeric/mtl/mtl.hpp>
 
 #include <boost/numeric/mtl/interface/odeint.hpp>
 
@@ -39,7 +31,7 @@ namespace odeint = boost::numeric::odeint;
 template <typename value_type>
 struct sys_func
 {
-    typedef mtl::cuda::vector<value_type>         vector_type;
+    typedef mtl::dense_vector<value_type>         vector_type;
     typedef mtl::multi_vector<vector_type>        state_type;
     // typedef boost::fusion::vector<vector_type, vector_type, vector_type>      state_type;
 
