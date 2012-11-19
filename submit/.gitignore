@@ -2,5 +2,6 @@
 *.bst
 *.clo
 *.cls
+*.eps
 *.pdf
 *.tex
