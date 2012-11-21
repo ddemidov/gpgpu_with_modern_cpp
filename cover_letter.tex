@@ -1,55 +1,59 @@
-\documentclass{letter}
+\documentclass[a4paper,11pt]{letter}
+
+\usepackage[left=3cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 
 \signature{Dr. Denis Demidov}
 \address{
-Kazan branch of Joint Supercomputer Center,\\
-Russian Academy of Sciences, \\
-Lobachevsky st. 2/31,\\
+Joint Supercomputer Center \\
+Russian Academy of Sciences \\
+Lobachevsky st. 2/31\\
 420011 Kazan, Russia 
 }
 \begin{document}
 
-\begin{letter}{SIAM Journal of Scientific Computing,\\Editor}
-\opening{Dear Sir/Madam,}
+\begin{letter}{
+    Hans Petter Langtangen\\
+    Editor-in-Chief\\
+    SIAM Journal of Scientific Computing
+    }
+\opening{Dear Dr. Langtangen,}
 
-Enclosed is a paper entitled ``Programming CUDA and OpenCL: a Case Study Using
-Modern C++ Libraries''. Please accept it as a candidate for publication in the
-``Software and High-Performance Computing'' section of SIAM Journal of
-Scientific Computing.
-
-The co-authors of the paper are:
-\begin{itemize}
-    \item Dr. Denis Demidov\footnote{Corresponding author}, Kazan branch of
-	Joint Supercomputer Center, Russian Academy of Sciences, Lobachevsky
-	st. 2/31, 420011 Kazan, Russia.\\
-	email: ddemidov@ksu.ru.
-    \item Dr. Karsten Ahnert, Institut f\"ur Physik und Astronomie,
-	Universit\"at Potsdam, Karl-Liebknecht-Strasse 24/25, 14476
-	Potsdam-Golm, Germany.\\ email: karsten.ahnert@gmx.de.
-    \item Dr. Karl Rupp, Mathematics and Computer Science Division, Argonne
-	National Laboratory, 9700 South Cass Avenue, Argonne, IL 60439, USA. \\
-	email: rupp@mcs.anl.gov.
-    \item Dr. Peter Gottschling, Technische Universit\"at Dresden, Institut
-	f\"ur Wissenschaftliches Rechnen, 01062 Dresden, Germany.\\
-	email: Peter.Gottschling@tu-dresden.de.
-\end{itemize}
+On behalf of all the authors, I would like to ask you to consider paper
+entitled ``Programming CUDA and OpenCL: a Case Study Using Modern C++
+Libraries'' for publication in the ``Software and High-Performance Computing''
+section of SIAM Journal of Scientific Computing.
 
 In the paper we present a comparison of several modern C++ libraries providing
 high-level interfaces for programming multi- and many-core architectures on top
-of CUDA or OpenCL.  The comparison focuses on the solution of ordinary
-differential equations and is based on odeint, a framework for the solution of
-ordinary differential equations. Odeint is designed in a very flexible way and
-may be easily adapted for effective use of libraries such as Thrust, VexCL, or
-ViennaCL, using CUDA or OpenCL technologies.  We found that CUDA and OpenCL
-work equally well for problems of large sizes, while OpenCL has higher overhead
-for smaller problems.  Furthermore, we show that modern high-level libraries
-allow to effectively use the computational resources of many-core GPUs or
-multi-core CPUs without much knowledge of the underlying technologies. We
-believe the contribution of this study warrants its publication in the SIAM
-Journal of Scientific Computing.
+of CUDA or OpenCL.  We look at both convenience and performance of the
+libraries under consideration in the context of solving ordinary differential
+equations. The comparison is based on odeint, a framework for the solution of
+ordinary differential equations. We show that modern high-level libraries allow
+to effectively use the computational resources of many-core GPUs or multi-core
+CPUs without much knowledge of the underlying technologies. We believe the
+contribution of this study warrants its publication in the SIAM Journal of
+Scientific Computing.
+
+The co-authors of the paper are: Dr. Denis Demidov (ddemidov@ksu.ru, Kazan
+branch of Joint Supercomputer Center, Russian Academy of Sciences, Lobachevsky
+st. 2/31, 420011 Kazan, Russia), Dr. Karsten Ahnert (karsten.ahnert@gmx.de,
+Institut f\"ur Physik und Astronomie, Universit\"at Potsdam,
+Karl-Liebknecht-Strasse 24/25, 14476 Potsdam-Golm, Germany), Dr. Karl Rupp
+(rupp@mcs.anl.gov, Mathematics and Computer Science Division, Argonne National
+Laboratory, 9700 South Cass Avenue, Argonne, IL 60439, USA), and Dr. Peter
+Gottschling (Peter.Gottschling@tu-dresden.de, Technische Universit\"at Dresden,
+Institut f\"ur Wissenschaftliches Rechnen, 01062 Dresden, Germany).
+
+My coauthors and I would like to suggest, as potential referees, Dr. Nathan
+Bell (NVIDIA Research, nbell@nvidia.com), Dr. Felix H\"ofling (Max Planck
+Institute for Intelligent Systems, hoefling@mf.mpg.de), Dr. Andreas Kl\"ockner
+(Courant Institute of Mathematical Sciences, New York University,
+kloeckner@cims.nyu.edu), and Dr. Matthew Knepley (Computation Institute,
+University of Chicago, knepley@mcs.anl.gov).
 
 This paper is our original unpublished work and it has not been submitted to
-any other journal for reviews.
+any other journal for reviews. All the authors have read the paper and have
+approved this submission.
 
 \closing{Sincerely,}
 
