@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     typedef typename disordered_lattice<value_type, matrix_type>::state_type  state_type;
 
     const size_t n1 = argc > 1 ? atoi(argv[1]) : 64, n2= n1, n= n1 * n2;
-    const value_type K = 0.1, beta = 0.01, dt= 0.01, t_max= 0.1; // 100.0;
+    const value_type K = 0.1, beta = 0.01, dt= 0.01, t_max= 100.0;
 
     std::vector<value_type> disorder( n );
     std::generate( disorder.begin(), disorder.end(), drand48 );
