@@ -55,15 +55,12 @@ int main( int argc , char **argv )
     value_type beta = 0.01;
     value_type t_max = 100.0;
     value_type dt = 0.01;
-    
+
     vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env && vex::Filter::DoublePrecision ) );
     std::cout << ctx << std::endl;
-    
 
     std::vector<value_type> disorder( n );
-    std::mt19937 rng;
-    std::uniform_real_distribution< value_type > dist( 0.0 , 1.0 );
-    for( size_t i=0 ; i<n ; ++i ) disorder[i] = dist( rng );
+    std::generate(disorder.begin(), disorder.end(), drand48);
 
     std::vector< double > val;
     std::vector< size_t > col;

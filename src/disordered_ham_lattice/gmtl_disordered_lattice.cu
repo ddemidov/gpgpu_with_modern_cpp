@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <string>
 #include <cmath>
 #include <utility>
 #include <boost/numeric/mtl/mtl.hpp>
@@ -24,24 +25,6 @@
 
 
 namespace odeint = boost::numeric::odeint;
-
-template <typename value_type, typename Matrix>
-struct disordered_lattice
-{
-    typedef mtl::dense_vector<value_type>         state_type;
-
-    disordered_lattice(value_type beta, const Matrix& A) 
-      : beta(beta), A(A) { }
-
-    void operator()(const state_type& q, state_type& dp) const
-    {
-	dp= -beta * q * q * q + A * q;
-    }
-
-  private:
-    const value_type beta;
-    const Matrix&    A;
-};
 
 struct index_modulus 
 {
@@ -56,14 +39,43 @@ struct index_modulus
     }
 };
 
+template <typename value_type, typename Matrix>
+struct disordered_lattice
+{
+    typedef mtl::dense_vector<value_type>         state_type;
+
+    disordered_lattice(value_type beta, const Matrix& A) 
+      : beta(beta), A(A), v(num_rows(A)) { }
+
+    void operator()(const state_type& q, state_type& dp) 
+    {
+	// compute product explicitly since implicit calculation causes expensive cudaMalloc/-Free (yet)
+	v= A * q;
+	dp= -beta * q * q * q + v;
+    }
+
+  private:
+    const value_type   beta;
+    const Matrix&      A;
+    state_type         v;
+};
+
+
+
+
 int main(int argc, char* argv[])
 {
+    mtl::vampir_trace<9999>                            tracer;
+
     typedef double                                     value_type;
     typedef mtl::compressed2D<value_type>              matrix_type;
     typedef typename disordered_lattice<value_type, matrix_type>::state_type  state_type;
 
     const size_t n1 = argc > 1 ? atoi(argv[1]) : 64, n2= n1, n= n1 * n2;
-    const value_type K = 0.1, beta = 0.01, dt= 0.01, t_max= 1.0; // 100.0;
+    const value_type K = 0.1, beta = 0.01, dt= 0.01, t_max= 0.1; // 100.0;
+
+    std::vector<value_type> disorder( n );
+    std::generate( disorder.begin(), disorder.end(), drand48 );
 
     index_modulus index(n);
     matrix_type A(n, n);
@@ -71,8 +83,8 @@ int main(int argc, char* argv[])
 	mtl::matrix::inserter<matrix_type> ins(A);
 	for( int i=0 ; i < n1 ; ++i ) 
 	    for( int j=0 ; j < n2 ; ++j ) {
-		int idx = i * n2 + j;
-		ins[idx][idx] << -double(rand()) / double(RAND_MAX) - 4.0 * K;
+		int idx = i * n2 + j; 
+		ins[idx][idx] << -disorder[idx] - 4.0 * K;
 		ins[idx][index(idx + 1)] << K;
 		ins[idx][index(idx - 1)] << K;
 		ins[idx][index(idx + n2)] << K;
@@ -91,8 +103,7 @@ int main(int argc, char* argv[])
     disordered_lattice<value_type, matrix_type> sys( beta, A );
     odeint::integrate_const(stepper, sys, X, value_type(0.0), t_max, dt);
 
-    std::cout << X.first[0] << X.second[0] << std::endl;
-
+    std::cout << X.first[0] << " " << X.second[0] << std::endl;
     return 0;
 }
 

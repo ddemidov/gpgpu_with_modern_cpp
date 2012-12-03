@@ -109,9 +109,7 @@ int main( int argc , char **argv )
     viennacl::copy(disorder, X.second);
     X.first[ n1/2*n2+n2/2 ] = 1.0;
 
-    std::mt19937 rng;
-    std::uniform_real_distribution< value_type > dist( 0.0 , 1.0 );
-    for( size_t i=0 ; i<n ; ++i ) disorder[i] = dist( rng );
+    std::generate(disorder.begin(), disorder.end(), drand48);
 
 
     odeint::symplectic_rkn_sb3a_mclachlan<
