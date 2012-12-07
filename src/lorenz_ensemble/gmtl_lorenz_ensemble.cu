@@ -23,8 +23,8 @@
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
-// #include <boost/numeric/odeint/algebra/fusion_algebra.hpp>
 
+#include <boost/timer.hpp>
 
 namespace odeint = boost::numeric::odeint;
 
@@ -39,11 +39,6 @@ struct sys_func
 
     void operator()(const state_type& x, state_type& dxdt, value_type)
     {
-	// using boost::fusion::at_c;  
-	// at_c<0>(dxdt)= sigma * (at_c<1>(x) - at_c<0>(x));  
-	// at_c<1>(dxdt)= R * at_c<0>(x) - at_c<1>(x) - at_c<0>(x) * at_c<2>(x);  	
-	// at_c<2>(dxdt)= at_c<0>(x) * at_c<0>(x) - b * at_c<2>(x); 
-
 	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
 	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
 	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
@@ -51,9 +46,15 @@ struct sys_func
 
   private:
     const vector_type &R;
-    static const value_type sigma = 10.0, b = 8.0 / 3.0;
+    static const value_type sigma, b;
+    // static const value_type sigma = 10.0, b = 8.0 / 3.0;
 };
 
+template <typename value_type>
+const value_type sys_func<value_type>::sigma= 10.0;
+
+template <typename value_type>
+const value_type sys_func<value_type>::b = 8.0 / 3.0;
 
 int main(int argc, char* argv[])
 {
@@ -61,24 +62,32 @@ int main(int argc, char* argv[])
     typedef typename sys_func<value_type>::vector_type vector_type;
     typedef typename sys_func<value_type>::state_type  state_type;
 
-    const size_t     n= argc > 1 ? atoi(argv[1]) : 1024;
-    const value_type dt= 0.01, t_max= 100.0, 
+    const size_t     n= argc > 1 ? atoi(argv[1]) : 1024*1024;
+    const value_type dt= 0.01, t_max= 100.0, // 10.0, 
                      Rmin= 0.1, Rmax= 50.0, dR= (Rmax - Rmin) / value_type(n - 1);
 
     vector_type      R(n);
     for (size_t i= 0; i < n; ++i)
 	R[i]= Rmin + dR * value_type(i);
 
-    std::cout << "multi_vector is " << boost::numeric::odeint::is_resizeable<state_type>::value << std::endl;
-
     state_type X(vector_type(n, 10.0), 3);
-    // state_type X(vector_type(n, 10.0), vector_type(n, 10.0), vector_type(n, 10.0));
 
     odeint::runge_kutta4<state_type, value_type, state_type, value_type,
 			 odeint::vector_space_algebra , odeint::default_operations> stepper;
+    boost::timer timer;
     odeint::integrate_const(stepper, sys_func<value_type>(R), X, value_type(0), t_max, dt);
-
+    std::cout << "Integration took " << timer.elapsed() << " s\n";
+ 
+    mtl::irange rr(10);
     std::cout << "Result = " << X.at(0)[0] << std::endl;
+
+    if (n == 1024*1024 && t_max == 10.0) {
+	mtl::dense_vector<value_type> compare(10);
+	compare= 0.1,0.100048,0.100095,0.100143,0.10019,0.100238,0.100286,0.100333,0.100381,0.100428;
+	compare-= R[rr];
+	if (two_norm(compare) > 0.01)
+	    std::cerr << "Wrong result" << std::endl;
+    }
 
     return 0;
 }
