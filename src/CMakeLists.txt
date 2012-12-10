@@ -30,6 +30,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
+add_definitions(-DVIENNACL_WITH_OPENCL)
+
 add_subdirectory(damped_oscillator)
 add_subdirectory(disordered_ham_lattice)
 add_subdirectory(lorenz_ensemble)

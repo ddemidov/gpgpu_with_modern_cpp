@@ -31,7 +31,7 @@ struct ham_lattice
 {
     ham_lattice( long n1 , long n2 , value_type K , value_type beta ,
 	    const std::vector< value_type > &disorder )
-	: m_N( n1 * n2 ), m_beta(beta), m_A(m_N, m_N)
+	: m_N( n1 * n2 ), m_beta(beta)
     {
 	if( disorder.size() != static_cast<size_t>(n1 * n2) ) throw ;
 
