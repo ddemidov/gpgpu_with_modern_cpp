@@ -2,6 +2,7 @@
 #include <vector>
 #include <utility>
 #include <tuple>
+#include <cmath>
 
 #include <vexcl/vexcl.hpp>
 #include <viennacl/vector.hpp>
@@ -60,7 +61,6 @@ struct sys_func
 size_t n;
 const value_type dt = 0.01;
 const value_type t_max = 100.0;
-const value_type pi = 3.1415926535897932384626433832795029;
 
 int main( int argc , char **argv )
 {
@@ -80,7 +80,7 @@ int main( int argc , char **argv )
     std::vector< value_type > x( n );
     for( size_t i=0 ; i<n ; ++i )
     {
-        x[i] = 2.0 * pi * drand48();
+        x[i] = 2.0 * M_PI * drand48();
         omega[i] = double( n - i ) * epsilon; // decreasing frequencies
     }
 
