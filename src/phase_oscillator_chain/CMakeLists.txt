@@ -7,6 +7,9 @@ if (CUDA_FOUND)
     cuda_add_executable(thrust_phase_oscillator_openmp thrust_phase_oscillator_chain.cu
 	OPTIONS "-Xcompiler;-fopenmp;-DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP")
     target_link_libraries(thrust_phase_oscillator_openmp gomp)
+
+    cuda_add_executable(gmtl_phase_oscillator gmtl_phase_oscillator_chain.cu
+	OPTIONS "-DMTL_WITH_SHORT_ELE_PROD;-DMTL_HAS_ODEINT;-DMTL_HAS_CUDA")
 endif (CUDA_FOUND)
 
 add_executable(vexcl_phase_oscillator vexcl_phase_oscillator_chain.cpp)
