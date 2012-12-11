@@ -17,6 +17,8 @@
 #include <string>
 #include <cmath>
 #include <utility>
+#include <boost/numeric/mtl/cuda/cuda_utility.hpp>
+
 #include <boost/numeric/mtl/mtl.hpp>
 
 #include <boost/numeric/mtl/interface/odeint.hpp>
@@ -31,63 +33,51 @@ namespace odeint = boost::numeric::odeint;
 
 using namespace mtl;
 
+
 struct stencil_kernel
 {
+    typedef double value_type;
     static const int start= -1, end= 1;
 
+    stencil_kernel(int n) : n(n) {}
+
     template <typename Vector>
-    __device__ double inner_stencil(const Vector& v, int i) const
+    __device__ __host__ value_type operator()(const Vector& v, int i) const
     {
-	return v[i-1] + v[i] + v[i+1];
+	return sin(v[i-1] - v[i]) + sin(v[i] - v[i+1]);
     }
 
     template <typename Vector>
-    __device__ double outer_stencil(const Vector& v, int i, int n) const
+    __device__ __host__ value_type outer_stencil(const Vector& v, int i, int offset= 0) const
     {
-	double s= v[i];
-	if (i > 0) s+= v[i-1];
-	if (i+1 < n) s+= v[i+1];
-	return s;
+	value_type s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]), 
+	           s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
+	return s1 + s2;
     }
+
+    int vector_size() const { return n; }
+
+    int n;
 };
 
-template <typename Stencil>
-struct test_kernel
+template <typename State>
+struct sys_func
 {
-    test_kernel(const dense_vector<double>& v, dense_vector<double>& w, Stencil stencil) 
-      : v(v), wp(w.device_data), n(mtl::vector::size(v)), stencil(stencil) {}
+    typedef typename Collection<State>::value_type value_type;
 
-    __device__ void operator()()
+    sys_func(const State& omega, State& tmp) 
+      : omega(omega), tmp(tmp), S(num_rows(omega)) {}
+
+    void operator()(const State &x, State &dxdt, value_type t) const
     {
-	const int size= (0x4000 - 0x28) / sizeof(double);
-
-	__shared__ double tmp[size];
-	const unsigned tid= threadIdx.x, bs= blockDim.x;
-
-	for (int i= tid; i < size; i+= bs)
-	    tmp[i]= v.dat(i);
-	__syncthreads();
-
-	// for (int i= tid; i < n; i+= bs)
-	//     stencil.inner_stencil(tmp, i);
-
-
-#if 1
-	wp[tid]= stencil.outer_stencil(tmp, tid, n);
-
-	for (int i= tid + bs; i < n - bs; i+= bs)
-	    wp[i]= stencil.inner_stencil(tmp, i);
-
-	wp[n - bs + tid]= stencil.outer_stencil(tmp, n - bs + tid, n);
-#endif
+	tmp= S * x;
+        dxdt= omega + tmp;
     }
 
-    vector::device_expr<dense_vector<double> > v;
-    double*                                    wp;
-    int                                        n;
-    Stencil                                    stencil;
+    const State&                           omega;
+    State&                                 tmp;
+    mtl::matrix::stencil1D<stencil_kernel> S; 
 };
-
 
 
 int main(int argc, char* argv[])
@@ -95,16 +85,30 @@ int main(int argc, char* argv[])
     using namespace mtl;
     mtl::vampir_trace<9999>                            tracer;
 
-    dense_vector<double> v(128), w(128);
-    iota(v);
+    typedef double                    value_type;
+    typedef dense_vector<value_type>  state_type;
 
-    v.to_device();
-    w.to_device();
-    test_kernel<stencil_kernel> k(v, w, stencil_kernel());
-    launch_function<<<1, 32>>>(k);
-    w.to_host();
+    const value_type dt= 0.01, pi= M_PI, t_max= 100.0;
+    const size_t n= argc > 1 ? atoi(argv[1]) : 1024;
+    const value_type epsilon = 6.0 / ( n * n ); // should be < 8/N^2 to see phase locking
 
-    std::cout << "w is " << w /*[irange(10)]*/ << '\n';
+    state_type omega(n), x(n), tmp(n);
+    for (size_t i= 0; i < n; ++i) {
+        x[i] = 2.0 * pi * drand48();
+        omega[i] = double(n - i) * epsilon; // decreasing frequencies
+    }
+
+    odeint::runge_kutta4<
+	    state_type, value_type, state_type, value_type,
+	    odeint::vector_space_algebra, odeint::default_operations
+	    > stepper;
+
+    boost::timer timer;
+    odeint::integrate_const(stepper, sys_func<state_type>(omega, tmp), x, 0.0, t_max, dt);
+    cudaThreadSynchronize();
+    std::cout << "Integration took " << timer.elapsed() << " s\n";
+    
+    std::cout << "Result is " << x[0] << '\n';
 
     return 0;
 }
