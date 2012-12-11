@@ -1,0 +1,24 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N disordered_lattice_cmtl4
+#$ -m ae -M dennis.demidov@gmail.com
+#$ -cwd
+#$ -l cores=4,tesla_2070=3
+#$ -t 1:10
+
+cmtl4_exe=gmtl_disordered_lattice
+
+# warming run
+./${cmtl4_exe}
+
+rm -f cmtl4_gpu_${SGE_TASK_ID}.dat
+
+for ((a=16;a<=2048;a*=2)); do
+    echo "$a"
+
+    echo -n "$a " >> cmtl4_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o cmtl4_gpu_${SGE_TASK_ID}.dat -a ./${cmtl4_exe} $a > /dev/null
+
+    echo ""
+done
