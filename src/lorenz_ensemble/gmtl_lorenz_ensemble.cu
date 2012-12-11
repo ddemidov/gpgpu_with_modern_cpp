@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     typedef typename sys_func<value_type>::state_type  state_type;
 
     const size_t     n= argc > 1 ? atoi(argv[1]) : 1024*1024;
-    const value_type dt= 0.01, t_max= 100.0, // 10.0, 
+    const value_type dt= 0.01, t_max= 100.0, 
                      Rmin= 0.1, Rmax= 50.0, dR= (Rmax - Rmin) / value_type(n - 1);
 
     vector_type      R(n);
@@ -77,17 +77,9 @@ int main(int argc, char* argv[])
     boost::timer timer;
     odeint::integrate_const(stepper, sys_func<value_type>(R), X, value_type(0), t_max, dt);
     std::cout << "Integration took " << timer.elapsed() << " s\n";
- 
-    mtl::irange rr(10);
-    std::cout << "Result = " << X.at(0)[0] << std::endl;
 
-    if (n == 1024*1024 && t_max == 10.0) {
-	mtl::dense_vector<value_type> compare(10);
-	compare= 0.1,0.100048,0.100095,0.100143,0.10019,0.100238,0.100286,0.100333,0.100381,0.100428;
-	compare-= R[rr];
-	if (two_norm(compare) > 0.01)
-	    std::cerr << "Wrong result" << std::endl;
-    }
+    std::cout << "Result = " << X.at(0)[0] << std::endl;
+ 
 
     return 0;
 }

@@ -32,7 +32,7 @@ include_directories(
 
 add_definitions(-DVIENNACL_WITH_OPENCL)
 
-add_subdirectory(damped_oscillator)
+#add_subdirectory(damped_oscillator)
 add_subdirectory(disordered_ham_lattice)
 add_subdirectory(lorenz_ensemble)
 add_subdirectory(phase_oscillator_chain)
