@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{subfigure}
 \usepackage[colorlinks,unicode,linkcolor=black]{hyperref}
+\usepackage{xspace}
 \usepackage{listings}
 \lstset{
     language=C++,
@@ -25,6 +26,9 @@
 \newcommand {\ii} {\mathop{i}}
 \newcommand {\rem}[1]{}
 
+\newcommand{\addpp}[1]{{#1\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}\xspace}
+\newcommand{\Cpp}{\addpp{C}}
+
 \title{Programming CUDA and OpenCL:\\a Case Study Using Modern C++ Libraries}
 
 \author{
@@ -39,19 +43,22 @@ karsten.ahnert@gmx.de}) }
 \and Karl Rupp\thanks{Mathematics and Computer Science Division,
 Argonne National Laboratory,
 9700 South Cass Avenue, Argonne, IL 60439, USA
-({\tt rupp@mcs.anl.gov}) } }
+({\tt rupp@mcs.anl.gov}) } 
+\and Peter Gottschling\thanks{SimuNova, Helmholtz-Str. 10, 01069 Dresden \&
+Inst. Scientific Computing, TU Dresden, 01062 Dresden}
+({\tt peter.gottschling@simunova.com}) }
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-    We present a comparison of several modern C++ libraries providing high-level interfaces
+    We present a comparison of several modern \Cpp libraries providing high-level interfaces
     for programming multi- and many-core architectures on top of CUDA or OpenCL.
     The comparison focuses on the solution of ordinary differential equations and is based on odeint,
     a framework for the solution of ordinary differential equations. Odeint is designed in a
     very flexible way and may be easily adapted for effective use of libraries such
-    as Thrust, VexCL, or ViennaCL, using CUDA or OpenCL technologies.
+    as MTL4, Thrust, VexCL, or ViennaCL, using CUDA or OpenCL technologies.
     We found that CUDA and OpenCL work equally well for problems
     of large sizes, while OpenCL has higher overhead for smaller problems.
     Furthermore, we show that modern high-level libraries allow to effectively
@@ -60,7 +67,7 @@ Argonne National Laboratory,
 \end{abstract}
 
 \begin{keywords}
-    GPGPU, OpenCL, CUDA, Modern C++ libraries, odeint, Thrust, VexCL, ViennaCL
+    GPGPU, OpenCL, CUDA, Modern \Cpp libraries, odeint, Thrust, VexCL, ViennaCL, MTL4
 \end{keywords}
 
 \begin{AMS}
@@ -85,8 +92,10 @@ both by increasing numbers of GPGPU-related publications and GPU-based
 supercomputers in the TOP500\footnote{ \href{ http://top500.org }{
 http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
 OpenCL.  The former is a proprietary parallel computing architecture developed
-by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
-latter is an open, royalty-free standard for cross-platform, parallel
+by NVIDIA tailored for general purpose computing on NVIDIA graphics adapters.
+CUDA could be used theoretically for other platforms as well but tool support
+only exists for NVIDIA hardware.
+OpenCL is an open, royalty-free standard for cross-platform, parallel
 programming of modern processors and GPUs maintained by the Khronos group. By
 nature, the two frameworks have their distinctive pros and cons. CUDA has a
 more mature programming environment with a larger set of scientific libraries,
@@ -103,37 +112,48 @@ several such libraries (BLAS implementations, Fast Fourier Transform, Thrust
 and others). OpenCL lacks standard libraries, but there are a number of
 third-party projects aimed at developing both CUDA and OpenCL programs.
 
-This paper presents a comparison of several modern C++ libraries aimed at ease
+This paper presents a comparison of several modern \Cpp libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
 libraries under consideration in the context of solving ordinary differential
 equations.  The comparison is based on odeint\footnote{ \href{
-http://odeint.com }{ http://odeint.com } }, a modern C++ library for solving
-ordinary differential equations (ODEs) numerically  \cite{OdeintRef1,
-OdeintRef2} that has been accepted for inclusion into the Boost
+http://odeint.com }{ http://odeint.com } }, a modern \Cpp library for solving
+ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1} 
+that has been accepted for inclusion into the Boost
 libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
-It is developed in a generic way using template metaprogramming techniques,
+It is developed in a generic way using template meta-programming techniques,
 which leads to extraordinary high flexibility at utmost performance. The
 numerical algorithms are implemented independently of the underlying
 arithmetics. This results in a broad applicability of the library, especially
 in non-standard environments.  For example, odeint supports matrix types,
 arbitrary precision arithmetics, and can be easily adopted to use either CUDA
-or OpenCL frameworks.  The GPGPU libraries considered in this work are Thrust,
+or OpenCL frameworks.  The GPGPU libraries considered in this work are MTL4, Thrust,
 VexCL, and ViennaCL:
 
 % [DD] How do you like it this way? The complete odeint description is above
 % and what follows is the list of the libraries we tested.
 
 \begin{description}
+    \item[MTL4] (The Matrix Template Library\footnote{ \href{ http://mtl4.org }{
+        http://mtl4.org }}) is a \Cpp linear algebra library that provides
+        an intuitive interface by establishing a domain-specific language
+        embedded in \Cpp.
+        The library aims for maximal performance achievable by high-level languages
+        using compile-time transformations.
+        % For this purpose, source code is transformed during compile time by expression
+        % templates and meta-tuning.
+        Currently, three versions exist: the open-source editions that support
+        single- and multi-core CPUs, the supercomputing edition providing generic
+    MPI-based parallelism, and the CUDA edition that is introduced in this paper.
     \item[Thrust] is a parallel algorithms library\footnote{ \href{
         http://thrust.github.com }{ http://thrust.github.com }} which resembles
-        the C++ Standard Template Library \cite{ThrustRef}.  Thrust's
+        the \Cpp Standard Template Library \cite{ThrustRef}.  Thrust's
         high-level interface greatly enhances developer productivity while
         enabling performance portability between GPUs and multi-core CPUs.
-        Thrust is distributed with the NVIDIA CUDA Toolkit since version 4.1.
+        Thrust is distributed with the NVIDIA CUDA Toolkit since version~4.1.
     \item[VexCL] is a vector expression template
         library\footnote{ \href{ https://github.com/ddemidov/vexcl }{
         https://github.com/ddemidov/vexcl }} for OpenCL \cite{VexCLRef}. It has
-        been created for ease of OpenCL development with C++.  VexCL strives to
+        been created for ease of OpenCL development with \Cpp.  VexCL strives to
         reduce the amount of boilerplate code needed to develop OpenCL
         applications. The library provides a convenient and intuitive notation
         for vector arithmetic, reduction, and sparse matrix-vector
@@ -141,7 +161,7 @@ VexCL, and ViennaCL:
         supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
         library\footnote{ \href{ http://viennacl.sourceforge.net }{
-        http://viennacl.sourceforge.net }} written in C++ and primarily based on OpenCL
+        http://viennacl.sourceforge.net }} written in \Cpp and primarily based on OpenCL
         \cite{ViennaCLRef}. Its interface is compatible with
         Boost.uBLAS\footnote{ \href{ http://www.boost.org/libs/numeric/ublas }
         { http://www.boost.org/libs/numeric/ublas } }
@@ -171,7 +191,7 @@ more effective in long runs. On the other hand,
 ViennaCL uses a set of predefined kernels, which functionally overlaps with
 BLAS level 1 routines for vector operations. These kernels are compiled in
 batch at the program start to allow for faster initialization. However, due to
-this design decision vector expressions with several operands may result in the launch
+this design decision, vector expressions with several operands may result in the launch
 of more than one kernel. It should be noted that because of the main focus
 of ViennaCL being on iterative solvers for large sparse systems of equations,
 where complex vector expressions are rare, predefined kernels are favorable in
@@ -179,11 +199,11 @@ such a setting.  The implications of these two distinct design decisions in
 VexCL and ViennaCL will be further addressed in the discussion of the results.
 
 The other difference between CUDA and OpenCL is that CUDA supports a subset of
-the C++ language in compute kernels, while OpenCL kernels are written in a subset
-of C99. Therefore, CUDA programmers may use template metaprogramming techniques
+the \Cpp language in compute kernels, while OpenCL kernels are written in a subset
+of C99. Therefore, CUDA programmers may use template meta-programming techniques
 which may lead to more efficient and compact code. The native OpenCL API does
 not provide such a feature, but the drawback is balanced by the ability of
-kernel source generation during runtime. Modern C++ libraries such as those
+kernel source generation during runtime. Modern \Cpp libraries such as those
 considered in this work successfully use this approach and hide gory details
 from their users.
 
@@ -214,7 +234,7 @@ equations given by
 \label{eq:ode}
 \end{equation}
 Here, $x$ is the dependent variable and is usually a vector of real or complex
-values.  $t$ is the independent variable. We will refer to $t$ as the time
+values.  $t$~is the independent variable. We will refer to $t$ as the time
 throughout the article and denote the time derivative with $\de x / \de t =
 \dot{x}$. $f(x,t)$ is the system function and defines the ODE.
 
@@ -227,8 +247,8 @@ This one large system is then solved at once, hence all small ODEs are solved
 simultaneously.
 
 
-Numerous methods for solving ODEs exist \cite{Press-92,HairerSolvingODEI,
-HairerSolvingODEII}, which are usually categorized in the field of numerical
+Numerous methods for solving ODEs exist \cite{HairerSolvingODEI,
+HairerSolvingODEII,Press-92}, which are usually categorized in the field of numerical
 analysis.  Odeint implements the most prominent of these methods, for example
 the classical Runge-Kutta methods and Runge-Kutta-Fehlberg methods, multi-step
 methods (Adams-Bashforth-Moulton), symplectic Runge-Kutta-Nystr\"om methods,
@@ -320,12 +340,12 @@ struct default_algebra {
 The main reason for the separation of algebra and operations is that
 all arithmetic calculations and iterations are completely encapsulated
 into the algebra and the operations which must be provided by the
-user. Note, that algebra and the operations must be chosen such that
+user. Note that algebra and the operations must be chosen such that
 they interact correctly with the state type.
 
 Many libraries for vector and matrix types provide expression templates
-\cite{Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques,
-Vandevoorde:CppTemplates} for the elementary operations using operator overload
+\cite{Vandevoorde:CppTemplates,Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques} 
+for the elementary operations using operator overload
 convenience.  Such libraries do not need to define their own algebra, but can
 instead be used with a default algebra and a default operation set included in
 odeint, which simply call the operations directly on the matrix or vector type.
@@ -338,7 +358,7 @@ native support for these libraries is available.  Implementation details such as
 the resizing of vectors is accomplished in a straight-forward manner and not
 further addressed for the sake of conciseness.
 
-To adapt Thrust to odeint we need to provide both an algebra and
+To adapt Thrust to odeint, we need to provide both an algebra and
 operations. The algebra needs to define the \code{for_each} family of
 algorithms. All of these operations follow the same pattern,
 so we consider \code{for_each3} only:
@@ -387,18 +407,20 @@ zip iterator into separate values.  This approach is heavily used with Thrust
 and allows to process several vectors in a single efficient sweep.
 
 
-Both VexCL and ViennaCL provide convenient expression templates that may be
-directly used with odeint's \code{vector_space_algebra} and
-\code{default_operations}. This combination proved to be effective with VexCL,
-where each expression results in a single kernel. For ViennaCL, however,
-default operations involving more than two terms result in multiple kernel
-launches.  Moreover, temporary vectors are allocated and deallocated for each
-of such composite operations, resulting in a dramatic decrease of performance.
-To address such problems, ViennaCL provides a kernel generator
-\cite{tillet:kernel-generator}, which is able to generate specialized
-operations for ViennaCL. These use a custom kernel generation mechanism
-provided by the library.  For example, the \code{scale_sum2} operation is
-defined as:
+\begin{sloppypar}
+  The three libraries MTL4, VexCL and ViennaCL provide convenient
+  expression templates that may be directly used with odeint's
+  \code{vector_space_algebra} and \code{default_operations}. This
+  combination proved to be effective with VexCL and MTL4, where each
+  expression results in a single kernel. For ViennaCL, however,
+  default operations involving more than two terms result in multiple
+  kernel launches.  Moreover, temporary vectors are allocated and
+  deallocated for each of such composite operations, resulting in a
+  dramatic decrease of performance.  To address such problems,
+  ViennaCL provides a kernel generator \cite{tillet:kernel-generator},
+  which is able to generate specialized operations for ViennaCL. These
+  use a custom kernel generation mechanism provided by the library.
+  For example, the \code{scale_sum2} operation is defined as:
 \begin{lstlisting}
 struct viennacl_operations {
     template<class Fac1 = double, class Fac2 = Fac1>
@@ -432,6 +454,8 @@ struct viennacl_operations {
 Here, a custom OpenCL kernel is automatically generated from symbolic vector
 expression in the first call of the \code{operator()} and then reused for all
 subsequent calls.
+\end{sloppypar}
+
 
 
 
@@ -583,6 +607,41 @@ above variant:
                               R * x(0) - x(1) - x(0) * x(2),
                               x(0) * x(1) - b * x(2)          );
 \end{lstlisting}
+
+In a similar manner, the system function is implemented in MTL4
+using \code{multi_vector}:
+\begin{lstlisting}
+template <typename value_type>
+struct lorenz_system
+{
+    typedef mtl::dense_vector<value_type>         vector_type;
+    typedef mtl::multi_vector<vector_type>        state_type;
+
+    explicit sys_func(const vector_type &R) : R(R) { }
+
+    void operator()(const state_type& x, state_type& dxdt, value_type) {
+	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
+	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
+	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
+    }
+  private:
+    const vector_type &R;
+    static const value_type sigma = 10.0, b = 8.0 / 3.0;
+};
+\end{lstlisting}
+This class was originally designed for building a generic matrix as a set of
+column vectors and expressing all matrix operations in terms of underlying
+vectors' operations.
+In this sense, all operations are performed on the sub-vectors of \code{x} and
+\code{dxdt} where each vector operation is a kernel call.
+
+There is potential for optimization when multi-vectors are consecutively allocated
+in memory so that in our case three kernel calls can be replaced by a single call.
+Likewise, the evaluation of the Lorenz system could be performed with one kernel
+using MTL4's fused expressions.
+However, both techniques require a very subtle meta-programming treatment on the type level and
+are not yet available CUDA version of MTL4 (we will refer to the CUDA version as CMTL4).
+
 
 For the ViennaCL version of the Lorenz attractor example a
 \code{boost::fusion::vector} is used to pack the coordinate components of the
@@ -739,7 +798,92 @@ struct phase_oscillators {
 };
 \end{lstlisting}
 
+The stencil operator in MTL4 is a minimalistic matrix type.
+Its application is expressed by a matrix vector product that assigned
+to a vector or used to increment/decrement it:
+\begin{lstlisting}
+y= S * x;
+y+= S * x;
+y-= S * x;
+\end{lstlisting}
+The user must provide a functor-like type that applies the stencil on 
+the i-th element of a vector and its neighbors.
+For the sake of performance the functor must provide two functions:
+one that is checking indices and to be applied near the beginning and the end of the vector 
+and one function without index checking.
+For the considered example, the functor/kernel is:
+\begin{lstlisting}
+struct stencil_functor
+{
+    typedef double value_type;
+    static const int start= -1, end= 1;
 
+    stencil_kernel(int n) : n(n) {}
+
+    template <typename Vector>
+    __device__ __host__ value_type operator()(const Vector& v, int i) const
+    {
+	return sin(v[i-1] - v[i]) + sin(v[i] - v[i+1]);
+    }
+
+    template <typename Vector>
+    __device__ __host__ value_type outer_stencil(const Vector& v, int i, int offset= 0) const
+    {
+	value_type s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]), 
+	           s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
+	return s1 + s2;
+    }
+
+    int vector_size() const { return n; }
+    int n;
+};
+\end{lstlisting}
+The parameter \code{offset} is needed when vector parts are cached so that the 
+addressing is shifted. 
+For the sake of backward (and forward) compatibility the non-portable keywords 
+\code{__device__} and \code{__host__} should be replaced by a macro that is 
+defined suitable for the according platform, e.g.~to an empty string on regular compilers.
+Thus, the user code is entirely platform-independent.
+
+The stencil functor is used as template argument of the stencil matrix:
+\begin{lstlisting}
+template <typename State>
+struct phase_oscillators
+{
+    typedef typename Collection<State>::value_type value_type;
+
+    sys_func(const State& omega, State& tmp) 
+      : omega(omega), tmp(tmp), S(num_rows(omega)) {}
+
+    void operator()(const State &x, State &dxdt, value_type t) const
+    {
+	tmp= S * x;
+        dxdt= omega + tmp;
+    }
+
+    const State&                           omega;
+    State&                                 tmp;
+    mtl::matrix::stencil1D<stencil_kernel> S; 
+}; 
+\end{lstlisting}
+The stencil matrix ``S'' in the system function above
+uses shared memory to benefit from re-accessing vector entries
+and to avoid non-coalesced memory accesses.
+
+The need for defining a temporary vector in the user code and referring
+it in the system function is not particularly elegant but unfortunately
+needed for performance.
+Profiling of CUDA programs with trace tools like Vampir~\cite{vampir}
+revealed that allocation and deallocation of GPU memory is extremely expensive
+so that the creation of temporary variables often took more time 
+than all calculations.
+It is therefor avoided in the operator above.
+On the other hand, odeint copies the system function object so that a member variable
+would also cause expensive creation, destruction, and copy operations.
+For the future, we consider managing the memory of temporaries by hand to avoid 
+such overhead.
+
+%To simplify the programming, we wil
 
 
 %
@@ -850,11 +994,25 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
+The MTL4 implementation reads:
+\begin{lstlisting}
+void operator()(const state_type& q, state_type& dp) {
+    v= A * q;
+    dp= -beta * q * q * q + v;
+}
+\end{lstlisting}
+The expression ``\code{q * q * q}'' computes the triple element-wise product of 
+column vector \code{q}.
+Usually, products of column/row vectors among themselves are often program errors
+and therefor not allowed in MTL4. 
+It can be enabled by defining the macro MTL_WITH_SHORT_ELE_PROD (e.g.~as compiler flag).
 
-
-
-
-
+In contrast to the other libraries, we used a compressed row storage matrix (CRS).
+The corresponding matrix vector product provides a special implementation when
+all rows have the same number of non-zero entries. 
+In this case, it is much easier to use shared memory for minimizing non-coalesced
+global memory access.
+This is subject to a future publication.
 
 
 
@@ -1074,7 +1232,7 @@ differences in the programming interfaces of the libraries are more likely to
 determine the choice of a particular library for a specific application rather than raw performance.
 
 The focus of Thrust is more on providing low-level primitives with an interface
-very close to the C++ STL library.  Special purpose functionality is available
+very close to the \Cpp STL library.  Special purpose functionality is available
 via separate libraries such as CUSPARSE and can be integrated without a lot of
 effort.  The OpenCL libraries we looked at demonstrated that they are able to
 provide a more convenient interface for a scientific programmer than a direct
