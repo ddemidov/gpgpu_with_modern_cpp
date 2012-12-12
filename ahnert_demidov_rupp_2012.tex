@@ -408,7 +408,7 @@ and allows to process several vectors in a single efficient sweep.
 
 
 \begin{sloppypar}
-  The three libraries MTL4, VexCL and ViennaCL provide convenient
+  MTL4, VexCL, and ViennaCL libraries provide convenient
   expression templates that may be directly used with odeint's
   \code{vector_space_algebra} and \code{default_operations}. This
   combination proved to be effective with VexCL and MTL4, where each
@@ -640,7 +640,8 @@ in memory so that in our case three kernel calls can be replaced by a single cal
 Likewise, the evaluation of the Lorenz system could be performed with one kernel
 using MTL4's fused expressions.
 However, both techniques require a very subtle meta-programming treatment on the type level and
-are not yet available CUDA version of MTL4 (we will refer to the CUDA version as CMTL4).
+are not yet available for CUDA version of MTL4 (we will refer to the CUDA
+version as CMTL4).
 
 
 For the ViennaCL version of the Lorenz attractor example a
@@ -799,8 +800,8 @@ struct phase_oscillators {
 \end{lstlisting}
 
 The stencil operator in MTL4 is a minimalistic matrix type.
-Its application is expressed by a matrix vector product that assigned
-to a vector or used to increment/decrement it:
+Its application is expressed by a matrix vector product that is assigned
+to, or is used to increment/decrement the vector:
 \begin{lstlisting}
 y= S * x;
 y+= S * x;
@@ -866,7 +867,7 @@ struct phase_oscillators
     mtl::matrix::stencil1D<stencil_kernel> S; 
 }; 
 \end{lstlisting}
-The stencil matrix ``S'' in the system function above
+The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
 and to avoid non-coalesced memory accesses.
 
@@ -877,7 +878,7 @@ Profiling of CUDA programs with trace tools like Vampir~\cite{vampir}
 revealed that allocation and deallocation of GPU memory is extremely expensive
 so that the creation of temporary variables often took more time 
 than all calculations.
-It is therefor avoided in the operator above.
+It is therefore avoided in the operator above.
 On the other hand, odeint copies the system function object so that a member variable
 would also cause expensive creation, destruction, and copy operations.
 For the future, we consider managing the memory of temporaries by hand to avoid 
@@ -1001,11 +1002,12 @@ void operator()(const state_type& q, state_type& dp) {
     dp= -beta * q * q * q + v;
 }
 \end{lstlisting}
-The expression ``\code{q * q * q}'' computes the triple element-wise product of 
+The expression \code{q * q * q} computes the triple element-wise product of 
 column vector \code{q}.
 Usually, products of column/row vectors among themselves are often program errors
-and therefor not allowed in MTL4. 
-It can be enabled by defining the macro \code{MTL_WITH_SHORT_ELE_PROD} (e.g.~as compiler flag).
+and therefore not allowed in MTL4. 
+It can be enabled by defining the macro \code{MTL_WITH_SHORT_ELE_PROD} (e.g.~as
+a compiler flag).
 
 In contrast to the other libraries, we used a compressed row storage matrix (CRS).
 The corresponding matrix vector product provides a special implementation when
