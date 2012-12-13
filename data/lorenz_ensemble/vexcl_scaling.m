@@ -2,7 +2,7 @@ close all
 clear all
 
 ms = 6;
-lw = 0.5;
+lw = 1;
 fs = 26;
 
 ex = [ ...

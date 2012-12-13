@@ -58,25 +58,24 @@ pos2 = get(gca, 'Position');
 pos2(1) = pos1(1) + pos1(3) - 0.05;
 set(gca, 'Position', pos2);
 
+gray = [0.6 0.6 0.6];
+
 % GPU
 ex = [ ...
-    experiment('thrust_gpu',          'Thrust Tesla',	   'ko-', 'w', ms, lw) ...
-    experiment('vexcl_1gpu',          'VexCL Tesla',       'kd-', 'k', ms, lw) ...
-    experiment('cmtl4_gpu',           'MTL4 Tesla',	   'ks-', 'w', ms, lw) ...
-    experiment('vexcl_1gpu_tahiti',   'VexCL Tahiti',      'kd-', 'w', ms, lw) ...
-    experiment('viennacl_gpu',        'ViennaCL Tesla',    'kv-', 'k', ms, lw) ...
-    experiment('viennacl_gpu_tahiti', 'ViennaCL Tahiti',   'kv-', 'w', ms, lw) ...
     experiment('vexcl_cpu_intel',     'VexCL CPU (Intel)', 'k:', 'k', ms, lw) ...
+    experiment('thrust_gpu',          'Thrust Tesla',	   'ko-', 'w', ms, lw) ...
+    experiment('cmtl4_gpu',           'MTL4 Tesla',	   'ks-', 'w', ms, lw) ...
+    experiment('viennacl_gpu',        'ViennaCL Tesla',    'kv-', 'k', ms, lw) ...
+    experiment('viennacl_gpu_tahiti', 'ViennaCL Tahiti',   'kv:', gray, ms, lw) ...
+    experiment('vexcl_1gpu',          'VexCL Tesla',       'kd-', 'k', ms, lw) ...
+    experiment('vexcl_1gpu_tahiti',   'VexCL Tahiti',      'kd:', gray, ms, lw) ...
     ];
 
 subplot(2, 2, 3); set(gca, 'FontSize', fs);
 subplot(2, 2, 4); set(gca, 'FontSize', fs);
 
+ref = ex(2).t;
 for i = 1:length(ex)
-    if i == 1
-	ref = ex(i).t;
-    end
-
     subplot(2, 2, 3);
     ex(i).loglog();
     hold on
@@ -88,7 +87,7 @@ end
 
 subplot(2, 2, 3);
 xlim([1e2 1e7])
-ylim([1e-1 1e4])
+ylim([1e-1 1e5])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 xlabel('N');
 ylabel('T (sec)');
@@ -114,3 +113,4 @@ pos4(2) = pos2(2) - pos4(4) - 0.05;
 set(gca, 'Position', pos4);
 
 print('-depsc', 'perfmtx.eps');
+close all
