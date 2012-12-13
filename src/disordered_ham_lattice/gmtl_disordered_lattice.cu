@@ -47,20 +47,20 @@ struct disordered_lattice
     typedef mtl::dense_vector<value_type>         state_type;
 
     // v is kept outside the functor to avoid copy constructor calls
-    disordered_lattice(value_type beta, const Matrix& A, state_type& v) 
-      : beta(beta), A(A), v(v) { }
+    disordered_lattice(value_type beta, const Matrix& A) 
+      : beta(beta), A(A), v(num_rows(A)) { }
 
     void operator()(const state_type& q, state_type& dp) 
     {
 	// compute product explicitly since implicit calculation causes expensive cudaMalloc/-Free (yet)
-	v= A * q;
+	v = A * q;
 	dp= -beta * q * q * q + v;
     }
 
   private:
     const value_type   beta;
     const Matrix&      A;
-    state_type&        v;
+    state_type         v;
 };
 
 
@@ -106,10 +106,9 @@ int main(int argc, char* argv[])
         odeint::vector_space_algebra , odeint::default_operations
         > stepper;
 
-    state_type   v(num_rows(A)); 
-    disordered_lattice<value_type, matrix_type> sys( beta, A, v);
+    disordered_lattice<value_type, matrix_type> sys( beta, A);
     boost::timer timer;
-    odeint::integrate_const(stepper, sys, X, value_type(0.0), t_max, dt);
+    odeint::integrate_const(stepper, boost::ref(sys), X, value_type(0.0), t_max, dt);
     cudaThreadSynchronize();
     std::cout << "Integration took " << timer.elapsed() << " s\n";
     mtl::irange rr(10);
