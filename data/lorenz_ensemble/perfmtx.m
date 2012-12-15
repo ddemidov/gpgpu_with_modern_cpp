@@ -21,7 +21,7 @@ ex = [ ...
 subplot(2, 2, 1); set(gca, 'FontSize', fs);
 subplot(2, 2, 2); set(gca, 'FontSize', fs);
 
-ref = ex(6).t;
+ref = ex(1).t;
 for i = 1:length(ex)
     subplot(2, 2, 1);
     ex(i).loglog();
