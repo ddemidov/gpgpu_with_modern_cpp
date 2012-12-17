@@ -91,11 +91,10 @@ acquired considerable momentum in the scientific community. This is confirmed
 both by increasing numbers of GPGPU-related publications and GPU-based
 supercomputers in the TOP500\footnote{ \href{ http://top500.org }{
 http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
-OpenCL.  The former is a proprietary parallel computing architecture developed
-by NVIDIA tailored for general purpose computing on NVIDIA graphics adapters.
-CUDA could be used theoretically for other platforms as well but tool support
-only exists for NVIDIA hardware.
-OpenCL is an open, royalty-free standard for cross-platform, parallel
+OpenCL.  
+The former is a proprietary parallel computing architecture developed
+by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
+ latter is an open, royalty-free standard for cross-platform, parallel
 programming of modern processors and GPUs maintained by the Khronos group. By
 nature, the two frameworks have their distinctive pros and cons. CUDA has a
 more mature programming environment with a larger set of scientific libraries,
@@ -133,10 +132,10 @@ VexCL, and ViennaCL:
 % and what follows is the list of the libraries we tested.
 
 \begin{description}
-    \item[MTL4] (The Matrix Template Library\footnote{ \href{ http://mtl4.org }{
-        http://mtl4.org }}) is a \Cpp linear algebra library that provides
+    \item[MTL4] (The Matrix Template Library)\footnote{ \href{ http://mtl4.org }{
+        http://mtl4.org }} is a \Cpp linear algebra library that provides
         an intuitive interface by establishing a domain-specific language
-        embedded in \Cpp.
+        embedded in \Cpp~\cite{pg_ccgrid12}.
         The library aims for maximal performance achievable by high-level languages
         using compile-time transformations.
         % For this purpose, source code is transformed during compile time by expression
@@ -571,9 +570,53 @@ struct lorenz_functor {
 \end{lstlisting}
 
 
+
 The system function object for the VexCL version of the Lorenz attractor example is
-more compact than the Thrust variant because VexCL supports a rich set of
-vector expressions. The state is represented by the
+more compact than the Thrust variant 
+when  a rich set of
+vector expressions
+as in MTL4 or VexCL is available.
+MTL4 provides the type \code{multi_vector} that allows for expressing the operations
+directly:
+\begin{lstlisting}
+template <typename value_type>
+struct lorenz_system
+{
+    typedef mtl::dense_vector<value_type>         vector_type;
+    typedef mtl::multi_vector<vector_type>        state_type;
+
+    explicit sys_func(const vector_type &R) : R(R) { }
+
+    void operator()(const state_type& x, state_type& dxdt, value_type) {
+	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
+	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
+	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
+    }
+  private:
+    const vector_type &R;
+    static const value_type sigma = 10.0, b = 8.0 / 3.0;
+};
+\end{lstlisting}
+This class was originally designed for building a generic matrix as a set of
+column vectors and expressing all matrix operations in terms of underlying
+vectors' operations.
+In this sense, all operations are performed on the sub-vectors of \code{x} and
+\code{dxdt} where each vector operation is a kernel call.
+
+There is potential for optimization when multi-vectors are consecutively allocated
+in memory so that in our case three kernel calls can be replaced by a single call.
+Especially for small problem sizes (e.g.~4096 entries), the kernel call overhead
+is dominant and one large vector operation is up to 150\,\% faster then three smaller
+ones whereas the difference is less about 5\,\% when the vectors are larger than one
+million entries.
+Likewise, the evaluation of the Lorenz system could be performed with one kernel
+using MTL4's fused expressions.
+However, both techniques require subtle meta-programming treatment on the type level and
+are not yet available for CUDA version of MTL4 (we will refer to the CUDA
+version as CMTL4).
+
+In the VexCL implementation,
+the state is represented by the
 \code{vex::multivector<double,3>} type, which holds three instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
 underlying components. The code for \code{operator()} body practically
@@ -607,41 +650,6 @@ above variant:
                               R * x(0) - x(1) - x(0) * x(2),
                               x(0) * x(1) - b * x(2)          );
 \end{lstlisting}
-
-In a similar manner, the system function is implemented in MTL4
-using \code{multi_vector}:
-\begin{lstlisting}
-template <typename value_type>
-struct lorenz_system
-{
-    typedef mtl::dense_vector<value_type>         vector_type;
-    typedef mtl::multi_vector<vector_type>        state_type;
-
-    explicit sys_func(const vector_type &R) : R(R) { }
-
-    void operator()(const state_type& x, state_type& dxdt, value_type) {
-	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
-	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
-	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
-    }
-  private:
-    const vector_type &R;
-    static const value_type sigma = 10.0, b = 8.0 / 3.0;
-};
-\end{lstlisting}
-This class was originally designed for building a generic matrix as a set of
-column vectors and expressing all matrix operations in terms of underlying
-vectors' operations.
-In this sense, all operations are performed on the sub-vectors of \code{x} and
-\code{dxdt} where each vector operation is a kernel call.
-
-There is potential for optimization when multi-vectors are consecutively allocated
-in memory so that in our case three kernel calls can be replaced by a single call.
-Likewise, the evaluation of the Lorenz system could be performed with one kernel
-using MTL4's fused expressions.
-However, both techniques require a very subtle meta-programming treatment on the type level and
-are not yet available for CUDA version of MTL4 (we will refer to the CUDA
-version as CMTL4).
 
 
 For the ViennaCL version of the Lorenz attractor example a
@@ -748,57 +756,6 @@ thrust::for_each(
 \code{thrust::device_vector<size_t>} and hold the indices to the left and right
 vector elements.
 
-The VexCL version of the example is the most
-concise variant since VexCL provides native support for the user-defined
-stencils operations. The sum of sines in \eqref{eq:phasesystem} is encoded
-using the \code{vex::StencilOperator<>} class template. Template parameters
-are the body string for the generated OpenCL function encoding required
-operation, width and center point of the stencil, and its return type. Once the
-stencil operator is defined, \code{operator()} of the function object is implemented
-with a single line of code:
-\begin{lstlisting}
-typedef vex::vector<double> state_type;
-extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
-
-struct phase_oscillators {
-    const state_type &omega;
-    vex::StencilOperator< double, 3, 1, oscillator_body > S;
-    phase_oscillators(const state_type &w)
-        : omega(w), S(w.queue_list()) { }
-    void operator()(const state_type &x, state_type &dxdt, double t) const {
-        dxdt = omega + S(x);
-    }
-};
-\end{lstlisting}
-
-
-ViennaCL does not provide stencil operations required for the problem at hand, so we had
-to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
-reasons of brevity.  Even though a custom OpenCL kernel needs to be used for
-this example, ViennaCL provides convenient mechanisms for the compilation and
-launch of custom kernels, avoiding tedious interactions with the low-level
-OpenCL API.  As a consequence, the performance of ViennaCL for this example is
-comparable to hand-tuned code.  The actual implementation of the
-\code{phase_oscillators} class consequently consists of the compilation of the
-kernel residing in a string object \code{phase_oscillator_source} in the
-constructor, and the launch of the respective kernel in \code{operator()}:
-\begin{lstlisting}
-typedef viennacl::vector<double> state_type;
-
-struct phase_oscillators {
-    const state_type &omega;
-    sys_func(const state_type &w) : omega(w) {
-        viennacl::ocl::current_context().add_program(phase_oscillator_source,
-            "oscillator_program").add_kernel("oscillator");
-    }
-    void operator()(const state_type &x, state_type &dxdt, double t) const {
-        viennacl::ocl::kernel &step = viennacl::ocl::get_kernel(
-		"oscillator_program", "oscillator");
-        viennacl::ocl::enqueue( step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
-    }
-};
-\end{lstlisting}
-
 The stencil operator in MTL4 is a minimalistic matrix type.
 Its application is expressed by a matrix vector product that is assigned
 to, or is used to increment/decrement the vector:
@@ -853,8 +810,8 @@ struct phase_oscillators
 {
     typedef typename Collection<State>::value_type value_type;
 
-    sys_func(const State& omega, State& tmp) 
-      : omega(omega), tmp(tmp), S(num_rows(omega)) {}
+    sys_func(const State& omega) 
+      : omega(omega), tmp(num_rows(omega), S(num_rows(omega)) {}
 
     void operator()(const State &x, State &dxdt, value_type t) const
     {
@@ -863,7 +820,7 @@ struct phase_oscillators
     }
 
     const State&                           omega;
-    State&                                 tmp;
+    State                                  tmp;
     mtl::matrix::stencil1D<stencil_kernel> S; 
 }; 
 \end{lstlisting}
@@ -871,18 +828,68 @@ The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
 and to avoid non-coalesced memory accesses.
 
-The need for defining a temporary vector in the user code and referring
-it in the system function is not particularly elegant but unfortunately
+The need for defining a temporary vector explicitly in the user code 
+instead of creating it implicitly in the expression template
+ is not particularly elegant but unfortunately
 needed for performance.
-Profiling of CUDA programs with trace tools like Vampir~\cite{vampir}
-revealed that allocation and deallocation of GPU memory is extremely expensive
-so that the creation of temporary variables often took more time 
-than all calculations.
-It is therefore avoided in the operator above.
-On the other hand, odeint copies the system function object so that a member variable
-would also cause expensive creation, destruction, and copy operations.
+The allocation and deallocation of GPU memory in each function
+call is extremely expensive (what can be clearly shown with a
+GPU-supporting performance tracer~\cite{Juckeland12}).
 For the future, we consider managing the memory of temporaries by hand to avoid 
 such overhead.
+
+
+The VexCL version of the example is the most
+concise variant since VexCL provides native support for the user-defined
+stencils operations. The sum of sines in \eqref{eq:phasesystem} is encoded
+using the \code{vex::StencilOperator<>} class template. Template parameters
+are the body string for the generated OpenCL function encoding required
+operation, width and center point of the stencil, and its return type. Once the
+stencil operator is defined, \code{operator()} of the function object is implemented
+with a single line of code:
+\begin{lstlisting}
+typedef vex::vector<double> state_type;
+extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
+
+struct phase_oscillators {
+    const state_type &omega;
+    vex::StencilOperator< double, 3, 1, oscillator_body > S;
+    phase_oscillators(const state_type &w)
+        : omega(w), S(w.queue_list()) { }
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
+        dxdt = omega + S(x);
+    }
+};
+\end{lstlisting}
+
+
+ViennaCL does not provide stencil operations required for the problem at hand, so we had
+to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
+reasons of brevity.  Even though a custom OpenCL kernel needs to be used for
+this example, ViennaCL provides convenient mechanisms for the compilation and
+launch of custom kernels, avoiding tedious interactions with the low-level
+OpenCL API.  As a consequence, the performance of ViennaCL for this example is
+comparable to hand-tuned code.  The actual implementation of the
+\code{phase_oscillators} class consequently consists of the compilation of the
+kernel residing in a string object \code{phase_oscillator_source} in the
+constructor, and the launch of the respective kernel in \code{operator()}:
+\begin{lstlisting}
+typedef viennacl::vector<double> state_type;
+
+struct phase_oscillators {
+    const state_type &omega;
+    sys_func(const state_type &w) : omega(w) {
+        viennacl::ocl::current_context().add_program(phase_oscillator_source,
+            "oscillator_program").add_kernel("oscillator");
+    }
+    void operator()(const state_type &x, state_type &dxdt, double t) const {
+        viennacl::ocl::kernel &step = viennacl::ocl::get_kernel(
+		"oscillator_program", "oscillator");
+        viennacl::ocl::enqueue( step(static_cast<cl_uint>(x.size()), dxdt, x, omega) );
+    }
+};
+\end{lstlisting}
+
 
 %To simplify the programming, we wil
 
@@ -1006,16 +1013,21 @@ The expression \code{q * q * q} computes the triple element-wise product of
 column vector \code{q}.
 Usually, products of column/row vectors among themselves are often program errors
 and therefore not allowed in MTL4. 
-It can be enabled by defining the macro \code{MTL_WITH_SHORT_ELE_PROD} (e.g.~as
-a compiler flag).
+It can be enabled by defining an according macro
+during compilation.
 
-In contrast to the other libraries, we used a compressed row storage matrix (CRS).
-The corresponding matrix vector product provides a special implementation when
-all rows have the same number of non-zero entries. 
-In this case, it is much easier to use shared memory for minimizing non-coalesced
+
+In contrast to the other libraries, we used a compressed row storage matrix (CRS)
+which is known for being a sub-optimal storage format on GPUs because it causes many non-coalesced 
+memory accesses when the matrix is processed row-wise.
+However, the corresponding matrix vector product can be realized with a special implementation when
+all rows of the matrix have the same number of non-zero entries (or are accordingly filled with zeros). 
+In this case, 
+it is much easier to use shared memory for minimizing non-coalesced
 global memory access.
 This is subject to a future publication.
-
+There is further potential in computing the matrix vector product and the element-wise
+vector operations in one single loop as successfully demonstrated in MTL4's CPU implementation.
 
 
 
@@ -1080,14 +1092,25 @@ to the additional kernel management logic required by the OpenCL runtime.
 Performance-wise, all of the considered libraries are close to each other when
 run on a GPU.  Thrust performs slightly better in most cases except for the
 phase oscillator chain example, where the permutation iterators require the use
-of an auxiliary index vector.  VexCL and ViennaCL are in general slower than
+of an auxiliary index vector.  MTL4, VexCL and ViennaCL are in general slower than
 Thrust by a few percent, which is usually negligible in practice.  Apparently,
 the CUSPARSE implementation of the sparse matrix-vector product is more
 efficient than that of the OpenCL libraries, since VexCL and ViennaCL are
 slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
-Hamiltonian lattice experiment. Both OpenCL libraries show very similar results
-on a GPU. ViennaCL is about 15 percent faster in the phase oscillator chain
-example due to the use of a hand-written kernel.  Conversely, the overhead of
+Hamiltonian lattice experiment. 
+Both OpenCL libraries show very similar results
+on a GPU.
+The specialized CRS implementation in MTL4 is twice as fast as  Thrust/CUSPARSE for very
+small examples and up to 50\,\% slower for large examples---which is still significantly
+below what Kraus and F\"orster observed that similar matrices are about four times faster
+in ELLPACK format than CRS~\cite{KrausFoerster}.
+
+ ViennaCL is about 15 percent faster than Thrust in the phase oscillator chain
+example due to the use of a hand-written kernel.  
+MTL4 provides similar performance with an implementation for arbitrary user-defined
+1D stencils.
+
+Conversely, the overhead of
 using high-level libraries is negligible compared to the effort spent in
 getting familiar with the details of CUDA or OpenCL.  Thus, we have
 successfully countered productivity concerns for GPU computing raised in the
