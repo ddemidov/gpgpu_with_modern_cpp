@@ -15,7 +15,7 @@ ex = [ ...
     experiment('viennacl_cpu_amd',   'ViennaCL CPU (AMD)',  'kv-', 'w', ms, lw) ...
     experiment('vexcl_cpu_intel',    'VexCL CPU (Intel)',   'kd-', 'k', ms, lw) ...
     experiment('vexcl_cpu_amd',      'VexCL CPU (AMD)',     'kd-', 'w', ms, lw) ...
-    experiment('thrust_gpu',         'Thrust Tesla',	    'k:',  'w', ms, lw) ...
+    experiment('viennacl_gpu',       'ViennaCL Tesla',	    'k:',  'w', ms, lw) ...
     ];
 
 subplot(2, 2, 1); set(gca, 'FontSize', fs);
@@ -72,7 +72,7 @@ ex = [ ...
 subplot(2, 2, 3); set(gca, 'FontSize', fs);
 subplot(2, 2, 4); set(gca, 'FontSize', fs);
 
-ref = ex(2).t;
+ref = ex(4).t;
 for i = 1:length(ex)
     subplot(2, 2, 3);
     ex(i).loglog();
@@ -102,7 +102,7 @@ xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 set(gca, 'yaxislocation', 'right')
 xlabel('N')
-ylabel('T / T(Thrust)');
+ylabel('T / T(ViennaCL Tesla)');
 axis square
 
 pos4 = get(gca, 'Position');
