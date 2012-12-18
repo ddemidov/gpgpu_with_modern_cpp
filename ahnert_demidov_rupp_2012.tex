@@ -821,18 +821,6 @@ The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
 and to avoid non-coalesced memory accesses.
 
-% TODO
-% The need for defining a temporary vector explicitly in the user code 
-% instead of creating it implicitly in the expression template
-%  is not particularly elegant but unfortunately
-% needed for performance.
-% The allocation and deallocation of GPU memory in each function
-% call is extremely expensive (what can be clearly shown with a
-% GPU-supporting performance tracer~\cite{Juckeland12}).
-% For the future, we consider managing the memory of temporaries by hand to avoid 
-% such overhead.
-
-
 The VexCL version of the example is the most
 concise variant since VexCL provides native support for the user-defined
 stencils operations. The sum of sines in \eqref{eq:phasesystem} is encoded

@@ -5,7 +5,7 @@ if (CUDA_FOUND)
     cuda_add_executable(thrust_disordered_lattice thrust_disordered_lattice.cu)
     target_link_libraries(thrust_disordered_lattice ${CUDA_cusparse_LIBRARY})
 
-    cuda_add_executable(gmtl_disordered_lattice gmtl_disordered_lattice.cu
+    cuda_add_executable(cmtl_disordered_lattice cmtl_disordered_lattice.cu
 	OPTIONS "-DMTL_WITH_SHORT_ELE_PROD;-DMTL_HAS_ODEINT;-DMTL_HAS_CUDA")
 endif (CUDA_FOUND)
 

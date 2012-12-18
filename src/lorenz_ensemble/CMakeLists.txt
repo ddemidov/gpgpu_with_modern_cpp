@@ -8,7 +8,7 @@ if (CUDA_FOUND)
 	OPTIONS "-Xcompiler;-fopenmp;-DTHRUST_DEVICE_BACKEND=THRUST_DEVICE_BACKEND_OMP")
     target_link_libraries(thrust_lorenz_openmp gomp)
 
-    cuda_add_executable(gmtl_lorenz gmtl_lorenz_ensemble.cu
+    cuda_add_executable(cmtl_lorenz cmtl_lorenz_ensemble.cu
 	OPTIONS "-DMTL_WITH_SHORT_ELE_PROD;-DMTL_HAS_ODEINT;-DMTL_HAS_CUDA")
 endif (CUDA_FOUND)
 

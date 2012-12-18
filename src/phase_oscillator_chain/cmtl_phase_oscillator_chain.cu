@@ -65,17 +65,16 @@ struct sys_func
 {
     typedef typename Collection<State>::value_type value_type;
 
-    sys_func(const State& omega, State& tmp) 
-      : omega(omega), tmp(tmp), S(num_rows(omega)) {}
+    sys_func(const State& omega) 
+      : omega(omega), S(num_rows(omega)) {}
 
     void operator()(const State &x, State &dxdt, value_type t) const
     {
-	tmp= S * x;
-        dxdt= omega + tmp;
+	dxdt = S * x;
+        dxdt += omega;
     }
 
-    const State&                           omega;
-    State&                                 tmp;
+    const State&   omega;
     mtl::matrix::stencil1D<stencil_kernel> S; 
 };
 
@@ -103,8 +102,9 @@ int main(int argc, char* argv[])
 	    odeint::vector_space_algebra, odeint::default_operations
 	    > stepper;
 
+    sys_func<state_type> sys(omega);
     boost::timer timer;
-    odeint::integrate_const(stepper, sys_func<state_type>(omega, tmp), x, 0.0, t_max, dt);
+    odeint::integrate_const(stepper, boost::ref(sys), x, 0.0, t_max, dt);
     cudaThreadSynchronize();
     std::cout << "Integration took " << timer.elapsed() << " s\n";
     

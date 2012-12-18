@@ -7,7 +7,7 @@
 #$ -l cores=4,tesla_2070=3
 #$ -t 1:10
 
-cmtl4_exe=gmtl_disordered_lattice
+cmtl4_exe=cmtl_disordered_lattice
 
 # warming run
 ./${cmtl4_exe}
