@@ -43,7 +43,7 @@ karsten.ahnert@gmx.de}) }
 \and Karl Rupp\thanks{Mathematics and Computer Science Division,
 Argonne National Laboratory,
 9700 South Cass Avenue, Argonne, IL 60439, USA
-({\tt rupp@mcs.anl.gov}) } 
+({\tt rupp@mcs.anl.gov}) }
 \and Peter Gottschling\thanks{SimuNova, Helmholtz-Str. 10, 01069 Dresden \&
 Inst. Scientific Computing, TU Dresden, 01062 Dresden}
 ({\tt peter.gottschling@simunova.com}) }
@@ -91,7 +91,7 @@ acquired considerable momentum in the scientific community. This is confirmed
 both by increasing numbers of GPGPU-related publications and GPU-based
 supercomputers in the TOP500\footnote{ \href{ http://top500.org }{
 http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
-OpenCL.  
+OpenCL.
 The former is a proprietary parallel computing architecture developed
 by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
  latter is an open, royalty-free standard for cross-platform, parallel
@@ -116,7 +116,7 @@ of GPGPU development. We look at both convenience and performance of the
 libraries under consideration in the context of solving ordinary differential
 equations.  The comparison is based on odeint\footnote{ \href{
 http://odeint.com }{ http://odeint.com } }, a modern \Cpp library for solving
-ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1} 
+ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1}
 that has been accepted for inclusion into the Boost
 libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
 It is developed in a generic way using template meta-programming techniques,
@@ -184,7 +184,7 @@ one of the main differences between the OpenCL libraries we considered.
 VexCL generates and compiles an OpenCL
 program with a single kernel for each vector expression it encounters.  This
 leads to potentially higher initialization overhead, but should prove to be
-more effective in long runs. On the other hand, 
+more effective in long runs. On the other hand,
 ViennaCL uses a set of predefined kernels, which functionally overlaps with
 BLAS level 1 routines for vector operations. These kernels are compiled in
 batch at the program start to allow for faster initialization. However, due to
@@ -238,7 +238,7 @@ throughout the article and denote the time derivative with $\de x / \de t =
 Typical use cases for solving ODEs on GPUs are large systems of coupled ODEs
 which occur as discretizations of PDEs, or in ODEs defined on lattices or
 graphs. Another use case are parameter studies, where the
-dependence of an ODE on some parameters are of interest. Here, one large ODE 
+dependence of an ODE on some parameters are of interest. Here, one large ODE
 consisting of many small uncoupled ODEs, each with a different parameter set, is considered.
 This one large system is then solved at once, hence all small ODEs are solved
 simultaneously.
@@ -341,7 +341,7 @@ user. Note that algebra and the operations must be chosen such that
 they interact correctly with the state type.
 
 Many libraries for vector and matrix types provide expression templates
-\cite{Vandevoorde:CppTemplates,Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques} 
+\cite{Vandevoorde:CppTemplates,Veldhuizen:ExpressionTemplates, Veldhuizen:Techniques}
 for the elementary operations using operator overload
 convenience.  Such libraries do not need to define their own algebra, but can
 instead be used with a default algebra and a default operation set included in
@@ -520,9 +520,7 @@ typedef thrust::device_vector<double> state_type;
 struct lorenz_system {
     size_t N;
     const state_type &R;
-
     lorenz_system(size_t n, const state_type &r) : N(n), R(r) { }
-
     void operator()(const state_type &x, state_type &dxdt, double t) const;
 };
 \end{lstlisting}
@@ -562,7 +560,6 @@ struct lorenz_functor {
         thrust::get<4>(t) = sigma * ( y - x );
         thrust::get<5>(t) = R * x - y - x * z;
         thrust::get<6>(t) = -b * z + x * y ;
-
     }
 };
 \end{lstlisting}
@@ -574,22 +571,19 @@ more compact than the Thrust variant because MTL4 supports a rich set of vector
 expressions.  MTL4 provides the type \code{multi_vector} that allows for
 expressing the operations directly:
 \begin{lstlisting}
-template <typename value_type>
-struct lorenz_system
-{
-    typedef mtl::dense_vector<value_type>         vector_type;
-    typedef mtl::multi_vector<vector_type>        state_type;
+typedef mtl::dense_vector<double>      vector_type;
+typedef mtl::multi_vector<vector_type> state_type;
+
+struct lorenz_system {
+    const vector_type &R;
 
     explicit sys_func(const vector_type &R) : R(R) { }
 
-    void operator()(const state_type& x, state_type& dxdt, value_type) {
-	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
-	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
-	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
+    void operator()(const state_type& x, state_type& dxdt, double t) {
+	dxdt.at(0) = sigma * (x.at(1) - x.at(0));
+	dxdt.at(1) = R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
+	dxdt.at(2) = x.at(0) * x.at(1) - b * x.at(2);
     }
-  private:
-    const vector_type &R;
-    static const value_type sigma = 10.0, b = 8.0 / 3.0;
 };
 \end{lstlisting}
 This class was originally designed for building a generic matrix as a set of
@@ -757,65 +751,55 @@ to, or is used to either increment or decrement the vector:
 \begin{lstlisting}
 y = S * x;       y += S * x;      y -= S * x;
 \end{lstlisting}
-The user must provide a function object that applies the stencil on 
+The user must provide a function object that applies the stencil on
 the $i$-th element of a vector and its neighbors.
 For the sake of performance the function object has to provide two methods:
 one that is checking indices and to be applied near the beginning and the end
 of the vector and the other without index checking.  For the considered
 example, the function object is:
 \begin{lstlisting}
-struct stencil_functor
-{
-    typedef double value_type;
-    static const int start= -1, end= 1;
+struct stencil_kernel {
+    static const int start = -1, end = 1;
+    int n;
 
     stencil_kernel(int n) : n(n) {}
 
     template <typename Vector>
-    __device__ __host__ value_type operator()(const Vector& v, int i) const
-    {
+    __device__ __host__ double operator()(const Vector& v, int i) const {
 	return sin(v[i-1] - v[i]) + sin(v[i] - v[i+1]);
     }
 
     template <typename Vector>
-    __device__ __host__ value_type outer_stencil(const Vector& v, int i, int offset= 0) const
-    {
-	value_type s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]), 
-	           s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
+    __device__ __host__
+    double outer_stencil(const Vector& v, int i, int offset= 0) const {
+	double s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]),
+	       s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
 	return s1 + s2;
     }
-
-    int vector_size() const { return n; }
-    int n;
 };
 \end{lstlisting}
-The parameter \code{offset} is needed when vector parts are cached so that the 
-addressing is shifted. 
-For the sake of backward (and forward) compatibility the non-portable keywords 
-\code{__device__} and \code{__host__} should be replaced by a macro that is 
+The parameter \code{offset} is needed when vector parts are cached so that the
+addressing is shifted.
+For the sake of backward (and forward) compatibility the non-portable keywords
+\code{__device__} and \code{__host__} should be replaced by a macro that is
 defined suitable for the according platform, e.g.~to an empty string on regular
 compilers.  Thus, the user code is entirely platform-independent.
 
 The stencil function object is used as template argument of the stencil matrix:
 \begin{lstlisting}
-template <typename State>
-struct phase_oscillators
-{
-    typedef typename Collection<State>::value_type value_type;
+typedef mtl::dense_vector<double>  state_type;
 
-    sys_func(const State& omega) 
-      : omega(omega), tmp(num_rows(omega), S(num_rows(omega)) {}
+struct phase_oscillators {
+    const state_type&  omega;
+    mtl::matrix::stencil1D<stencil_kernel> S;
 
-    void operator()(const State &x, State &dxdt, value_type t) const
-    {
-	tmp= S * x;
-        dxdt= omega + tmp;
+    sys_func(const State& omega) : omega(omega), S(num_rows(omega)) {}
+
+    void operator()(const State &x, State &dxdt, double t) const {
+	dxdt = S * x;
+        dxdt += omega;
     }
-
-    const State&                           omega;
-    State                                  tmp;
-    mtl::matrix::stencil1D<stencil_kernel> S; 
-}; 
+};
 \end{lstlisting}
 The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
@@ -879,7 +863,7 @@ struct phase_oscillators {
 \subsection{Disordered Hamiltonian Lattice}
 
 
-The last example in our performance and usage study is a 
+The last example in our performance and usage study is a
 nonlinear disordered Hamiltonian lattice \cite{mulansky_scaling_2012}. Its
 equations of motion are governed by
 \begin{equation}
@@ -891,7 +875,7 @@ Here, $\Delta_d q_{i,j}$ denotes the two-dimensional discrete Laplacian
 $\Delta_d
 q_{i,j}=q_{i+1,j}+q_{i-1,j}+q_{i,j+1}+q_{i,j-1}-4q_{i,j}$. Such
 systems are widely used in theoretical physics to study phenomena
-like Anderson localization \cite{Sheng-06} or thermalization \cite{FPUScholarpedia}. 
+like Anderson localization \cite{Sheng-06} or thermalization \cite{FPUScholarpedia}.
 
 An important property of \eqref{eq:disordered_ham} is its Hamiltonian
 nature. It can be obtained from the Hamilton equations and energy as well as phase volume conservation during the time
@@ -918,12 +902,13 @@ have been used, yet we consider only the first option in the following.
 % [KA] : is it neccessary to mention Cusp?
 % [DD] : I think not. This is not the only alternative.
 
-For better comparison, all libraries considered in our study use the hybrid ELL
-format for storing the sparse matrix on GPUs, since it is one of the most
-efficient formats for sparse matrices on these devices~\cite{BellGarland2008}. The
-standard compressed sparse row format is used for CPU runs.  As the
-construction of the sparse matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$
-is straight-forward, we only provide code for the system function object interface.
+For better comparison, all libraries considered in our study (except for MTL4,
+see Sec.~\ref{sec:results}) use the hybrid ELL format for storing the sparse
+matrix on GPUs, since it is one of the most efficient formats for sparse
+matrices on these devices~\cite{BellGarland2008}. The standard compressed
+sparse row format is used for CPU runs.  As the construction of the sparse
+matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$ is straight-forward, we
+only provide code for the system function object interface.
 
 The relevant code for the Thrust version of the system function object is
 \begin{lstlisting}
@@ -948,9 +933,11 @@ iterator to a raw device pointer.
 
 The MTL4 implementation reads:
 \begin{lstlisting}
+typedef mtl::dense_vector<double> state_type;
+
 void operator()(const state_type& q, state_type& dp) {
-    v  = A * q;
-    dp = -beta * q * q * q + v;
+    dp = A * q;
+    dp -= beta * q * q * q;
 }
 \end{lstlisting}
 Here \code{A} is an instance of a sparse matrix holding the discretization of
@@ -995,10 +982,10 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-\section{Results}
+\section{Results} \label{sec:results}
 
 We present results obtained from our numerical experiments in this section. The
-complete source code for the experiments and the full set of results are freely 
+complete source code for the experiments and the full set of results are freely
 available in a GitHub repository\footnote{ \href{
 https://github.com/ddemidov/vexcl_odeint_paper } {
 https://github.com/ddemidov/vexcl\_odeint\_paper } }.
@@ -1083,7 +1070,7 @@ F\"orster. They observed that similar matrices are about four times faster in
 ELLPACK format than CRS~\cite{KrausFoerster}.
 
 ViennaCL is about 15 percent faster than Thrust in the phase oscillator chain
-example due to the use of a hand-written kernel.  
+example due to the use of a hand-written kernel.
 MTL4 provides similar performance with an implementation for arbitrary user-defined
 1D stencils.
 
@@ -1093,59 +1080,15 @@ getting familiar with the details of CUDA or OpenCL.  Thus, we have
 successfully countered productivity concerns for GPU computing raised in the
 past \cite{bordawekar:gpu-productivity}.
 
-Looking at the performance of the experiments on the CPU, 
+Looking at the performance of the experiments on the CPU,
 differences between the libraries become more pronounced. For larger problems Thrust outperforms VexCL
 by 15 to 40 percent and ViennaCL by about 75 percent. The only exception is the phase oscillators
 example, where ViennaCL is the fastest library. The difference
-between the OpenCL implementations of AMD and the Intel is negligible in 
+between the OpenCL implementations of AMD and the Intel is negligible in
 most cases. The only exception is the example of the chain of phase oscillators,
 where the implementation by Intel outperforms the one of AMD by up to 50 percent.
 This might be explained by a better implementation of trigonometric functions in Intel's implementation,
 producing better code for the underlying Intel CPU, for which there are no optimizations by AMD.
-%We believe that this may be explained by more effective implementation of the
-%sine function in Intel OpenCL SDK.
-% [DD] If I replace sine with erfc in system function, then Intel and AMD
-% perform similarly.
-% [DD] erfc does not help with viennacl (Intel is still much faster there), so..
-% [DD] Karl, do you have any other ideas? Faster sines? better work with caches?
-% [KR] I have no idea, probably it is indeed the sine() implementation. I've added that the test was run on an Intel CPU, maybe this causes the differences.
-
-% Here is absolute/relative data for the largest problems (as output by
-% data/relperf.m script):
-% 
-% --- CPU ---------------------------------------------------------
-%         thrust_cpu: 	 2336.14	 5182.55	 N/A
-%      vexcl_cpu_amd: 	 3203.47	 5011.66	 3152.31
-%    vexcl_cpu_intel: 	 3284.18	 4463.24	 3182.94
-%   viennacl_cpu_amd: 	 4073.66	 4612.23	 5480.03
-% viennacl_cpu_intel: 	 3943.59	 3040.05	 5437.47
-% 
-%         thrust_cpu: 	    1.00	    1.70	    N/A
-%      vexcl_cpu_amd: 	    1.37	    1.65	    1.00
-%    vexcl_cpu_intel: 	    1.41	    1.47	    1.01
-%   viennacl_cpu_amd: 	    1.74	    1.52	    1.74
-% viennacl_cpu_intel: 	    1.69	    1.00	    1.72
-% 
-% --- Tesla -------------------------------------------------------
-%         thrust_gpu: 	  242.78	  240.87	  319.60
-%         vexcl_1gpu: 	  246.58	  189.38	  401.39
-%       viennacl_gpu: 	  259.85	  166.20	  433.50
-% 
-%         thrust_gpu: 	    1.00	    1.45	    1.00
-%         vexcl_1gpu: 	    1.02	    1.14	    1.26
-%       viennacl_gpu: 	    1.07	    1.00	    1.36
-% 
-% --- Tahiti ------------------------------------------------------
-%         thrust_gpu: 	  242.78	  240.87	  319.60
-%  vexcl_1gpu_tahiti: 	  149.49	   91.60	  225.41
-% viennacl_gpu_tahiti: 	  148.69	   76.55	  214.87
-% 
-%         thrust_gpu: 	    1.63	    3.15	    1.49
-%  vexcl_1gpu_tahiti: 	    1.01	    1.20	    1.05
-% viennacl_gpu_tahiti: 	    1.00	    1.00	    1.00
-% 
-% First group of lines in each section are absolute times; second group is
-% relative times wrt fastest imlementation.
 
 \begin{table}
  \centering
@@ -1187,14 +1130,6 @@ tremendous, if not embarrassing, hence OpenCL cannot be considered to be a
 competitive CPU programming model for a large area of applications in its
 present state.
 
-% [KR]: Please let me know whether you agree with this sentence. It is a rather
-% bold statement, yet the only reasonable one when looking at the benchmark
-% results.
-
-% [KA]: I think this statement is to hard.
-
-% [DD]: Let's wait for the final results.
-
 Finally, results for multi-GPU usage as provided by VexCL in a transparent way
 are considered. \figref{fig:scaling} shows scaling results for up to three
 GPUs. It can be seen that a notable speed-up for several Tesla GPUs over a
@@ -1230,7 +1165,7 @@ libraries when those are run on the same hardware for large problem sizes.
 As we have shown, various
 computational problems may be solved effectively in terms of both human and
 machine time with the help of modern high-level libraries. Hence, the
-differences in the programming interfaces of the libraries are more likely to 
+differences in the programming interfaces of the libraries are more likely to
 determine the choice of a particular library for a specific application rather than raw performance.
 
 The focus of Thrust is more on providing low-level primitives with an interface

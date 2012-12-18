@@ -55,8 +55,6 @@ struct stencil_kernel
 	return s1 + s2;
     }
 
-    int vector_size() const { return n; }
-
     int n;
 };
 
