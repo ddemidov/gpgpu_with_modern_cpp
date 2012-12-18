@@ -1001,11 +1001,19 @@ as well as for an Intel Core i7 930 CPU. All reported values are median values
 of execution times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
-data for the three examples discussed in the previous section.  The plots on
-the left show absolute solution time over the size of the problem being solved, while
-the plots on the right hand side depict performances relative to the Thrust
-version.  Absolute execution times for the largest problem size for all of the
-considered libraries are given in Table~\ref{tab:abstimes}.
+data for the three examples discussed in the previous section.
+The top row in each figure shows performance for CPU-based
+experiments, while bottom rows shows GPU-based data. On the GPU plots the
+graphs for NVIDIA Tesla and AMD Tahiti cards are correspondingly plotted with
+solid and dotted lines.
+The plots on the left show absolute solution time over the size of the problem
+being solved, while the plots on the right depict performances relative to the
+Thrust version. The only exception to the latter rule is
+\figref{fig:lorenz:perf}, where ViennaCL is selected as a reference library for
+GPU data.  This is due to poor performance of Thrust library in case of the
+Lorenz attractor ensemble example.
+Absolute execution times for the largest problem size for all of the considered
+libraries are given in Table~\ref{tab:abstimes}. 
 
 \begin{figure}
     \begin{center}
