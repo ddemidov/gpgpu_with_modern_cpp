@@ -1,6 +1,6 @@
 function relperf()
 cpu_data = {'thrust_cpu', 'vexcl_cpu_amd', 'vexcl_cpu_intel', 'viennacl_cpu_amd', 'viennacl_cpu_intel'};
-gpu_data = {'thrust_gpu', 'vexcl_1gpu', 'viennacl_gpu'};
+gpu_data = {'thrust_gpu', 'cmtl4_gpu', 'vexcl_1gpu', 'viennacl_gpu'};
 tahiti_data = {'thrust_gpu', 'vexcl_1gpu_tahiti', 'viennacl_gpu_tahiti'};
 
 fprintf('--- CPU ---------------------------------------------------------\n');

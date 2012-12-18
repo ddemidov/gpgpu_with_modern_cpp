@@ -1101,6 +1101,7 @@ producing better code for the underlying Intel CPU, for which there are no optim
         & & ensemble  & oscillators & lattice     \\
         \hline
         Thrust   &Tesla & 242.78 & 240.87 & 319.60 \\
+        CMTL4    &Tesla & 293.17 & 161.96 & 477.66 \\
         VexCL    &Tesla & 246.58 & 189.38 & 401.39 \\
         ViennaCL &Tesla & 259.85 & 166.20 & 433.50 \\
         \hline
@@ -1171,18 +1172,20 @@ determine the choice of a particular library for a specific application rather t
 The focus of Thrust is more on providing low-level primitives with an interface
 very close to the \Cpp STL library.  Special purpose functionality is available
 via separate libraries such as CUSPARSE and can be integrated without a lot of
-effort.  The OpenCL libraries we looked at demonstrated that they are able to
+effort.  The rest of the libraries we looked at demonstrated that they are able to
 provide a more convenient interface for a scientific programmer than a direct
-implementation in CUDA or OpenCL.  VexCL has a richer set of element-wise
-vector operations and allows for the shortest implementations in the context of
+implementation in CUDA or OpenCL.  MTL4 and VexCL have a richer set of element-wise
+vector operations and allow for the shortest implementations in the context of
 ODEs considered in this work.  ViennaCL required a few additional lines of code
 including a small custom OpenCL kernel for one of our examples.  Still, this extra
 effort is acceptable considering that the library's focus is on sparse linear
 systems solvers, which are, however, beyond the scope of this paper.
 
 Regarding a comparison of CUDA versus OpenCL, the main difference observed in
-this work is the wider range of hardware supported.  Although the performance
+this work is the wider range of hardware supported by OpenCL.  Although the performance
 obtained via CUDA is a few percent better than that of OpenCL on the overall,
+% [DD] We should probably change this, since with MTL4's introduction CUDA is
+% no longer the decisive winner w.r.t. performance.
 the differences are mostly too small in order to make a decision in favor of
 CUDA based on performance only.  Moreover, the slight performance advantage of
 CUDA can still turn into a disadvantage when taking the larger set of hardware
