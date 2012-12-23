@@ -160,8 +160,10 @@ MTL4, VexCL, and ViennaCL:
         supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
         library\footnote{ \href{ http://viennacl.sourceforge.net }{
-        http://viennacl.sourceforge.net }} written in \Cpp and primarily based on OpenCL
-        \cite{ViennaCLRef}. Its interface is compatible with
+        http://viennacl.sourceforge.net }} written in \Cpp \cite{ViennaCLRef}.
+        CUDA and OpenMP compute backends were added recently, but
+        only the initial OpenCL backend is considered in the remainder of this work.
+        The programming interface is compatible with
         Boost.uBLAS\footnote{ \href{ http://www.boost.org/libs/numeric/ublas }
         { http://www.boost.org/libs/numeric/ublas } }
         and allows for simple, high-level access to the vast
