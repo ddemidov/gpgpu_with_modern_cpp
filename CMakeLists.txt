@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(ahnert_demidov_2012)
+project(gpgpu_with_modern_cpp)
 
 
 find_package(LATEX)
@@ -7,7 +7,7 @@ find_package(LATEX)
 if (LATEX_COMPILER)
     include(UseLATEX.cmake)
 
-    add_latex_document(ahnert_demidov_rupp_2012.tex
+    add_latex_document(gpgpu_with_modern_cpp.tex
 	IMAGES data/lorenz_ensemble/perfmtx.eps
 	       data/lorenz_ensemble/scaling.eps
 	       data/phase_oscillator_chain/perfmtx.eps
