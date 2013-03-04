@@ -18,8 +18,7 @@ typedef vex::vector< value_type > state_type;
 
 using namespace std;
 
-extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
-vex::UserFunction<pow3_body, value_type(value_type)> pow3;
+VEX_FUNCTION(pow3, value_type(value_type),  "return prm1 * prm1 * prm1;");
 
 struct ham_lattice {
     ham_lattice(value_type beta, const vex::SpMat<double> &A) : beta(beta), A(A) { }

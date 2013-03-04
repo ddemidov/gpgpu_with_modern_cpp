@@ -13,19 +13,19 @@ if (CUDA_FOUND)
 endif (CUDA_FOUND)
 
 add_executable(vexcl_lorenz vexcl_lorenz_ensemble.cpp)
-target_link_libraries(vexcl_lorenz OpenCL)
+target_link_libraries(vexcl_lorenz OpenCL ${Boost_LIBRARIES})
 set_target_properties(vexcl_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(viennacl_lorenz viennacl_lorenz_ensemble.cpp)
-target_link_libraries(viennacl_lorenz OpenCL)
+target_link_libraries(viennacl_lorenz OpenCL ${Boost_LIBRARIES})
 set_target_properties(viennacl_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(custom_lorenz custom_lorenz_ensemble.cpp)
-target_link_libraries(custom_lorenz OpenCL)
+target_link_libraries(custom_lorenz OpenCL ${Boost_LIBRARIES})
 set_target_properties(custom_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(generated_lorenz generated_lorenz_ensemble.cpp)
-target_link_libraries(generated_lorenz OpenCL)
+target_link_libraries(generated_lorenz OpenCL ${Boost_LIBRARIES})
 set_target_properties(generated_lorenz PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 foreach(script run_thrust run_vexcl run_viennacl)

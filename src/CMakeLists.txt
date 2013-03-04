@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(vexcl_odeint_paper_sources)
 
 # set( Boost_NO_SYSTEM_PATHS 1 )
-find_package(Boost)
+find_package(Boost COMPONENTS system thread chrono)
 
 find_package(CUDA QUIET)
 

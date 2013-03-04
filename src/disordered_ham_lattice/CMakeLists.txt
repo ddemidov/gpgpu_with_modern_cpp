@@ -10,11 +10,11 @@ if (CUDA_FOUND)
 endif (CUDA_FOUND)
 
 add_executable(vexcl_disordered_lattice vexcl_disordered_lattice.cpp)
-target_link_libraries(vexcl_disordered_lattice OpenCL)
+target_link_libraries(vexcl_disordered_lattice OpenCL ${Boost_LIBRARIES})
 set_target_properties(vexcl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 add_executable(viennacl_disordered_lattice viennacl_disordered_lattice.cpp)
-target_link_libraries(viennacl_disordered_lattice OpenCL pugixml)
+target_link_libraries(viennacl_disordered_lattice OpenCL pugixml ${Boost_LIBRARIES})
 set_target_properties(viennacl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
 foreach(script run_thrust run_vexcl run_viennacl)

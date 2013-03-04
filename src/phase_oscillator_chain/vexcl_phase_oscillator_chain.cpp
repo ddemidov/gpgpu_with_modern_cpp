@@ -17,13 +17,13 @@ typedef double value_type;
 
 typedef vex::vector< value_type > state_type;
 
-extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
+VEX_STENCIL_OPERATOR_TYPE(S_type, double, 3, 1, "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);");
 
 struct sys_func
 {
 
     const state_type &omega;
-    vex::StencilOperator< double, 3, 1, oscillator_body > S;
+    S_type S;
 
     sys_func( const state_type &_omega )
         : omega( _omega ) , S( _omega.queue_list() )
