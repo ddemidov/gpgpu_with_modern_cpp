@@ -19,6 +19,8 @@ static cl::Device       device;
 static cl::CommandQueue queue;
 static cl::Program      program;
 
+size_t bytes_touched = 0;
+
 const char clbuf_source[] =
 "#if defined(cl_khr_fp64)\n"
 "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
@@ -205,6 +207,11 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -243,6 +250,12 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -285,6 +298,13 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T2) +
+                v5.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -332,6 +352,14 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T2) +
+                v5.n * sizeof(T2) +
+                v6.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -364,6 +392,8 @@ struct sys_func
         queue.enqueueNDRangeKernel(
                 krn, cl::NullRange, alignup(x.n, wgsize), wgsize
                 );
+
+        bytes_touched += 5 * sizeof(value_type) * x.n;
     }
 };
 
@@ -404,6 +434,7 @@ int main(int argc, char *argv[]) {
 
         queue.enqueueReadBuffer(X.data, CL_TRUE, 0, sizeof(value_type), x.data());
         std::cout << x[0] << std::endl;
+        std::cout << "bytes io: " << bytes_touched << std::endl;
     } catch (const cl::Error &e) {
         std::cerr << "OpenCL error: " << e << std::endl;
         return 1;

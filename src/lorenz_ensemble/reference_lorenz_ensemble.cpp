@@ -19,6 +19,8 @@ static cl::Device       device;
 static cl::CommandQueue queue;
 static cl::Program      program;
 
+size_t bytes_touched = 0;
+
 const char clbuf_source[] =
 "#if defined(cl_khr_fp64)\n"
 "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
@@ -219,6 +221,11 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -257,6 +264,12 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -299,6 +312,13 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T2) +
+                v5.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -346,6 +366,14 @@ struct clbuf_operations {
             queue.enqueueNDRangeKernel(
                     krn, cl::NullRange, alignup(v1.n, wgsize), wgsize
                     );
+
+            bytes_touched +=
+                v1.n * sizeof(T1) +
+                v2.n * sizeof(T2) +
+                v3.n * sizeof(T2) +
+                v4.n * sizeof(T2) +
+                v5.n * sizeof(T2) +
+                v6.n * sizeof(T3);
         }
 
         typedef void result_type;
@@ -369,8 +397,10 @@ struct sys_func
     {
         static cl::Kernel krn(program, "lorenz_system");
 
+        size_t n = x.n / 3;
+
         uint pos = 0;
-        krn.setArg(pos++, x.n / 3);
+        krn.setArg(pos++, n);
         krn.setArg(pos++, dxdt.data);
         krn.setArg(pos++, x.data);
         krn.setArg(pos++, R.data);
@@ -378,8 +408,10 @@ struct sys_func
         krn.setArg(pos++, b);
 
         queue.enqueueNDRangeKernel(
-                krn, cl::NullRange, alignup(x.n / 3, wgsize), wgsize
+                krn, cl::NullRange, alignup(n, wgsize), wgsize
                 );
+
+        bytes_touched += 7 * sizeof(value_type) * n;
     }
 };
 
@@ -415,6 +447,7 @@ int main(int argc, char *argv[]) {
         queue.enqueueReadBuffer(X.data, CL_TRUE, 0, sizeof(value_type), x.data());
 
         std::cout << x[0] << std::endl;
+        std::cout << "bytes io: " << bytes_touched << std::endl;
 
     } catch (const cl::Error &e) {
         std::cerr << "OpenCL error: " << e << std::endl;
