@@ -16,6 +16,10 @@ add_executable(vexcl_phase_oscillator vexcl_phase_oscillator_chain.cpp)
 target_link_libraries(vexcl_phase_oscillator OpenCL ${Boost_LIBRARIES})
 set_target_properties(vexcl_phase_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
 
+add_executable(reference_phase_oscillator reference_phase_oscillator_chain.cpp)
+target_link_libraries(reference_phase_oscillator OpenCL ${Boost_LIBRARIES})
+set_target_properties(reference_phase_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
+
 add_executable(viennacl_phase_oscillator viennacl_phase_oscillator_chain.cpp)
 target_link_libraries(viennacl_phase_oscillator OpenCL ${Boost_LIBRARIES})
 set_target_properties(viennacl_phase_oscillator PROPERTIES COMPILE_FLAGS -std=c++0x)
