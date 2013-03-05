@@ -111,18 +111,18 @@ const char clbuf_source[] =
 "\n"
 "kernel void ham_system(\n"
 "    ulong n, uint w, ulong pitch,\n"
-"    global const ulong *col,\n"
+"    global const int *col,\n"
 "    global const real *val,\n"
 "    global const real *x,\n"
 "    global real *dx,\n"
 "    real beta\n"
 "    )\n"
 "{\n"
-"    for(size_t i = get_global_id(0); i < n; i += get_global_size()) {\n"
+"    for(size_t i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
 "        real X = x[i];\n"
 "        real sum = -beta * X * X * X;\n"
 "        for(size_t j = 0; j < w; j++) {\n"
-"            ulong c = col[i + j * pitch];\n"
+"            int c = col[i + j * pitch];\n"
 "            if (c != -1) sum += val[i + j * pitch] * x[c];\n"
 "        }\n"
 "        dx[i] = sum;\n"
@@ -366,22 +366,23 @@ struct index_modulus {
 
 struct sys_func
 {
-    clbuf<ptrdiff_t>  col;
+    clbuf<int>        col;
     clbuf<value_type> val;
     size_t n, pitch;
     uint   w;
 
-    sys_func(size_t n1, size_t n2) : n(n1 * n2), pitch(alignup(n, 16)), w(5) {
+    sys_func(int n1, int n2) : n(n1 * n2), pitch(alignup(n, 16)), w(5) {
         std::vector<value_type> disorder( n );
         std::generate(disorder.begin(), disorder.end(), drand48);
 
-        std::vector<ptrdiff_t>  C(w * pitch, -1);
+        std::vector<int>        C(w * pitch, -1);
         std::vector<value_type> V(w * pitch);
 
         index_modulus index(n);
 
-        for( int i=0, idx=0 ; i < n1 ; ++i ) {
-            for( int j=0 ; j < n2 ; ++j, ++idx ) {
+        for( int i=0 ; i < n1 ; ++i ) {
+            for( int j=0 ; j < n2 ; ++j ) {
+                int idx = i * n2 + j;
                 int is[5] = { idx , index( idx + 1 ) , index( idx - 1 ) , index( idx - n2 ) , index( idx + n2 ) };
                 std::sort( is , is + 5 );
                 for( int k=0 ; k < 5 ; ++k ) {
@@ -391,11 +392,11 @@ struct sys_func
             }
         }
 
-        clbuf<ptrdiff_t> (C).swap(col);
+        clbuf<int>       (C).swap(col);
         clbuf<value_type>(V).swap(val);
     }
 
-    void operator()( const clbuf<value_type> &x , clbuf<value_type> &dxdt , value_type t )
+    void operator()( const clbuf<value_type> &q , clbuf<value_type> &dp )
     {
         static cl::Kernel krn(program, "ham_system");
 
@@ -405,8 +406,8 @@ struct sys_func
         krn.setArg(pos++, pitch);
         krn.setArg(pos++, col.data);
         krn.setArg(pos++, val.data);
-        krn.setArg(pos++, x.data);
-        krn.setArg(pos++, dxdt.data);
+        krn.setArg(pos++, q.data);
+        krn.setArg(pos++, dp.data);
         krn.setArg(pos++, beta);
 
         queue.enqueueNDRangeKernel(
@@ -418,7 +419,7 @@ struct sys_func
 typedef clbuf<value_type> state_type;
 
 int main(int argc, char *argv[]) {
-    const size_t n1 = argc > 1 ? atoi(argv[1]) : 1024;
+    const size_t n1 = argc > 1 ? atoi(argv[1]) : 64;
     const size_t n2 = n1;
     const size_t n = n1 * n2;
 
@@ -437,7 +438,9 @@ int main(int argc, char *argv[]) {
         std::vector<value_type> p(n, 0);
         q[n1/2*n2 + n2/2] = 1;
 
-        std::pair<state_type, state_type> X(state_type(q), state_type(p));
+        std::pair<state_type, state_type> X;
+        state_type(q).swap(X.first);
+        state_type(p).swap(X.second);
 
         odeint::symplectic_rkn_sb3a_mclachlan<
             state_type , state_type , value_type , state_type , state_type , value_type ,
@@ -447,7 +450,7 @@ int main(int argc, char *argv[]) {
         sys_func sys(n1, n2);
         odeint::integrate_const( stepper , std::ref( sys ) , X , value_type(0.0) , t_max , dt );
 
-        //queue.enqueueReadBuffer(X.first.data, CL_TRUE, 0, sizeof(value_type), q.data());
+        queue.enqueueReadBuffer(X.first.data, CL_TRUE, 0, sizeof(value_type), q.data());
         std::cout << q[0] << std::endl;
     } catch (const cl::Error &e) {
         std::cerr << "OpenCL error: " << e << std::endl;
