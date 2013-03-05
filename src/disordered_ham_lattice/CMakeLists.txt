@@ -13,6 +13,10 @@ add_executable(vexcl_disordered_lattice vexcl_disordered_lattice.cpp)
 target_link_libraries(vexcl_disordered_lattice OpenCL ${Boost_LIBRARIES})
 set_target_properties(vexcl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
 
+add_executable(reference_disordered_lattice reference_disordered_lattice.cpp)
+target_link_libraries(reference_disordered_lattice OpenCL ${Boost_LIBRARIES})
+set_target_properties(reference_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
+
 add_executable(viennacl_disordered_lattice viennacl_disordered_lattice.cpp)
 target_link_libraries(viennacl_disordered_lattice OpenCL pugixml ${Boost_LIBRARIES})
 set_target_properties(viennacl_disordered_lattice PROPERTIES COMPILE_FLAGS -std=c++0x)
