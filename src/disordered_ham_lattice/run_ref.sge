@@ -1,0 +1,40 @@
+#!/bin/bash
+#$ -V
+#$ -j y
+#$ -N disordered_lattice_reference
+#$ -m ae -M dennis.demidov@gmail.com
+#$ -cwd
+#$ -l cores=4,tesla_2070=1
+#$ -t 1:10
+
+reference_exe=reference_disordered_lattice
+
+# warming run
+OCL_PLATFORM=AMD    ./${reference_exe}
+OCL_PLATFORM=Intel  ./${reference_exe}
+OCL_PLATFORM=NVIDIA ./${reference_exe}
+
+rm -f reference_cpu_amd_${SGE_TASK_ID}.dat
+rm -f reference_cpu_intel_${SGE_TASK_ID}.dat
+rm -f reference_gpu_${SGE_TASK_ID}.dat
+
+for ((a=16;a<=2048;a*=2)); do
+    echo "$a"
+
+    export OCL_PLATFORM=AMD
+
+    echo -n "$a " >> reference_cpu_amd_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o reference_cpu_amd_${SGE_TASK_ID}.dat -a ./${reference_exe} $a > /dev/null
+
+    export OCL_PLATFORM=Intel
+
+    echo -n "$a " >> reference_cpu_intel_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o reference_cpu_intel_${SGE_TASK_ID}.dat -a ./${reference_exe} $a > /dev/null
+
+    export OCL_PLATFORM=NVIDIA
+
+    echo -n "$a " >> reference_gpu_${SGE_TASK_ID}.dat
+    /usr/bin/time -f %e -o reference_gpu_${SGE_TASK_ID}.dat -a ./${reference_exe} $a > /dev/null
+
+    echo ""
+done
