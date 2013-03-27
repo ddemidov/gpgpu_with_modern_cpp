@@ -826,14 +826,14 @@ stencil operator is defined, \code{operator()} of the function object is impleme
 with a single line of code:
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
-extern const char oscillator_body[] = "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);";
 
 struct phase_oscillators {
     const state_type &omega;
-    vex::StencilOperator< double, 3, 1, oscillator_body > S;
-    phase_oscillators(const state_type &w)
-        : omega(w), S(w.queue_list()) { }
+    phase_oscillators(const state_type &w) : omega(w) { }
     void operator()(const state_type &x, state_type &dxdt, double t) const {
+        static VEX_STENCIL_OPERATOR(S, double, 3, 1,
+                "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);",
+                omega.queue_list());
         dxdt = omega + S(x);
     }
 };
@@ -960,12 +960,11 @@ enabled by defining an according macro during compilation.
 
 The VexCL version employs the user-defined OpenCL function \code{pow3}, which
 computes the third power of its argument and is used for the sake of best
-performance.:
+performance:
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
 
-extern const char pow3_body[] = "return prm1 * prm1 * prm1;";
-vex::UserFunction<pow3_body, double(double)> pow3;
+VEX_FUNCTION(pow3, value_type(value_type),  "return prm1 * prm1 * prm1;");
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
     dp = (-beta) * pow3(q) + A * q;

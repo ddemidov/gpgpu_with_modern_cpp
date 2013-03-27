@@ -17,20 +17,20 @@ typedef double value_type;
 
 typedef vex::vector< value_type > state_type;
 
-VEX_STENCIL_OPERATOR_TYPE(S_type, double, 3, 1, "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);");
-
 struct sys_func
 {
 
     const state_type &omega;
-    S_type S;
 
     sys_func( const state_type &_omega )
-        : omega( _omega ) , S( _omega.queue_list() )
+        : omega( _omega )
     { }
 
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const
     {
+        static VEX_STENCIL_OPERATOR(S, double, 3, 1,
+                "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);",
+                omega.queue_list());
         // thrust::get<4>(t) = omega + sin( phi_right - phi ) + sin( phi - phi_left );
         dxdt = omega + S( x );
     }
