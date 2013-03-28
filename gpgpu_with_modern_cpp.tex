@@ -96,7 +96,7 @@ http://top500.org }} list. Major programming frameworks are NVIDIA CUDA and
 OpenCL.
 The former is a proprietary parallel computing architecture developed
 by NVIDIA for general purpose computing on NVIDIA graphics adapters, and the
- latter is an open, royalty-free standard for cross-platform, parallel
+latter is an open, royalty-free standard for cross-platform, parallel
 programming of modern processors and GPUs maintained by the Khronos group. By
 nature, the two frameworks have their distinctive pros and cons. CUDA has a
 more mature programming environment with a larger set of scientific libraries,
@@ -113,13 +113,19 @@ several such libraries (BLAS implementations, Fast Fourier Transform, Thrust
 and others). OpenCL lacks standard libraries, but there are a number of
 third-party projects aimed at developing both CUDA and OpenCL programs.
 
+Using such libraries it is also possible to write cross-platform
+code. For example, OpenCL executables can be configured by a
+environment variable to run on either the GPU or the CPU. Thrust can
+be configured during the compilation stage to generate binaries for
+CUDA or for OpenMP.
+
 This paper presents a comparison of several modern \Cpp libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
 libraries under consideration in the context of solving ordinary differential
-equations.  The comparison is based on odeint\footnote{ \href{
+equations.  The comparison is based on odeint\footnote{\href{
 http://odeint.com }{ http://odeint.com } }, a modern \Cpp library for solving
 ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1}
-that has been accepted for inclusion into the Boost
+that has been include into the Boost
 libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
 It is developed in a generic way using template meta-programming techniques,
 which lead to extraordinary high flexibility at utmost performance. The
