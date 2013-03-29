@@ -98,6 +98,7 @@ int main( int argc , char **argv )
     viennacl::ocl::setup_context(0, ctx.context(0)(), dev_id, queue_id);
     std::cout << ctx << std::endl;
 
+    viennacl::linalg::kernels::compressed_matrix<value_type, 1>::init(); // init CSR kernels before setting parameters
     viennacl::io::read_kernel_parameters< viennacl::compressed_matrix<value_type> >("sparse_parameters.xml");
 
     bool cpu = ctx.queue(0).getInfo<CL_QUEUE_DEVICE>().getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU;
