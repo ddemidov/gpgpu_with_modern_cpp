@@ -60,7 +60,7 @@ Inst. Scientific Computing, TU Dresden, 01062 Dresden}
     The comparison focuses on the solution of ordinary differential equations and is based on odeint,
     a framework for the solution of systems of ordinary differential equations. Odeint is designed in a
     very flexible way and may be easily adapted for effective use of libraries such
-    as Thrust, MTL4, VexCL, or ViennaCL, using CUDA or OpenCL technologies.
+    as MTL4, VexCL, or ViennaCL, using CUDA or OpenCL technologies.
     We found that CUDA and OpenCL work equally well for problems
     of large sizes, while OpenCL has higher overhead for smaller problems.
     Furthermore, we show that modern high-level libraries allow to effectively
@@ -69,7 +69,7 @@ Inst. Scientific Computing, TU Dresden, 01062 Dresden}
 \end{abstract}
 
 \begin{keywords}
-    GPGPU, OpenCL, CUDA, Modern \Cpp libraries, odeint, Thrust, MTL4, VexCL, ViennaCL
+    GPGPU, OpenCL, CUDA, Modern \Cpp libraries, odeint, MTL4, VexCL, ViennaCL
 \end{keywords}
 
 \begin{AMS}
@@ -133,16 +133,17 @@ numerical algorithms are implemented independently of the underlying
 arithmetics. This results in a broad applicability of the library, especially
 in non-standard environments.  For example, odeint supports matrix types,
 arbitrary precision arithmetics, and can be easily adopted to use either CUDA
-or OpenCL frameworks.  The GPGPU libraries considered in this work are Thrust,
-MTL4, VexCL, and ViennaCL:
+or OpenCL frameworks.  The GPGPU libraries considered in this work are MTL4,
+VexCL, and ViennaCL. We also employ Thrust\footnote{ \href{
+http://thrust.github.com }{ http://thrust.github.com }} in order to provide a
+reference point for the comparison of the considered libraries.
+Thrust is a parallel algorithms library which resembles the \Cpp Standard
+Template Library \cite{ThrustRef}.  Thrust's high-level interface greatly
+enhances developer productivity while enabling performance portability between
+GPUs and multi-core CPUs.  Thrust is distributed with the NVIDIA CUDA Toolkit
+since version~4.1.
 
 \begin{description}
-    \item[Thrust] is a parallel algorithms library\footnote{ \href{
-        http://thrust.github.com }{ http://thrust.github.com }} which resembles
-        the \Cpp Standard Template Library \cite{ThrustRef}.  Thrust's
-        high-level interface greatly enhances developer productivity while
-        enabling performance portability between GPUs and multi-core CPUs.
-        Thrust is distributed with the NVIDIA CUDA Toolkit since version~4.1.
     \item[MTL4] (The Matrix Template Library)\footnote{ \href{ http://mtl4.org }{
         http://mtl4.org }} is a \Cpp linear algebra library that provides
         an intuitive interface by establishing a domain-specific language
