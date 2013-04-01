@@ -26,6 +26,8 @@ include_directories(
     ${ODEINT_ROOT}
     ${VEXCL_ROOT}
     ${VIENNACL_ROOT}
+    ${VIENNACL_ROOT}/external
+    ${VIENNACL_ROOT}/build
     ${MTL4_ROOT}
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
