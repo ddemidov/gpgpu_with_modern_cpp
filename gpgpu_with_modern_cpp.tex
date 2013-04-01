@@ -215,18 +215,6 @@ kernel source generation during runtime. Modern \Cpp libraries such as those
 considered in this work successfully use this approach and hide gory details
 from their users.
 
-Besides the three above mentioned GPGPU libraries we also show results
-for a naive OpenCL backend for odeint. It does not use any high-level
-features as expression templates or advanced memory management but
-serves here as a reference implementation of the used arithmetic
-operations. Using this backend we can show the usability advantages of
-the high-level libraries and we can compare and judge their
-performance in comparison to the naive OpenCL code. For CUDA we do not
-use any self-written reference backend. Instead, we use Thrust as a
-reference. It is developed by NVIDIA and already distributed with
-CUDA. Therefore we assume that it behaves very similar to a naive CUDA
-implementation. At least, this is what many user will assume.
-
 
 
 
