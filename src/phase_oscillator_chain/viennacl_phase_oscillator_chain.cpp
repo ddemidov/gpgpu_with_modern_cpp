@@ -34,9 +34,10 @@ struct sys_func
 
       typedef viennacl::generator::dummy_vector<value_type> sym_vec;
 
-      static custom_operation oscillator_op(
-                sym_vec(dxdt) = sym_vec(omega) + sin(shift(sym_vec(x), -1)) + sin(shift(sym_vec(x), 1)),
-                "oscillator");
+      custom_operation oscillator_op;
+      oscillator_op.add(
+                sym_vec(dxdt) = sym_vec(omega) + viennacl::generator::sin(shift(sym_vec(x), -1)) + viennacl::generator::sin(shift(sym_vec(x), 1))
+                );
       oscillator_op.execute();
     }
 };
