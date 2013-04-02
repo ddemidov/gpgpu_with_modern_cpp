@@ -25,36 +25,22 @@ struct sys_func
 {
     const state_type &omega;
 
-    sys_func( const state_type &_omega ) : omega( _omega ) {
-	static const char source[] =
-	    "#if defined(cl_khr_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
-	    "#elif defined(cl_amd_fp64)\n"
-	    "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
-	    "#endif\n"
-	    "kernel void oscillator(\n"
-	    "        uint n,\n"
-	    "        global double *dx,\n"
-	    "        global const double *x,\n"
-	    "        global const double *omega\n"
-	    "        )\n"
-	    "{\n"
-	    "    for(uint i = get_global_id(0); i < n; i += get_global_size(0)) {\n"
-	    "        double X0 = x[i];\n"
-	    "        double Xl = i > 0 ? x[i - 1] : X0;\n"
-	    "        double Xr = i + 1 < n ? x[i + 1] : X0;\n"
-	    "        dx[i] = omega[i] + sin(Xl - X0) + sin(X0 - Xr);\n"
-	    "    }\n"
-	    "}\n";
+    sys_func( const state_type &_omega ) : omega( _omega ) {}
 
-	viennacl::ocl::current_context().add_program(
-		source, "oscillator_program").add_kernel("oscillator");
-    }
+    void operator()( const state_type &x , state_type &dxdt , value_type t ) const
+    {
 
-    void operator()( const state_type &x , state_type &dxdt , value_type t ) const {
-	viennacl::ocl::kernel &step = viennacl::ocl::get_kernel("oscillator_program", "oscillator");
+      using namespace viennacl::generator;
 
-	viennacl::ocl::enqueue( step(cl_uint(x.size()), dxdt, x, omega) );
+      static symbolic_vector<0,NumericT> sym_dX;
+      static symbolic_vector<1,NumericT> sym_X;
+      static symbolic_vector<2,NumericT> sym_Omega;
+
+      static custom_operation oscillator_op(
+                sym_dX = sym_Omega + sin(shift(sym_X, -1)) + sin(shift(dym_X, 1)),
+                "oscillator");
+
+      viennacl::ocl::enqueue( oscillator_op(dxdt, x, omega) );
     }
 };
 
