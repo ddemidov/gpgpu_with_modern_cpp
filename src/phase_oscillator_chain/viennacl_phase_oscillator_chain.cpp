@@ -32,15 +32,12 @@ struct sys_func
 
       using namespace viennacl::generator;
 
-      static symbolic_vector<0,NumericT> sym_dX;
-      static symbolic_vector<1,NumericT> sym_X;
-      static symbolic_vector<2,NumericT> sym_Omega;
+      typedef viennacl::generator::dummy_vector<value_type> sym_vec;
 
       static custom_operation oscillator_op(
-                sym_dX = sym_Omega + sin(shift(sym_X, -1)) + sin(shift(dym_X, 1)),
+                sym_vec(dxdt) = sym_vec(omega) + sin(shift(sym_vec(x), -1)) + sin(shift(sym_vec(x), 1)),
                 "oscillator");
-
-      viennacl::ocl::enqueue( oscillator_op(dxdt, x, omega) );
+      oscillator_op.execute();
     }
 };
 
