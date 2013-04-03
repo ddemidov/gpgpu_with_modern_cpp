@@ -17,6 +17,7 @@
 #include <cmath>
 #include <utility>
 #include <boost/numeric/mtl/mtl.hpp>
+#include <boost/numeric/mtl/matrix/ell_matrix.hpp>
 
 #include <boost/numeric/mtl/interface/odeint.hpp>
 
@@ -73,7 +74,8 @@ int main(int argc, char* argv[])
     typedef double                                     value_type;
     typedef unsigned                                   size_type;
     typedef matrix::parameters<row_major, mtl::index::c_index, non_fixed::dimensions, false, size_type> para;
-    typedef mtl::compressed2D<value_type, para>              matrix_type;
+    // typedef mtl::compressed2D<value_type, para>              matrix_type;
+    typedef mtl::matrix::ell_matrix<value_type, para>              matrix_type;
     typedef typename disordered_lattice<value_type, matrix_type>::state_type  state_type;
 
     size_type n1 = argc > 1 ? atoi(argv[1]) : 512 /* 64 */, n2= n1, n= n1 * n2;
