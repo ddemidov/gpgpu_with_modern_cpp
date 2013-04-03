@@ -23,6 +23,7 @@ if (LATEX_COMPILER)
 	)
 
     add_latex_document(cover_letter.tex DEFAULT_PDF MANGLE_TARGET_NAMES)
+    add_latex_document(cover_revision.tex DEFAULT_PDF MANGLE_TARGET_NAMES)
 endif (LATEX_COMPILER)
 
 add_subdirectory(src)

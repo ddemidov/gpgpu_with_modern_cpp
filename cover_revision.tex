@@ -1,0 +1,83 @@
+\documentclass[a4paper,11pt]{letter}
+
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\signature{Dr. Denis Demidov}
+\address{
+Joint Supercomputer Center \\
+Russian Academy of Sciences \\
+Lobachevsky st. 2/31\\
+420111 Kazan, Russia \\
+email: ddemidov@ksu.ru
+}
+\begin{document}
+
+\begin{letter}{
+    Hans Petter Langtangen\\
+    Editor-in-Chief\\
+    SIAM Journal of Scientific Computing
+    }
+\opening{Dear Dr. Langtangen,}
+
+On behalf of all the authors, I would like to submit revised version of
+manuscript entitled ``Programming CUDA and OpenCL: a Case Study Using Modern
+C++ Libraries'' for publication in the ``Software and High-Performance
+Computing'' section of SIAM Journal of Scientific Computing.
+
+There were several remarks made by the referees, which I would like to address
+below.
+
+\begin{enumerate}
+    \item The first point made by Referee \#1 is that a reference
+        implementation in CUDA or OpenCL is not presented. This is result of
+        unclear wording from our side, since we intended to use Thrust library
+        as a reference implementation. Thrust is a widely accepted GPGPU
+        library which is supported by the major vendor (NVIDIA) and is included
+        into the CUDA Toolkit distribution package. Hence, we beleive the
+        library is suitable candidate for the reference implementation. We
+        rephrased the relevant part of the introduction to make this point more
+        clear to the readers.
+    \item The other point the Referee makes is that ViennaCL implementation of
+        the phase oscillator chain example used manually coded OpenCL kernel,
+        which, by his opinion, undermined the idea of using libraries instead
+        of hand coded low-level code. The authors of ViennaCL have since
+        improved their library thus eliminating use of any hand coded kernels
+        in our paper. We have changed the related code snippets to reflect the
+        change.
+    \item Probably the most important objection from the first Referee is that
+        the result we show lack performance portability, especially when run on
+        a CPU. We agree that it is hard to achieve performance portability with
+        current state of OpenCL and hardware differences, but we beleive that
+        this issue should be addressed by library authors and not by
+        application developers. To emphasize the point, authors of
+        VexCL and ViennaCL % and hopefully CMTL
+        have added several CPU-related optimizations to their codes.
+        This resulted in much improved agreement between performance results of
+        the libraries. We have updated the relevant plots, Table~4.1, and parts
+        of the discussion section.
+    \item Referee \#2 suggested, in addition to timings for the different
+        problems, to report what fractions of the available computational
+        resource are being exploited. We beleive this is very helpful addition
+        and we have accordingly updated Table~4.1.
+\end{enumerate}
+
+We would like to thank both Referees for the fruitful discussion. We hope that
+the paper in its revised form would be suitable for publication in the SIAM
+Journal of Scientific Computing.
+
+
+The co-authors of the paper are: Dr. Karsten Ahnert (karsten.ahnert@gmx.de,
+Ambrosys GmbH, Geschw.-Scholl-Str.63a, 14471 Potsdam, Germany), Dr. Karl Rupp
+(rupp@mcs.anl.gov, Mathematics and Computer Science Division, Argonne National
+Laboratory, 9700 South Cass Avenue, Argonne, IL 60439, USA), and Dr. Peter
+Gottschling (Peter.Gottschling@tu-dresden.de, Technische Universit\"at Dresden,
+Institut f\"ur Wissenschaftliches Rechnen, 01062 Dresden, Germany).
+
+\closing{Sincerely,}
+
+\end{letter}
+
+\end{document}
+Dear Dr. Langtangen,
+
+On behalf of all the authors
