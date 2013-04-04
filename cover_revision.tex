@@ -43,16 +43,16 @@ below.
         in our paper. We have changed the related code snippets to reflect the
         change.
     \item Probably the most important objection from the first Referee is that
-        the results we show lack performance portability, especially when run on
-        a CPU. We agree that it is hard to achieve performance portability with
-        current state of OpenCL and hardware differences, but we believe that
-        this issue should be addressed by library authors and not by
-        application developers. To emphasize the point, authors of
-        VexCL and ViennaCL % and hopefully CMTL
-        have added several CPU-related optimizations to their codes.
-        This resulted in much improved agreement between performance results of
-        the libraries. We have updated the relevant plots, Table~4.1, and parts
-        of the discussion section.
+        the results we show lack performance portability, especially when run
+        on a CPU. We agree that it is hard to achieve performance portability
+        with current state of OpenCL and hardware differences, but we believe
+        that this issue should be addressed by library authors and not by
+        application developers. To emphasize the point, authors of VexCL and
+        ViennaCL libraries have added several CPU-related optimizations to
+        their codes. MTL4 library was updated to have sparse matrix~-- vector
+        product performance on par with the rest of libraries.  This resulted
+        in much improved agreement between performance results. We have updated
+        the relevant plots, Table~4.1, and parts of the discussion section.
     \item Referee \#2 suggested, in addition to timings for the different
         problems, to report what fractions of the available computational
         resource are being exploited. We believe this is very helpful addition
