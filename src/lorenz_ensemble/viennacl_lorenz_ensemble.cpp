@@ -38,9 +38,7 @@ struct sys_func
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const
     {
 	using namespace viennacl::generator;
-
-        typedef dummy_vector<value_type> sym_vec;
-        typedef dummy_scalar<value_type> sym_val;
+        typedef dummy_vector<value_type> vec;
 
 	const auto &X = fusion::at_c< 0 >( x );
 	const auto &Y = fusion::at_c< 1 >( x );
@@ -52,9 +50,9 @@ struct sys_func
 
 	custom_operation op;
 
-        op.add(sym_vec(dX) = sym_val(sigma) * (sym_vec(Y) - sym_vec(X)));
-        op.add(sym_vec(dY) = element_prod(sym_vec(R), sym_vec(X)) - sym_vec(Y) - element_prod(sym_vec(X), sym_vec(Z)));
-        op.add(sym_vec(dZ) = element_prod(sym_vec(X), sym_vec(Y)) - sym_val(b) * sym_vec(Z));
+        op.add(vec(dX) = sigma * (vec(Y) - vec(X)));
+        op.add(vec(dY) = element_prod(vec(R), vec(X)) - vec(Y) - element_prod(vec(X), vec(Z)));
+        op.add(vec(dZ) = element_prod(vec(X), vec(Y)) - b * vec(Z));
 
         op.execute();
     }

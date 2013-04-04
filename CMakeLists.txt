@@ -12,8 +12,6 @@ if (LATEX_COMPILER)
 	       data/lorenz_ensemble/scaling.eps
 	       data/phase_oscillator_chain/perfmtx.eps
 	       data/phase_oscillator_chain/scaling.eps
-	       data/damped_oscillator/perfmtx.eps
-	       data/damped_oscillator/scaling.eps
 	       data/disordered_ham_lattice/perfmtx.eps
 	       data/disordered_ham_lattice/scaling.eps
 	BIBFILES ref.bib

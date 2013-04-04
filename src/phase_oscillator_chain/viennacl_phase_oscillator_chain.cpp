@@ -27,17 +27,12 @@ struct sys_func
 
     sys_func( const state_type &_omega ) : omega( _omega ) {}
 
-    void operator()( const state_type &x , state_type &dxdt , value_type t ) const
-    {
-
+    void operator()( const state_type &x , state_type &dxdt , value_type t ) const {
       using namespace viennacl::generator;
-
-      typedef dummy_vector<value_type> sym_vec;
+      typedef dummy_vector<value_type> vec;
 
       custom_operation oscillator_op;
-      oscillator_op.add(
-                sym_vec(dxdt) = sym_vec(omega) + viennacl::generator::sin(shift(sym_vec(x), -1)) + viennacl::generator::sin(shift(sym_vec(x), 1))
-                );
+      oscillator_op.add(vec(dxdt) = vec(omega) + sin(shift(vec(x), -1)) + sin(shift(vec(x), 1)));
       oscillator_op.execute();
     }
 };

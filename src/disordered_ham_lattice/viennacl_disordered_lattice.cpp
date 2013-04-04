@@ -63,16 +63,12 @@ struct ham_lattice
 
     void operator()( const state_type &q , state_type &dp ) const {
 	using namespace viennacl::generator;
-
-        typedef dummy_vector<value_type> sym_vec;
-        typedef dummy_scalar<value_type> sym_val;
-
-        custom_operation op;
-        op.add(
-                sym_vec(dp) -= sym_val(m_beta) * element_prod(sym_vec(q), element_prod(sym_vec(q), sym_vec(q)))
-              );
+        typedef dummy_vector<value_type> vec;
 
         dp = viennacl::linalg::prod(m_A, q);
+
+        custom_operation op;
+        op.add(vec(dp) -= m_beta * element_prod(vec(q), element_prod(vec(q), vec(q))));
         op.execute();
     }
 
