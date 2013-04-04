@@ -102,7 +102,9 @@ nature, the two frameworks have their distinctive pros and cons. CUDA has a
 more mature programming environment with a larger set of scientific libraries,
 but is available for NVIDIA hardware only. OpenCL is supported on a wide range
 of hardware, but its native API requires a much larger amount of boilerplate
-code from the developer.
+code from the developer. Another problem with OpenCL is that it is generally
+difficult to achieve performance portability across different hardware
+architectures.
 
 Both technologies are able to provide scientists with the vast computational
 resources of modern GPUs at the price of a steep learning curve.  Programmers
@@ -114,10 +116,11 @@ and others). OpenCL lacks standard libraries, but there are a number of
 third-party projects aimed at developing both CUDA and OpenCL programs.
 
 Using such libraries it is also possible to write cross-platform
-code. For example, VexCL executables can be configured by a
-environment variable to run on either the GPU or the CPU. Thrust can
-be configured during the compilation stage to generate binaries for
-CUDA or for OpenMP.
+code. For example, VexCL executables can be configured by an
+environment variable to run on either the GPU or the CPU. Thrust supports
+several computation backends, such as CUDA, OpenMP, or Intel Thread Building
+Blocks. One of the backends may be selected during the compilation stage by a
+compiler option.
 
 This paper presents a comparison of several modern \Cpp libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
@@ -128,7 +131,7 @@ ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1}
 that has been included into the Boost
 libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
 It is developed in a generic way using template meta-programming techniques,
-which lead to extraordinary high flexibility at utmost performance. The
+which leads to extraordinary high flexibility at utmost performance. The
 numerical algorithms are implemented independently of the underlying
 arithmetics. This results in a broad applicability of the library, especially
 in non-standard environments.  For example, odeint supports matrix types,
@@ -162,9 +165,8 @@ since version~4.1.
         been created for ease of OpenCL development with \Cpp.  VexCL strives to
         reduce the amount of boilerplate code needed to develop OpenCL
         applications. The library provides a convenient and intuitive notation
-        for vector arithmetic, reduction, and sparse matrix-vector
-        multiplication.  Multi-device and even multi-platform computations are
-        supported.
+        for vector arithmetic, reduction, sparse matrix-vector multiplication,
+        etc.  Multi-device and even multi-platform computations are supported.
     \item[ViennaCL] (The Vienna Computing Library) is a scientific computing
         library\footnote{ \href{ http://viennacl.sourceforge.net }{
         http://viennacl.sourceforge.net }} written in \Cpp \cite{ViennaCLRef}.
@@ -439,25 +441,17 @@ struct viennacl_operations {
         // ...
         template<class T1, class T2, class T3>
         void operator()( viennacl::vector<T1> &v1,
-                const viennacl::vector<T2> &v2,
-                const viennacl::vector<T3> &v3) const
+                    const viennacl::vector<T2> &v2,
+                    const viennacl::vector<T3> &v3) const
         {
-            using namespace viennacl;
+            typedef viennacl::generator::dummy_vector<T1> sym_vec;
 
-            // instantiate symbolic types:
-            static generator::symbolic_vector    <0, T1>   sym_v1;
-            static generator::symbolic_vector    <1, T2>   sym_v2;
-            static generator::symbolic_vector    <2, T3>   sym_v3;
-            static generator::cpu_symbolic_scalar<3, Fac1> sym_a1;
-            static generator::cpu_symbolic_scalar<4, Fac2> sym_a2;
+            viennacl::generator::custom_operation op;
+            op.add( sym_vec(v1) = m_alpha1 * sym_vec(v2)
+                                 + m_alpha2 * sym_vec(v3)
+                                 + m_alpha3 * sym_vec(v4) );
 
-            // run the kernel generation at first call of this function:
-            static generator::custom_operation op(
-                    sym_v1 = sym_a1 * sym_v2 + sym_a2 * sym_v3,
-                    "scale_sum2");
-
-            // launch the kernel:
-            ocl::enqueue( op(v1, v2, v3, m_alpha1, m_alpha2) );
+            op.execute();
         }
     };
 };
@@ -481,7 +475,7 @@ subsequent calls.
 %
 \section{Numerical Experiments}
 
-As shown in the previous section, all three GP\-GPU libraries considered
+As shown in the previous section, all four GP\-GPU libraries considered
 in our comparison could be adapted to odeint without getting in
 contact with low-level CUDA or OpenCL code.  The purpose of this
 section is to evaluate the performance of the GPGPU libraries and
@@ -823,14 +817,14 @@ The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
 and to avoid non-coalesced memory accesses.
 
-The VexCL version of the example is the most
-concise variant since VexCL provides native support for the user-defined
-stencils operations. The sum of sines in \eqref{eq:phasesystem} is encoded
-using the \code{vex::StencilOperator<>} class template. Template parameters
-are the body string for the generated OpenCL function encoding required
-operation, width and center point of the stencil, and its return type. Once the
-stencil operator is defined, \code{operator()} of the function object is implemented
-with a single line of code:
+The VexCL version of the example is the most concise variant since VexCL
+provides native support for the user-defined stencils operations. The sum of
+sines in \eqref{eq:phasesystem} is encoded using the
+\code{VEX_STENCIL_OPERATOR} preprocessor macro. Its parameters are name of the
+resulting functor, return type, stencil width, center, and the body string for
+the generated OpenCL function encoding required operation.  Once the stencil
+operator is defined, \code{operator()} of the system function object is
+implemented with a single line of code:
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
 
@@ -913,20 +907,15 @@ types nor sparse matrix-vector products, Thrust was combined with the
 CUSPARSE library in order to implement this example. CUSPARSE contains a set of
 basic linear algebra subroutines used for handling sparse matrices and is
 included in the CUDA Toolkit distribution together with the Thrust library
-\cite{NvidiaCusparseManual}. As an alternative, the open-source Cusp library
-\cite{CuspRef} for sparse linear algebra and graph computations on CUDA could
-have been used, yet we consider only the first option in the following.
+\cite{NvidiaCusparseManual}.
 
-% [KA] : is it neccessary to mention Cusp?
-% [DD] : I think not. This is not the only alternative.
-
-For better comparison, all libraries considered in our study (except for MTL4,
-see Sec.~\ref{sec:results}) use the hybrid ELL format for storing the sparse
-matrix on GPUs, since it is one of the most efficient formats for sparse
-matrices on these devices~\cite{BellGarland2008}. The standard compressed
-sparse row format is used for CPU runs.  As the construction of the sparse
-matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$ is straight-forward, we
-only provide code for the system function object interface.
+For better comparison, all libraries considered in our study use the hybrid ELL
+format for storing the sparse matrix on GPUs, since it is one of the most
+efficient formats for sparse matrices on these devices~\cite{BellGarland2008}.
+The standard compressed sparse row format is used for CPU runs.  As the
+construction of the sparse matrix for $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$
+is straight-forward, we only provide code for the system function object
+interface.
 
 The relevant code for the Thrust version of the system function object is
 \begin{lstlisting}
@@ -970,7 +959,6 @@ computes the third power of its argument and is used for the sake of best
 performance:
 \begin{lstlisting}
 typedef vex::vector<double> state_type;
-
 VEX_FUNCTION(pow3, value_type(value_type),  "return prm1 * prm1 * prm1;");
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
@@ -1007,14 +995,14 @@ available in a GitHub repository\footnote{ \href{
 https://github.com/ddemidov/gpgpu_with_modern_cpp } {
 https://github.com/ddemidov/gpgpu\_with\_modern\_cpp } }.
 
-All the libraries tested in this paper allow for the use of both CPU and GPU
-devices.  Thrust supports an OpenMP-based execution on the CPU, which is
-enabled by a compilation switch, while OpenCL libraries natively support CPUs
-provided that the respective runtime is installed. Two OpenCL implementations
-from AMD and from Intel were used.  The timings provided were obtained
-for two GPUs, namely an NVIDIA Tesla C2070 and an AMD Radeon HD~7970 (Tahiti),
-as well as for an Intel Core i7 930 CPU. All reported values are median values
-of execution times taken for ten runs.
+All the libraries tested in this paper with the exception of CMTL4 and CUSPARSE
+allow for the use of both CPU and GPU devices.  Thrust supports an OpenMP-based
+execution on the CPU, which is enabled by a compilation switch, while OpenCL
+libraries natively support CPUs provided that the respective runtime is
+installed. Two OpenCL implementations from AMD and from Intel were used.  The
+timings provided were obtained for two GPUs, namely an NVIDIA Tesla C2070 and
+an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU. All
+reported values are median values of execution times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.
@@ -1029,7 +1017,9 @@ Thrust version. The only exception to the latter rule is
 GPU data.  This is due to poor performance of Thrust library in case of the
 coupled phase oscillator chain example.
 Absolute execution times for the largest problem size for all of the considered
-libraries are given in Table~\ref{tab:abstimes}. 
+libraries are given in Table~\ref{tab:abstimes}. The table also provides
+achieved memory bandwidth values in GB/sec and in fractions of theoretical peak
+values for each of the compute devices.
 
 \begin{figure}
     \begin{center}
@@ -1076,34 +1066,15 @@ slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
 Hamiltonian lattice experiment.  Both OpenCL libraries show very similar
 results on a GPU.
 
-In contrast to the other libraries, CMTL4 uses a compressed row storage matrix
-(CRS) which is known for being a sub-optimal storage format on GPUs because it
-causes many non-coalesced memory accesses when the matrix is processed
-row-wise.  However, CMTL4 provides a specialized implementation for a
-matrix-vector product when all rows of the matrix have the same number of
-non-zero entries (or are accordingly padded with zeros).  In this case, it is
-much easier to use shared memory for minimizing non-coalesced global memory
-access.  This is subject to a future publication.
-%There is further potential in computing the matrix vector product and the
-%element-wise vector operations in one single loop as successfully demonstrated
-%in MTL4's CPU implementation.
-% [DD]: I think this does not concern us here.
-This specialized CRS implementation in CMTL4 is twice faster than
-Thrust/CUSPARSE for very small examples and up to 50\,\% slower for large
-examples~--- which is still significantly better than reported by Kraus and
-F\"orster. They observed that similar matrices are about four times faster in
-ELLPACK format than CRS~\cite{KrausFoerster}.
-
 ViennaCL is about 15 percent faster than Thrust in the phase oscillator chain
 example due to the use of a hand-written kernel.
 MTL4 provides similar performance with an implementation for arbitrary user-defined
 1D stencils.
 
-Conversely, the overhead of
-using high-level libraries is negligible compared to the effort spent in
-getting familiar with the details of CUDA or OpenCL.  Thus, we have
-successfully countered productivity concerns for GPU computing raised in the
-past \cite{bordawekar:gpu-productivity}.
+Conversely, the overhead of using high-level libraries is negligible compared
+to the effort spent in getting familiar with the details of CUDA or OpenCL.
+Thus, we have successfully countered productivity concerns for GPU computing
+raised in the past \cite{bordawekar:gpu-productivity}.
 
 
 \subsection{CPU-Performance}
