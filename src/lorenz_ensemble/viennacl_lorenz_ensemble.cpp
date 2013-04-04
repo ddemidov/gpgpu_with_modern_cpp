@@ -39,24 +39,8 @@ struct sys_func
     {
 	using namespace viennacl::generator;
 
-	static symbolic_vector<0,value_type> sym_dX;
-	static symbolic_vector<1,value_type> sym_dY;
-	static symbolic_vector<2,value_type> sym_dZ;
-
-	static symbolic_vector<3,value_type> sym_X;
-	static symbolic_vector<4,value_type> sym_Y;
-	static symbolic_vector<5,value_type> sym_Z;
-
-	static symbolic_vector<6,value_type> sym_R;
-
-	static cpu_symbolic_scalar<7,value_type> sym_sigma;
-	static cpu_symbolic_scalar<8,value_type> sym_b;
-
-	static custom_operation lorenz_op(
-		sym_dX = sym_sigma * (sym_Y - sym_X),
-		sym_dY = element_prod(sym_R, sym_X) - sym_Y - element_prod(sym_X, sym_Z),
-		sym_dZ = element_prod(sym_X, sym_Y) - sym_b * sym_Z,
-		"lorenz");
+        typedef dummy_vector<value_type> sym_vec;
+        typedef dummy_scalar<value_type> sym_val;
 
 	const auto &X = fusion::at_c< 0 >( x );
 	const auto &Y = fusion::at_c< 1 >( x );
@@ -66,7 +50,13 @@ struct sys_func
 	auto &dY = fusion::at_c<1>( dxdt );
 	auto &dZ = fusion::at_c<2>( dxdt );
 
-	viennacl::ocl::enqueue(lorenz_op(dX, dY, dZ, X, Y, Z, R, sigma, b));
+	custom_operation op;
+
+        op.add(sym_vec(dX) = sym_val(sigma) * (sym_vec(Y) - sym_vec(X)));
+        op.add(sym_vec(dY) = element_prod(sym_vec(R), sym_vec(X)) - sym_vec(Y) - element_prod(sym_vec(X), sym_vec(Z)));
+        op.add(sym_vec(dZ) = element_prod(sym_vec(X), sym_vec(Y)) - sym_val(b) * sym_vec(Z));
+
+        op.execute();
     }
 };
 

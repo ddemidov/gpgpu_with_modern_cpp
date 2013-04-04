@@ -63,16 +63,17 @@ struct ham_lattice
 
     void operator()( const state_type &q , state_type &dp ) const {
 	using namespace viennacl::generator;
-	static symbolic_vector<0, value_type> sym_dp;
-	static symbolic_vector<1, value_type> sym_q;
-	static cpu_symbolic_scalar<2, value_type> sym_beta;
 
-	static custom_operation lattice_op(
-		sym_dp -= sym_beta * element_prod(sym_q, element_prod(sym_q, sym_q)),
-		"hamiltonian");
+        typedef dummy_vector<value_type> sym_vec;
+        typedef dummy_scalar<value_type> sym_val;
+
+        custom_operation op;
+        op.add(
+                sym_vec(dp) -= sym_val(m_beta) * element_prod(sym_vec(q), element_prod(sym_vec(q), sym_vec(q)))
+              );
 
         dp = viennacl::linalg::prod(m_A, q);
-	viennacl::ocl::enqueue( lattice_op(dp, q, m_beta) );
+        op.execute();
     }
 
     long m_N ;

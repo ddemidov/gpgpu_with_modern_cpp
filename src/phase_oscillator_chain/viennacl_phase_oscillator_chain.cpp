@@ -32,7 +32,7 @@ struct sys_func
 
       using namespace viennacl::generator;
 
-      typedef viennacl::generator::dummy_vector<value_type> sym_vec;
+      typedef dummy_vector<value_type> sym_vec;
 
       custom_operation oscillator_op;
       oscillator_op.add(
