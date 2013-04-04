@@ -39,9 +39,9 @@ struct sys_func
 
     void operator()(const state_type& x, state_type& dxdt, value_type)
     {
-	dxdt.at(0)= sigma * (x.at(1) - x.at(0));
-	dxdt.at(1)= R * x.at(0) - x.at(1) - x.at(0) * x.at(2);
-	dxdt.at(2)= x.at(0) * x.at(1) - b * x.at(2);
+	(lazy(dxdt.at(0))= sigma * (x.at(1) - x.at(0)))
+	    || (lazy(dxdt.at(1))= R * x.at(0) - x.at(1) - x.at(0) * x.at(2))
+	    || (lazy(dxdt.at(2))= x.at(0) * x.at(1) - b * x.at(2));
     }
 
   private:
