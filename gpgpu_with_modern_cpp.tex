@@ -16,7 +16,7 @@
     frame=lines
     }
 
-\newcommand{\code}[1]{\lstinline|#1|}
+\newcommand{\code}[1]{\lstinline$#1$}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
 \newcommand{\eqref}[1]{(\ref{#1})}
 
@@ -601,13 +601,13 @@ In this sense, all operations are performed on the sub-vectors of \code{x} and
 There is potential for optimization when the three operations are performed by one
 kernel.
 This can be achieved with the following formulation:
-\begin{lstlisting}
-    (lazy(dxdt.at(0))= sigma * (x.at(1) - x.at(0)))
-        || (lazy(dxdt.at(1))= R * x.at(0) - x.at(1) - x.at(0) * x.at(2))
-        || (lazy(dxdt.at(2))= x.at(0) * x.at(1) - b * x.at(2));
+\begin{lstlisting}[firstnumber=9]
+    ( lazy(dxdt.at(0)) = sigma * (x.at(1) - x.at(0)) ) ||
+    ( lazy(dxdt.at(1)) = R * x.at(0) - x.at(1) - x.at(0) * x.at(2) ) ||
+    ( lazy(dxdt.at(2)) = x.at(0) * x.at(1) - b * x.at(2) );
 \end{lstlisting}
 The vector assignments are not performed immediately but their evaluation is delayed
-and can be fused with other expressions---denoted by \code{||}. 
+and can be fused with other expressions~--- denoted by operator \code{||}. 
 This formulation has yet another advantage: the three vector operations
 are performed in one single loop which provides much better data locality
 for vector \code{x}.
@@ -615,23 +615,10 @@ For performance sake, the multi-vectors are constructed with contiguous memory
 whenever the types allow for it.
 Then expressions on multi-vectors can be evaluated with one kernel call.
 Especially for small vectors, the overhead of calling multiple kernels
-is significant: we observed 150\,\% overhead with 3~vector with 4k entries compared
-to one vector of size 12k.
-In the following, we will refer to the CUDA
-version of MTL4 as CMTL4.
+is significant: we observed 150\,\% overhead with 3-component vector with 4K
+entries compared to one vector of size 12K.  In the following, we will refer to
+the CUDA version of MTL4 as CMTL4.
 
-
-% There is potential for optimization when multi-vectors are consecutively allocated
-% in memory so that in our case three kernel calls can be replaced by a single call.
-% Especially for small problem sizes (e.g.~4096 entries), the kernel call overhead
-% is dominant and one large vector operation is up to 150\,\% faster than three smaller
-% ones whereas the difference is less than about 5\,\% when the vectors are
-% larger than one million entries.
-% Likewise, the evaluation of the Lorenz system could be performed with one kernel
-% using MTL4's fused expressions.
-% However, both techniques require subtle meta-programming treatment on the type level and
-% are not yet available for CUDA version of MTL4 (we will refer to the CUDA
-% version as CMTL4).
 
 The VexCL implementation of the Lorenz attractor ensemble example looks as
 compact as MTL4's. Here, the state is represented by the
@@ -1218,8 +1205,6 @@ paper.
 Regarding a comparison of CUDA versus OpenCL, the main difference observed in
 this work is the wider range of hardware supported by OpenCL.  Although the performance
 obtained via CUDA is a few percent better than that of OpenCL on the overall,
-% [DD] We should probably change this, since with MTL4's introduction CUDA is
-% no longer the decisive winner w.r.t. performance.
 the differences are mostly too small in order to make a decision in favor of
 CUDA based on performance only.  Moreover, the slight performance advantage of
 CUDA can still turn into a disadvantage when taking the larger set of hardware
