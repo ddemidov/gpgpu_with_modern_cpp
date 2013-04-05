@@ -37,8 +37,7 @@ struct sys_func
 
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const
     {
-	using namespace viennacl::generator;
-        typedef dummy_vector<value_type> vec;
+        typedef viennacl::generator::vector<value_type> vec;
 
 	const auto &X = fusion::at_c< 0 >( x );
 	const auto &Y = fusion::at_c< 1 >( x );
@@ -48,7 +47,7 @@ struct sys_func
 	auto &dY = fusion::at_c<1>( dxdt );
 	auto &dZ = fusion::at_c<2>( dxdt );
 
-	custom_operation op;
+	viennacl::generator::custom_operation op;
 
         op.add(vec(dX) = sigma * (vec(Y) - vec(X)));
         op.add(vec(dY) = element_prod(vec(R), vec(X)) - vec(Y) - element_prod(vec(X), vec(Z)));
