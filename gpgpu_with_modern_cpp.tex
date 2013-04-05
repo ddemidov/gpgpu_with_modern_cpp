@@ -366,7 +366,7 @@ instead be used with a default algebra and a default operation set included in
 odeint, which simply call the operations directly on the matrix or vector type.
 
 We describe the adaptation of odeint for the GPGPU libraries under
-consideration in the following. The adaptions are now part of odeint, thus
+consideration in the following. The adaptations are now part of odeint, thus
 native support for these libraries is available.  Implementation details such as
 the resizing of vectors is accomplished in a straight-forward manner and not
 further addressed for the sake of conciseness.
@@ -494,7 +494,7 @@ whether there is a price to pay for the high-level interface.
 In the first example we consider the Lorenz system \cite{Lorenz-63}. The
 Lorenz system is a system of three coupled ODEs which shows chaotic
 behavior for a large range of parameters. It is one of the most frequently
-used ODEs for evaluation purposes in the nonlinear dynamics community.   % [KR]: Justification (citation) required
+used ODEs for evaluation purposes in the nonlinear dynamics community.
 The equations for the Lorenz system read
 \begin{equation}
     \dot{x} = -\sigma \left( x - y \right), \quad
@@ -502,8 +502,6 @@ The equations for the Lorenz system read
     \dot{z} = -bz + xy.
     \label{eq:lorenz}
 \end{equation}
-% [KR]: A short  discussion/description of the parameters \sigma, R, and b should be added.
-% Something similar to the introductory sentences for the phase oscillators would be sufficient.
 
 Solutions of the Lorenz system usually furnish very interesting
 behavior in dependence on one of its parameters.  For example, one
@@ -513,9 +511,6 @@ with a different parameter $R$), pack them all into one system and
 solve them simultaneously. In a real study of chaoticity one
 may also calculate the Lyapunov exponents \cite{Ott-book-02}, which
 requires to solve the Lorenz system and their linear perturbations.
-
-% [KR] The paragraph right above is probably not of interest for the reader in
-% its current form. Either shorten, or extend.
 
 The Thrust version of the system function object for the Lorenz attractor ensemble
 example is presented below. It holds model parameters and provides the necessary
@@ -719,10 +714,6 @@ formation, phase chaos, or oscillation death
 \cite{Kuramoto-84,Synchronization-Pikovsky}. It is a prominent example
 of an emergent system where the coupled system shows a more complex
 behavior than its constitutes.
-
-% [DD]: Is it ok to say that periodic variable grows linearly in time? Is it
-% the amplitude that grows in this case?
-
 
 The concrete example we analyze here is a chain of nearest-neighbor
 coupled phase oscillators \cite{Cohen-Rand-Holmes-82}:
@@ -1056,20 +1047,15 @@ for OpenCL libraries is larger than that of CUDA programs, which is mostly due
 to the additional kernel management logic required by the OpenCL runtime.
 
 Performance-wise, all of the considered libraries are close to each other when
-run on a GPU.  Thrust performs slightly better in most cases except for the
-phase oscillator chain example, where the permutation iterators require the use
-of an auxiliary index vector.  MTL4, VexCL and ViennaCL are in general slower
-than Thrust by a few percent, which is usually negligible in practice.
-Apparently, the CUSPARSE implementation of the sparse matrix-vector product is
-more efficient than that of the OpenCL libraries, since VexCL and ViennaCL are
-slower than Thrust/CUSPARSE combination by about 30 percent for the disordered
-Hamiltonian lattice experiment.  Both OpenCL libraries show very similar
-results on a GPU.
-
-ViennaCL is about 15 percent faster than Thrust in the phase oscillator chain
-example due to the use of a hand-written kernel.
-MTL4 provides similar performance with an implementation for arbitrary user-defined
-1D stencils.
+run on a GPU.  VexCL and ViennaCL are in general slower than CMTL4 and Thrust
+by a few percent, which is usually negligible in practice.  Apparently, the
+CUSPARSE implementation of the sparse matrix-vector product is more efficient
+than that of the rest of the libraries, since it outperforms the competitors by
+about 20-30\% in the disordered Hamiltonian lattice experiment.  The
+implementation of phase oscillator chain example for Thrust is rather
+ineffective since it uses permutation iterator which requires an additional
+global vector for storing indices. CMTL4 and ViennaCL implementations of
+stencil operators are slightly more efficient than that of VexCL.
 
 Conversely, the overhead of using high-level libraries is negligible compared
 to the effort spent in getting familiar with the details of CUDA or OpenCL.
@@ -1078,15 +1064,24 @@ raised in the past \cite{bordawekar:gpu-productivity}.
 
 
 \subsection{CPU-Performance}
-Looking at the performance of the experiments on the CPU,
-differences between the libraries become more pronounced. For larger problems Thrust outperforms VexCL
-by 15 to 40 percent and ViennaCL by about 75 percent. The only exception is the phase oscillators
-example, where ViennaCL is the fastest library. The difference
-between the OpenCL implementations of AMD and the Intel is negligible in
-most cases. The only exception is the example of the chain of phase oscillators,
-where the implementation by Intel outperforms the one of AMD by up to 50 percent.
-This might be explained by a better implementation of trigonometric functions in Intel's version,
-producing better code for the underlying Intel CPU, for which there are no optimizations by AMD.
+
+Thrust, VexCL, and ViennaCL show very similar performance on the CPU for the
+larger problem sizes. For the smaller problems the difference between Thrust
+and OpenCL-based libraries is more pronounced, since Thrust uses OpenMP backend
+which does not have any overhead such as OpenCL initialization and kernel
+compilation.  The difference between the OpenCL
+implementations of AMD and the Intel is negligible in most cases. The only
+exception is the example of the chain of phase oscillators, where the
+implementation by Intel outperforms the one of AMD by up to 50 percent.  This
+might be explained by either a better implementation of trigonometric functions
+in Intel's version, or the autovectorization feature of Intel's OpenCL SDK,
+which transparently compiles OpenCL kernels to fully utilize the SIMD
+processing on the underlying Intel CPU.
+
+It has to be said that the overhead of OpenCL for small problem sizes is
+tremendous, if not embarrassing, hence OpenCL cannot be considered to be a
+competitive CPU programming model for a large area of applications in its
+present state.
 
 % GBytes transfered for each of the experiments:
 %   Lorenz:      25625.0
@@ -1135,19 +1130,6 @@ producing better code for the underlying Intel CPU, for which there are no optim
     \end{small}
 \end{table}
 
-
-The difference between Thrust and the OpenCL libraries can be explained by the
-fact that Thrust uses an OpenMP back end when run on a CPU. Thus, it does not
-have any overhead such as OpenCL initialization and kernel compilation.  The
-gap between VexCL and ViennaCL may be attributed to the different work-group
-sizes used in their kernels and the fact that VexCL generates slightly
-different kernels when run on a CPU device. Moreover, both of the libraries are
-primarily aimed at GPU performance and do not use CPU-specific optimizations,
-such as employing OpenCL vector data types that facilitate the use of SSE
-instructions.  Still, library-specifics aside, the overhead of OpenCL for small problem sizes is
-tremendous, if not embarrassing, hence OpenCL cannot be considered to be a
-competitive CPU programming model for a large area of applications in its
-present state.
 
 Finally, results for multi-GPU usage as provided by VexCL in a transparent way
 are considered. \figref{fig:scaling} shows scaling results for up to three
