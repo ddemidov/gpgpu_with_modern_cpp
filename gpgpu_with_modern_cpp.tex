@@ -115,12 +115,16 @@ several such libraries (BLAS implementations, Fast Fourier Transform, Thrust
 and others). OpenCL lacks standard libraries, but there are a number of
 third-party projects aimed at developing both CUDA and OpenCL programs.
 
-Using such libraries it is also possible to write cross-platform
-code. For example, VexCL executables can be configured by an
-environment variable to run on either the GPU or the CPU. Thrust supports
-several computation backends, such as CUDA, OpenMP, or Intel Thread Building
-Blocks. One of the backends may be selected during the compilation stage by a
-compiler option.
+% Using such libraries it is also possible to write cross-platform
+% code. For example, VexCL executables can be configured by an
+% environment variable to run on either the GPU or the CPU. Thrust supports
+% several computation backends, such as CUDA, OpenMP, or Intel Thread Building
+% Blocks. One of the backends may be selected during the compilation stage by a
+% compiler option.
+
+% [DD]: I don't like this paragraph. Hardware portability is intrinsic feature
+% of any OpenCL application, not just VexCL, and one does not have to use
+% libraries for that.
 
 This paper presents a comparison of several modern \Cpp libraries aimed at ease
 of GPGPU development. We look at both convenience and performance of the
