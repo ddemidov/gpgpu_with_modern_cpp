@@ -816,8 +816,7 @@ The stencil matrix \code{S} in the system function above
 uses shared memory to benefit from re-accessing vector entries
 and to avoid non-coalesced memory accesses.
 
-The VexCL version of the example is the most concise variant since VexCL
-provides native support for the user-defined stencils operations. The sum of
+The VexCL version of the example is the most concise variant. The sum of
 sines in \eqref{eq:phasesystem} is encoded using the
 \code{VEX_STENCIL_OPERATOR} preprocessor macro. Its parameters are name of the
 resulting functor, return type, stencil width, center, and the body string for
