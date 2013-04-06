@@ -159,11 +159,12 @@ distributed with the NVIDIA CUDA Toolkit since version~4.1.
         The library aims for maximal performance achievable by high-level languages
         using compile-time transformations.
         % For this purpose, source code is transformed during compile time by expression
-        % templates and meta-tuning.
-        Currently, three versions exist: the open-source edition that supports
-        single- and multi-core CPUs, the supercomputing edition providing
-        generic MPI-based parallelism, and the CUDA edition that is introduced
-        in this paper.
+        % templates and meta-tuning.  Currently, three versions exist:
+        the open-source edition that supports single- and multi-core
+        CPUs, the supercomputing edition providing generic MPI-based
+        parallelism, and the CUDA edition that is introduced in this
+        paper. In the following, we will refer to the CUDA version of
+        MTL4 as CMTL4.
     \item[VexCL] is a vector expression template
         library\footnote{ \href{ https://github.com/ddemidov/vexcl }{
         https://github.com/ddemidov/vexcl }} for OpenCL \cite{VexCLRef}. It has
@@ -518,7 +519,7 @@ may also calculate the Lyapunov exponents \cite{Ott-book-02}, which
 requires to solve the Lorenz system and their linear perturbations.
 
 The Thrust version of the system function object for the Lorenz attractor ensemble
-example is presented below. It holds model parameters and provides the necessary
+example is presented below. It holds the model parameters and provides the necessary
 \code{operator()} with a signature required by the odeint library. The state
 type is represented by \code{thrust::device_vector<double>}:
 \begin{lstlisting}
@@ -616,8 +617,7 @@ whenever the types allow for it.
 Then expressions on multi-vectors can be evaluated with one kernel call.
 Especially for small vectors, the overhead of calling multiple kernels
 is significant: we observed 150\,\% overhead with 3-component vector with 4K
-entries compared to one vector of size 12K.  In the following, we will refer to
-the CUDA version of MTL4 as CMTL4.
+entries compared to one vector of size 12K.
 
 
 The VexCL implementation of the Lorenz attractor ensemble example looks as
