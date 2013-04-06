@@ -1,6 +1,6 @@
 \documentclass[a4paper,11pt]{letter}
 
-\signature{Dr. Denis Demidov}
+\signature{Dr.~Denis Demidov}
 \address{
 Joint Supercomputer Center \\
 Russian Academy of Sciences \\
@@ -15,7 +15,7 @@ email: ddemidov@ksu.ru
     Editor-in-Chief\\
     SIAM Journal of Scientific Computing
     }
-\opening{Dear Dr. Langtangen,}
+\opening{Dear Dr.~Langtangen,}
 
 On behalf of all the authors, I would like to submit revised version of
 manuscript entitled ``Programming CUDA and OpenCL: a Case Study Using Modern
@@ -35,26 +35,26 @@ below.
         library is suitable candidate for the reference implementation. We
         rephrased the relevant part of the introduction to make this point more
         clear to the readers.
-    \item The other point the Referee makes is that ViennaCL implementation of
-        the phase oscillator chain example used manually coded OpenCL kernel,
+    \item The other point the Referee makes is that the ViennaCL implementation of
+        the phase oscillator chain example used a manually coded OpenCL kernel,
         which, by his opinion, undermined the idea of using libraries instead
-        of hand coded low-level code. The authors of ViennaCL have since
-        improved their library thus eliminating use of any hand coded kernels
-        in our paper. We have changed the related code snippets to reflect the
+        of hand-coded low-level code. The authors of ViennaCL have since
+        improved their library, thus eliminating the use of any hand coded kernels
+        in our paper. We have updated the related code snippets to reflect the
         change.
     \item Probably the most important objection from the first Referee is that
         the results we show lack performance portability, especially when run
         on a CPU. We agree that it is hard to achieve performance portability
-        with current state of OpenCL and hardware differences, but we believe
+        with the current state of OpenCL and hardware differences, but we believe
         that this issue should be addressed by library authors and not by
-        application developers. To emphasize the point, authors of VexCL and
-        ViennaCL libraries have added several CPU-related optimizations to
+        application developers. To emphasize the point, the authors of VexCL and
+        ViennaCL have added several CPU-related optimizations to
         their codes. MTL4 library was updated to have sparse matrix~-- vector
         product performance on par with the rest of libraries.  This resulted
         in much improved agreement between performance results. We have updated
         the relevant plots, Table~4.1, and parts of the discussion section.
     \item Referee \#2 suggested, in addition to timings for the different
-        problems, to report what fractions of the available computational
+        problems, to report which fractions of the available computational
         resource are being exploited. We believe this is very helpful addition
         and we have accordingly updated Table~4.1.
 \end{enumerate}
@@ -64,10 +64,10 @@ the paper in its revised form would be suitable for publication in the SIAM
 Journal of Scientific Computing.
 
 
-The co-authors of the paper are: Dr. Karsten Ahnert (karsten.ahnert@gmx.de,
-Ambrosys GmbH, Geschw.-Scholl-Str.63a, 14471 Potsdam, Germany), Dr. Karl Rupp
+The co-authors of the paper are: Dr.~Karsten Ahnert (karsten.ahnert@gmx.de,
+Ambrosys GmbH, Geschw.-Scholl-Str.63a, 14471 Potsdam, Germany), Dr.~Karl Rupp
 (rupp@mcs.anl.gov, Mathematics and Computer Science Division, Argonne National
-Laboratory, 9700 South Cass Avenue, Argonne, IL 60439, USA), and Dr. Peter
+Laboratory, 9700 South Cass Avenue, Argonne, IL 60439, USA), and Dr.~Peter
 Gottschling (Peter.Gottschling@tu-dresden.de, Technische Universit\"at Dresden,
 Institut f\"ur Wissenschaftliches Rechnen, 01062 Dresden, Germany).
 
