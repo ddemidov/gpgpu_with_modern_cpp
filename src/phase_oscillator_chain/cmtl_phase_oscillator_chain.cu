@@ -44,14 +44,14 @@ struct stencil_kernel
     template <typename Vector>
     __device__ __host__ value_type operator()(const Vector& v, int i) const
     {
-	return sin(v[i-1] - v[i]) + sin(v[i] - v[i+1]);
+	return sin(v[i+1] - v[i]) + sin(v[i] - v[i-1]);
     }
 
     template <typename Vector>
     __device__ __host__ value_type outer_stencil(const Vector& v, int i, int offset= 0) const
     {
-	value_type s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]), 
-	           s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
+	value_type s1= i > offset? sin(v[i] - v[i-1]) : sin(v[i]), 
+	           s2= i+1 < n + offset? sin(v[i+1] - v[i]) : sin(v[i]);
 	return s1 + s2;
     }
 

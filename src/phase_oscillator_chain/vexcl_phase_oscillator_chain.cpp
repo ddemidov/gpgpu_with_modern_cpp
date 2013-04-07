@@ -29,9 +29,8 @@ struct sys_func
     void operator()( const state_type &x , state_type &dxdt , value_type t ) const
     {
         static VEX_STENCIL_OPERATOR(S, double, 3, 1,
-                "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);",
+                "return sin(X[1] - X[0]) + sin(X[0] - X[-1]);",
                 omega.queue_list());
-        // thrust::get<4>(t) = omega + sin( phi_right - phi ) + sin( phi - phi_left );
         dxdt = omega + S( x );
     }
 };

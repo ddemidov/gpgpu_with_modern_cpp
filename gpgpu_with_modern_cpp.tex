@@ -234,7 +234,7 @@ from their users.
 
 Ordinary differential equations play a major role in many scientific
 disciplines. They occur naturally in the context of mechanical systems, like
-granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the  %[KR]: Add a reference for molecular dynamics as well?
+granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the
 Newtonian and Hamiltonian mechanics are formulated as ODEs
 \cite{landau_mechanics_1976}.  Many other applications can be found in such
 diverse fields as biology \cite{brauer_mathematical_2001,Murray-93} and
@@ -428,10 +428,10 @@ and allows to process several vectors in a single efficient sweep.
 
 
 \begin{sloppypar}
-  MTL4, VexCL, and ViennaCL libraries provide convenient
+  CMTL4, VexCL, and ViennaCL libraries provide convenient
   expression templates that may be directly used with odeint's
   \code{vector_space_algebra} and \code{default_operations}. This
-  combination proved to be effective with MTL4 and VexCL, where each
+  combination proved to be effective with CMTL4 and VexCL, where each
   expression results in a single kernel. For ViennaCL, however,
   default operations involving more than two terms result in multiple
   kernel launches.  Moreover, temporary vectors are allocated and
@@ -575,9 +575,9 @@ struct lorenz_functor {
 
 
 
-The system function object for the MTL4 version of the Lorenz attractor example is
-more compact than the Thrust variant because MTL4 supports a rich set of vector
-expressions.  MTL4 provides the type \code{multi_vector} that allows for
+The system function object for the CMTL4 version of the Lorenz attractor example is
+more compact than the Thrust variant because CMTL4 supports a rich set of vector
+expressions.  CMTL4 provides the type \code{multi_vector} that allows for
 expressing the operations directly:
 \begin{lstlisting}
 typedef mtl::dense_vector<double>      vector_type;
@@ -622,7 +622,7 @@ entries compared to one vector of size 12K.
 
 
 The VexCL implementation of the Lorenz attractor ensemble example looks as
-compact as MTL4's. Here, the state is represented by the
+compact as CMTL4's. Here, the state is represented by the
 \code{vex::multivector<double,3>} type, which holds three instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
 underlying components. The code for the body of \code{operator()} practically
@@ -644,7 +644,7 @@ struct lorenz_system {
 
 However, the drawback of this variant is that it leads to three kernel
 launches, namely one per each vector assignment. As we have shown in
-the above discussion of the MTL4 variant, this results in suboptimal
+the above discussion of the CMTL4 variant, this results in suboptimal
 performance. A direct use of multi-vectors arithmetic operations is
 not possible due to mixed components in the right hand side
 expressions.  These additional kernel launches can be eliminated in
@@ -755,7 +755,7 @@ thrust::for_each(
 \code{thrust::device_vector<size_t>} and hold the indices to the left and right
 vector elements.
 
-The stencil operator in MTL4 is a minimalistic matrix type.
+The stencil operator in CMTL4 is a minimalistic matrix type.
 Its application is expressed by a matrix-vector product that is assigned
 to, or is used to either increment or decrement the vector:
 \begin{lstlisting}
@@ -776,14 +776,14 @@ struct stencil_kernel {
 
     template <typename Vector>
     __device__ __host__ double operator()(const Vector& v, int i) const {
-	return sin(v[i-1] - v[i]) + sin(v[i] - v[i+1]);
+	return sin(v[i+1] - v[i]) + sin(v[i] - v[i-1]);
     }
 
     template <typename Vector>
     __device__ __host__
     double outer_stencil(const Vector& v, int i, int offset= 0) const {
-	double s1= i > offset? sin(v[i-1] - v[i]) : sin(v[i]),
-	       s2= i+1 < n + offset? sin(v[i] - v[i+1]) : sin(v[i]);
+	double s1 = i > offset? sin(v[i] - v[i-1]) : sin(v[i]),
+	       s2 = i+1 < n + offset? sin(v[i+1] - v[i]) : sin(v[i]);
 	return s1 + s2;
     }
 };
@@ -830,7 +830,7 @@ struct phase_oscillators {
     phase_oscillators(const state_type &w) : omega(w) { }
     void operator()(const state_type &x, state_type &dxdt, double t) const {
         static VEX_STENCIL_OPERATOR(S, double, 3, 1,
-                "return sin(X[-1] - X[0]) + sin(X[0] - X[1]);", omega.queue_list());
+                "return sin(X[1] - X[0]) + sin(X[0] - X[-1]);", omega.queue_list());
         dxdt = omega + S(x);
     }
 };
@@ -929,7 +929,7 @@ matrix-vector product kernel in CUSPARSE, where
 \code{thrust::raw_pointer_cast()} is used to convert the thrust device vector
 iterator to a raw device pointer.
 
-The MTL4 implementation reads:
+The CMTL4 implementation reads:
 \begin{lstlisting}
 typedef mtl::dense_vector<double> state_type;
 
@@ -942,7 +942,7 @@ Here \code{A} is an instance of a sparse matrix holding the discretization of
 the linear combination $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$. The
 expression \code{q * q * q} computes the triple element-wise product of column
 vector \code{q}.  Usually, products of column/row vectors among themselves are
-often program errors and therefore are not allowed in MTL4.  Their use may be
+often program errors and therefore are not allowed in CMTL4.  Their use may be
 enabled by defining an according macro during compilation.
 
 The VexCL version employs the user-defined OpenCL function \code{pow3}, which
@@ -957,7 +957,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-Similar to MTL4, the ViennaCL version of the system function object is split into two parts:
+Similar to CMTL4, the ViennaCL version of the system function object is split into two parts:
 first, the sparse matrix-vector product $Aq$ is computed; second, the
 non-linear term $-\beta q^3$ is added to the result by means of a custom
 operation:
@@ -987,22 +987,25 @@ allow for the use of both CPU and GPU devices.  Thrust supports an OpenMP-based
 execution on the CPU, which is enabled by a compilation switch, while OpenCL
 libraries natively support CPUs provided that the respective runtime is
 installed. Two OpenCL implementations from AMD and from Intel were used.  The
-timings provided were obtained for two GPUs, namely an NVIDIA Tesla C2070 and
-an AMD Radeon HD~7970 (Tahiti), as well as for an Intel Core i7 930 CPU. All
-reported values are median values of execution times taken for ten runs.
+timings provided were obtained on Gentoo Linux operating system for two GPUs,
+namely an NVIDIA Tesla C2070 and an AMD Radeon HD~7970 (Tahiti), as well as for
+an Intel Core i7 930 CPU.  All reported values are median values of execution
+times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
-data for the three examples discussed in the previous section.
-The top row in each figure shows the performance obtained from CPU-based
-experiments, while bottom rows shows GPU-based data. On the GPU plots the
-graphs for NVIDIA Tesla and AMD Tahiti cards are correspondingly plotted with
-solid and dotted lines.
+data for the three examples discussed in the previous section.  The top row in
+each figure shows the performance obtained from CPU-based experiments, while
+bottom rows shows GPU-based data. On the GPU plots the graphs for NVIDIA Tesla
+and AMD Tahiti cards are correspondingly plotted with solid and dotted lines.
 The plots on the left show absolute solution time over the size of the problem
 being solved, while the plots on the right depict performances relative to the
-Thrust version. The only exception to the latter rule is
+Thrust version with two exceptions. The first exception is
 \figref{fig:phase:perf}, where ViennaCL is selected as a reference library for
-GPU data.  This is due to poor performance of Thrust library in case of the
-coupled phase oscillator chain example.
+GPU data due to poor performance of Thrust library in case of the coupled phase
+oscillator chain example. The other exception is \figref{fig:lattice:perf},
+where VexCL was selected as a reference library, since Thrust/CUSPARSE
+combination is not able to run on a CPU. 
+
 Absolute execution times for the largest problem size for all of the considered
 libraries are given in Table~\ref{tab:abstimes}. The table also provides
 achieved memory bandwidth values in GB/sec and in fractions of theoretical peak
@@ -1172,7 +1175,7 @@ functionality is available via separate libraries such as CUSPARSE and
 can be integrated without a lot of effort.  The rest of the libraries
 we looked at demonstrated that they are able to provide a more
 convenient interface for a scientific programmer than a direct
-implementation in CUDA or OpenCL.  MTL4 and VexCL have a richer set of
+implementation in CUDA or OpenCL.  CMTL4 and VexCL have a richer set of
 element-wise vector operations and allow for the shortest
 implementations in the context of the ODEs considered in this work.
 ViennaCL requires two additional lines of code in each of the examples due to the use of the kernel generator facility.
@@ -1189,12 +1192,12 @@ CUDA can still turn into a disadvantage when taking the larger set of hardware
 supporting OpenCL into consideration.
 
 
-Another aspect that has not been studied in this work is the ability to
-generate OpenCL kernels optimized for the problem at hand at runtime. This
-allows, for example, to generate optimized kernels for a certain set of
-parameters supplied, eliminating any otherwise spurious reads from global
-memory.  An in-depth study of such an approach is, however, left for future
-work.
+% Another aspect that has not been studied in this work is the ability to
+% generate OpenCL kernels optimized for the problem at hand at runtime. This
+% allows, for example, to generate optimized kernels for a certain set of
+% parameters supplied, eliminating any otherwise spurious reads from global
+% memory.  An in-depth study of such an approach is, however, left for future
+% work.
 
 \section{Acknowledgments}
 
