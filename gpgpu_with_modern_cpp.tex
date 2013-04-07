@@ -987,7 +987,7 @@ allow for the use of both CPU and GPU devices.  Thrust supports an OpenMP-based
 execution on the CPU, which is enabled by a compilation switch, while OpenCL
 libraries natively support CPUs provided that the respective runtime is
 installed. Two OpenCL implementations from AMD and from Intel were used.  The
-timings provided were obtained on Gentoo Linux operating system for two GPUs,
+timings provided were obtained on a Gentoo Linux operating system for two GPUs,
 namely an NVIDIA Tesla C2070 and an AMD Radeon HD~7970 (Tahiti), as well as for
 an Intel Core i7 930 CPU.  All reported values are median values of execution
 times taken for ten runs.
@@ -1003,8 +1003,8 @@ Thrust version with two exceptions. The first exception is
 \figref{fig:phase:perf}, where ViennaCL is selected as a reference library for
 GPU data due to poor performance of Thrust library in case of the coupled phase
 oscillator chain example. The other exception is \figref{fig:lattice:perf},
-where VexCL was selected as a reference library, since Thrust/CUSPARSE
-combination is not able to run on a CPU. 
+where VexCL was selected as a reference library, since the combination of 
+Thrust and CUSPARSE is not able to run on a CPU. 
 
 Absolute execution times for the largest problem size for all of the considered
 libraries are given in Table~\ref{tab:abstimes}. The table also provides
