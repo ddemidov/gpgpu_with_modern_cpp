@@ -34,8 +34,9 @@ end
 
 subplot(2, 2, 1);
 xlim([1e2 1e7])
-ylim([1e-2 1e7])
+ylim([1e-1 1e6])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
+set(gca, 'ytick', [1e-1 1e0 1e1 1e2 1e3 1e4, 1e5 1e6])
 set(gca, 'xticklabel', [])
 ylabel('T (sec)');
 legend(ex(:).legend, 'location', 'NorthWest');

@@ -36,7 +36,7 @@ end
 
 subplot(2, 2, 1);
 xlim([1e2 1e7])
-ylim([1e-2 1e7])
+ylim([1e0 1e5])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 set(gca, 'xticklabel', [])
 ylabel('T (sec)');
@@ -51,7 +51,7 @@ xlim([1e2 1e7])
 set(gca, 'xtick', [1e2 1e3 1e4 1e5 1e6 1e7])
 set(gca, 'xticklabel', [])
 set(gca, 'yaxislocation', 'right')
-ylabel('T / T( VexCL(Intel) )');
+ylabel('T / T( ViennaCL(Intel) )');
 axis square
 
 pos2 = get(gca, 'Position');
