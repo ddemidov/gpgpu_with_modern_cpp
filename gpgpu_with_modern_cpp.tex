@@ -666,7 +666,7 @@ For the ViennaCL version of the Lorenz attractor example a
 state vector into a single type. Individual components are instances of the
 \code{viennacl::vector<double>} type.  The ViennaCL kernel generation facility described in
 Sec.~\ref{sec:adapting-odeint} is then used to avoid multiple kernel launches.
-Even though an \code{custom_operation} object is instantiated in each call to \code{operator()},
+Even though a \code{custom_operation} object is instantiated in each call to \code{operator()},
 the kernel is created only once and then buffered internally for further reuse.
 \begin{lstlisting}
 typedef fusion::vector<
@@ -751,7 +751,7 @@ thrust::for_each(
     sys_functor()
     );
 \end{lstlisting}
-\code{prev} and \code{next} are vectors of type
+Here, \code{prev} and \code{next} are vectors of type
 \code{thrust::device_vector<size_t>} and hold the indices to the left and right
 vector elements.
 
@@ -1000,7 +1000,7 @@ and AMD Tahiti cards are correspondingly plotted with solid and dotted lines.
 The plots on the left show absolute solution time over the size of the problem
 being solved, while the plots on the right depict performances relative to the
 Thrust version with two exceptions, where ViennaCL is selected as the reference
-library. The first exception is GPU plots on \figref{fig:phase:perf}, where
+library. The first exception are GPU plots on \figref{fig:phase:perf}, where
 Thrust library performs badly in case of the coupled phase oscillator chain
 example. The other exception is \figref{fig:lattice:perf}, where the
 combination of Thrust and CUSPARSE is not able to run on a CPU. 
