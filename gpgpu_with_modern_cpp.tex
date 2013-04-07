@@ -451,10 +451,9 @@ struct viennacl_operations {
                     const viennacl::vector<T2> &v2,
                     const viennacl::vector<T3> &v3) const
         {
-            using namespace viennacl::generator;
-            typedef dummy_vector<T1> vec;
+            typedef viennacl::generator::vector<T1> vec;
 
-            custom_operation op;
+            viennacl::generator::custom_operation op;
             op.add( vec(v1) = m_alpha1 * vec(v2) + m_alpha2 * vec(v3)
                             + m_alpha3 * vec(v4) );
             op.execute();
@@ -463,8 +462,9 @@ struct viennacl_operations {
 };
 \end{lstlisting}
 Here, a custom OpenCL kernel is automatically generated from symbolic vector
-expression in the first call of the \code{operator()} and then reused for all
-subsequent calls.
+expression in the first call of the \code{operator()} and then buffered and reused for all
+subsequent calls. The objects of type \code{vec} are used to distinguish direct ViennaCL statements
+from symbolic specifications for the kernel generation facility.
 \end{sloppypar}
 
 
@@ -615,7 +615,7 @@ are performed in one single loop which provides much better data locality
 for vector \code{x}.
 For performance sake, the multi-vectors are constructed with contiguous memory
 whenever the types allow for it.
-Then expressions on multi-vectors can be evaluated with one kernel call.
+Then, expressions on multi-vectors can be evaluated with one kernel call.
 Especially for small vectors, the overhead of calling multiple kernels
 is significant: we observed 150\,\% overhead with 3-component vector with 4K
 entries compared to one vector of size 12K.
@@ -625,7 +625,7 @@ The VexCL implementation of the Lorenz attractor ensemble example looks as
 compact as MTL4's. Here, the state is represented by the
 \code{vex::multivector<double,3>} type, which holds three instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
-underlying components. The code for \code{operator()} body practically
+underlying components. The code for the body of \code{operator()} practically
 coincides with the problem statement \eqref{eq:lorenz}:
 \begin{lstlisting}
 typedef vex::multivector<double, 3> state_type;
@@ -666,9 +666,8 @@ For the ViennaCL version of the Lorenz attractor example a
 state vector into a single type. Individual components are instances of the
 \code{viennacl::vector<double>} type.  The ViennaCL kernel generation facility described in
 Sec.~\ref{sec:adapting-odeint} is then used to avoid multiple kernel launches.
-The symbolic variables and the custom operation
-are defined as static variables, so the corresponding OpenCL kernel is compiled
-only once in the first call of the system function object:
+Even though an \code{custom_operation} object is instantiated in each call to \code{operator()},
+the kernel is created only once and then buffered internally for further reuse.
 \begin{lstlisting}
 typedef fusion::vector<
     viennacl::vector<double>, viennacl::vector<double>, viennacl::vector<double>
@@ -679,8 +678,7 @@ struct lorenz_system {
     lorenz_system(const viennacl::vector<double> &r) : R(r) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        using namespace viennacl::generator;
-        typedef dummy_vector<value_type> vec;
+        typedef viennacl::generator::dummy_vector<value_type> vec;
 
         const auto &X = fusion::at_c<0>(x);
         const auto &Y = fusion::at_c<1>(x);
@@ -690,7 +688,7 @@ struct lorenz_system {
         auto &dY = fusion::at_c<1>(dxdt);
         auto &dZ = fusion::at_c<2>(dxdt);
 
-        custom_operation op;
+        viennacl::generator::custom_operation op;
         op.add( vec(dX) = sigma * (vec(Y) - vec(X)) );
         op.add( vec(dY) = element_prod(vec(R), vec(X)) - vec(Y)
                         - element_prod(vec(X), vec(Z)) );
@@ -805,7 +803,7 @@ struct phase_oscillators {
     const state_type&  omega;
     mtl::matrix::stencil1D<stencil_kernel> S;
 
-    sys_func(const State& omega) : omega(omega), S(num_rows(omega)) {}
+    sys_func(const State& w) : omega(w), S(num_rows(w)) {}
 
     void operator()(const State &x, State &dxdt, double t) const {
 	dxdt = S * x;
@@ -839,16 +837,10 @@ struct phase_oscillators {
 \end{lstlisting}
 
 
-ViennaCL does not provide stencil operations required for the problem at hand, so we had
-to fallback to the use of a hand-coded OpenCL kernel, which is omitted for
-reasons of brevity.  Even though a custom OpenCL kernel needs to be used for
-this example, ViennaCL provides convenient mechanisms for the compilation and
-launch of custom kernels, avoiding tedious interactions with the low-level
-OpenCL API.  As a consequence, the performance of ViennaCL for this example is
-comparable to hand-tuned code.  The actual implementation of the
-\code{phase_oscillators} class consequently consists of the compilation of the
-kernel residing in a string object \code{phase_oscillator_source} in the
-constructor, and the launch of the respective kernel in \code{operator()}:
+The stencil operations are implemented in ViennaCL using the \code{shift()} operation,
+which shifts the indices of a vector by a certain offset. 
+New shifted values at the beginning or at the end of the vector are by default the same as the first or last entry of the vector, respectively,
+which is just what is needed here:
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
@@ -857,11 +849,11 @@ struct phase_oscillators {
     sys_func(const state_type &w) : omega(w) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-      using namespace viennacl::generator;
-      typedef dummy_vector<value_type> vec;
+      typedef viennacl::generator::vector<value_type> vec;
 
-      custom_operation op;
-      op.add( vec(dxdt) = vec(omega) + sin(shift(vec(x), -1)) + sin(shift(vec(x), 1)) );
+      viennacl::generator::custom_operation op;
+      op.add( vec(dxdt) = vec(omega) + sin(shift(vec(x),  1) - vec(x))
+                                      + sin(vec(x) - shift(vec(x), -1)) );
       op.execute();
     }
 };
@@ -965,7 +957,7 @@ void ham_lattice::operator()(const state_type &q, state_type &dp) const {
 }
 \end{lstlisting}
 
-The ViennaCL version of the system function object is split into two parts:
+Similar to MTL4, the ViennaCL version of the system function object is split into two parts:
 first, the sparse matrix-vector product $Aq$ is computed; second, the
 non-linear term $-\beta q^3$ is added to the result by means of a custom
 operation:
@@ -973,12 +965,11 @@ operation:
 typedef viennacl::vector<double> state_type;
 
 void ham_lattice::operator()(const state_type &q, state_type &dp) const {
-    using namespace viennacl::generator;
-    typedef dummy_vector<value_type> vec;
+    typedef viennacl::generator::vector<value_type> vec;
 
     dp = viennacl::linalg::prod(m_A, q);
-    custom_operation op;
-    op.add(vec(dp) -= m_beta * element_prod(vec(q), element_prod(vec(q), vec(q))));
+    viennacl::generator::custom_operation op;
+    op.add( vec(dp) -= m_beta * element_prod(vec(q), element_prod(vec(q), vec(q))) );
     op.execute();
 }
 \end{lstlisting}
@@ -1002,7 +993,7 @@ reported values are median values of execution times taken for ten runs.
 
 Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.
-The top row in each figure shows performance for CPU-based
+The top row in each figure shows the performance obtained from CPU-based
 experiments, while bottom rows shows GPU-based data. On the GPU plots the
 graphs for NVIDIA Tesla and AMD Tahiti cards are correspondingly plotted with
 solid and dotted lines.
@@ -1046,7 +1037,7 @@ In general, all our experiments show up to $10\times$ to $20\times$
 acceleration when run on a GPU as compared to the CPU path. This is the
 expected acceleration rate for the memory bandwidth bound examples that we
 looked at. However, both CUDA and OpenCL programs show considerable overhead
-for the smaller problem sizes, thus requiring problems of sizes between $10^3$
+at smaller problem sizes, thus requiring problems of sizes between $10^3$
 and $10^5$ to see any significant acceleration on a GPU at all. The overhead
 for OpenCL libraries is larger than that of CUDA programs, which is mostly due
 to the additional kernel management logic required by the OpenCL runtime.
@@ -1072,7 +1063,7 @@ raised in the past \cite{bordawekar:gpu-productivity}.
 
 Thrust, VexCL, and ViennaCL show very similar performance on the CPU for the
 larger problem sizes. For the smaller problems the difference between Thrust
-and OpenCL-based libraries is more pronounced, since Thrust uses OpenMP backend
+and OpenCL-based libraries is more pronounced, since Thrust uses an OpenMP backend
 which does not have any overhead such as OpenCL initialization and kernel
 compilation.  The difference between the OpenCL
 implementations of AMD and the Intel is negligible in most cases. The only
@@ -1086,7 +1077,8 @@ processing on the underlying Intel CPU.
 It has to be said that the overhead of OpenCL for small problem sizes is
 tremendous, if not embarrassing, hence OpenCL cannot be considered to be a
 competitive CPU programming model for a large area of applications in its
-present state.
+present state. 
+A considerable reduction in kernel launch overhead for CPU-based kernel execution is required to make OpenCL more attractive on this target.
 
 % GBytes transfered for each of the experiments:
 %   Lorenz:      25625.0
@@ -1183,9 +1175,8 @@ convenient interface for a scientific programmer than a direct
 implementation in CUDA or OpenCL.  MTL4 and VexCL have a richer set of
 element-wise vector operations and allow for the shortest
 implementations in the context of the ODEs considered in this work.
-ViennaCL required a few additional lines of code including a small
-custom OpenCL kernel for one of our examples.  Still, this extra
-effort is acceptable considering that the library's focus is on sparse
+ViennaCL requires two additional lines of code in each of the examples due to the use of the kernel generator facility.
+Still, this extra effort is acceptable considering that the library's focus is on sparse
 linear systems solvers, which are, however, beyond the scope of this
 paper.
 

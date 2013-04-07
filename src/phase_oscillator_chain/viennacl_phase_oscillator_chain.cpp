@@ -31,7 +31,8 @@ struct sys_func
       typedef viennacl::generator::vector<value_type> vec;
 
       viennacl::generator::custom_operation oscillator_op;
-      oscillator_op.add(vec(dxdt) = vec(omega) + sin(shift(vec(x), -1)) + sin(shift(vec(x), 1)));
+      oscillator_op.add(vec(dxdt) = vec(omega) + sin(shift(vec(x),  1) - vec(x))
+                                               + sin(vec(x) - shift(vec(x), -1)));
       oscillator_op.execute();
     }
 };
