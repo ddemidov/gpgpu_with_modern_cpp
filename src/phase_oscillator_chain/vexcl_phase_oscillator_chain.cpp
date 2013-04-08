@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <utility>
 #include <tuple>
@@ -70,8 +71,8 @@ int main( int argc , char **argv )
 
     std::vector< value_type > res( n );
     vex::copy( X , res );
-    cout << res[0] << endl;
-//    for( size_t i=0 ; i<n ; ++i ) cout << res[i] << endl;
+    std::ofstream f("vexcl.dat");
+    for( size_t i=0 ; i<n ; ++i ) f << res[i] << endl;
 
     return 0;
 }

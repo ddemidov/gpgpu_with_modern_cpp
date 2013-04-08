@@ -20,6 +20,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
 
 #include <thrust/device_vector.h>
@@ -79,7 +80,7 @@ public:
                                 x.begin(),
                                 x.begin() + 2,
                                 m_omega.begin() ,
-                                dxdt.begin()
+                                dxdt.begin() + 1
                                 ) ),
                 thrust::make_zip_iterator(
                         thrust::make_tuple(
@@ -87,7 +88,7 @@ public:
                                 x.end() - 2,
                                 x.end(),
                                 m_omega.end() ,
-                                dxdt.end()) ) ,
+                                dxdt.end() - 1) ) ,
                 sys_functor()
                 );
 
@@ -138,5 +139,7 @@ int main( int argc , char* argv[] )
 
     std::vector< value_type > res( n );
     thrust::copy( x.begin() + 1, x.end() - 1, res.begin() );
-    cout << res[0] << endl;
+    std::ofstream f("thrust.dat");
+    for(int i = 0; i < n; i++)
+        f << res[i] << endl;
 }
