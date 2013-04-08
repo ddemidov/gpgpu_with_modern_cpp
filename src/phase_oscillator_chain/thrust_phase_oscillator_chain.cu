@@ -33,7 +33,6 @@
 #include <boost/numeric/odeint/external/thrust/thrust_resize.hpp>
 
 using namespace std;
-
 using namespace boost::numeric::odeint;
 
 
@@ -67,15 +66,8 @@ public:
     };
 
     phase_oscillators( const state_type &omega )
-        : m_omega( omega ) , m_N( omega.size() ) , m_prev( omega.size() ) , m_next( omega.size() )
+        : m_omega( omega ) , m_N( omega.size() )
     {
-        // build indices pointing to left and right neighbours
-        thrust::counting_iterator<size_t> c( 0 );
-        thrust::copy( c , c+m_N-1 , m_prev.begin()+1 );
-        m_prev[0] = 0; // m_prev = { 0 , 0 , 1 , 2 , 3 , ... , N-1 }
-
-        thrust::copy( c+1 , c+m_N , m_next.begin() );
-        m_next[m_N-1] = m_N-1; // m_next = { 1 , 2 , 3 , ... , N-1 , N-1 }
     }
 
     void operator() ( const state_type &x , state_type &dxdt , const value_type dt )
@@ -83,21 +75,24 @@ public:
         thrust::for_each(
                 thrust::make_zip_iterator(
                         thrust::make_tuple(
-                                x.begin() ,
-                                thrust::make_permutation_iterator( x.begin() , m_prev.begin() ) ,
-                                thrust::make_permutation_iterator( x.begin() , m_next.begin() ) ,
+                                x.begin() + 1,
+                                x.begin(),
+                                x.begin() + 2,
                                 m_omega.begin() ,
                                 dxdt.begin()
                                 ) ),
                 thrust::make_zip_iterator(
                         thrust::make_tuple(
-                                x.end() ,
-                                thrust::make_permutation_iterator( x.begin() , m_prev.end() ) ,
-                                thrust::make_permutation_iterator( x.begin() , m_next.end() ) ,
+                                x.end() - 1,
+                                x.end() - 2,
+                                x.end(),
                                 m_omega.end() ,
                                 dxdt.end()) ) ,
                 sys_functor()
                 );
+
+        dxdt[0] = dxdt[1];
+        dxdt[m_N + 1] = dxdt[m_N];
     }
 
 private:
@@ -121,13 +116,16 @@ int main( int argc , char* argv[] )
     n = ( argc > 1 ) ? atoi(argv[1]) : 1024;
     const value_type epsilon = 6.0 / ( n * n ); // should be < 8/N^2 to see phase locking
 
-    vector< value_type > x_host( n );
+    vector< value_type > x_host( n + 2 );
     vector< value_type > omega_host( n );
     for( size_t i=0 ; i<n ; ++i )
     {
-        x_host[i] = 2.0 * M_PI * drand48();
+        x_host[i + 1] = 2.0 * M_PI * drand48();
         omega_host[i] = double( n - i ) * epsilon; // decreasing frequencies
     }
+
+    x_host[0] = x_host[1];
+    x_host[n + 1] = x_host[n];
 
     state_type x = x_host;
     state_type omega = omega_host;
@@ -139,6 +137,6 @@ int main( int argc , char* argv[] )
     integrate_const( stepper , sys , x , 0.0 , t_max , dt );
 
     std::vector< value_type > res( n );
-    thrust::copy( x.begin() , x.end() , res.begin() );
+    thrust::copy( x.begin() + 1, x.end() - 1, res.begin() );
     cout << res[0] << endl;
 }
