@@ -139,7 +139,9 @@ int main( int argc , char* argv[] )
 
     std::vector< value_type > res( n );
     thrust::copy( x.begin() + 1, x.end() - 1, res.begin() );
+    /*
     std::ofstream f("thrust.dat");
     for(int i = 0; i < n; i++)
         f << res[i] << endl;
+	*/
 }
