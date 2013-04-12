@@ -411,7 +411,7 @@ struct thrust_operations {
         const Fac1 m_alpha1;
         const Fac2 m_alpha2;
 
-        scale_sum3(const Fac1 alpha1, const Fac2 alpha2)
+        scale_sum2(const Fac1 alpha1, const Fac2 alpha2)
             : m_alpha1(alpha1), m_alpha2(alpha2) { }
 
         template< class Tuple >
@@ -454,8 +454,7 @@ struct viennacl_operations {
             typedef viennacl::generator::vector<T1> vec;
 
             viennacl::generator::custom_operation op;
-            op.add( vec(v1) = m_alpha1 * vec(v2) + m_alpha2 * vec(v3)
-                            + m_alpha3 * vec(v4) );
+            op.add( vec(v1) = m_alpha1 * vec(v2) + m_alpha2 * vec(v3) );
             op.execute();
         }
     };
@@ -585,7 +584,7 @@ typedef mtl::multi_vector<vector_type> state_type;
 
 struct lorenz_system {
     const vector_type &R;
-    explicit sys_func(const vector_type &R) : R(R) { }
+    explicit lorenz_system(const vector_type &R) : R(R) { }
 
     void operator()(const state_type& x, state_type& dxdt, double t) {
 	dxdt.at(0) = sigma * (x.at(1) - x.at(0));
@@ -678,7 +677,7 @@ struct lorenz_system {
     lorenz_system(const viennacl::vector<double> &r) : R(r) {}
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
-        typedef viennacl::generator::dummy_vector<value_type> vec;
+        typedef viennacl::generator::vector<value_type> vec;
 
         const auto &X = fusion::at_c<0>(x);
         const auto &Y = fusion::at_c<1>(x);
@@ -748,12 +747,13 @@ thrust::for_each(
             thrust::make_permutation_iterator( x.begin(), prev.end() ),
             thrust::make_permutation_iterator( x.begin(), next.end() ),
             omega.end(), dxdt.end() ) ),
-    sys_functor()
+    phase_oscillators_functor()
     );
 \end{lstlisting}
 Here, \code{prev} and \code{next} are vectors of type
 \code{thrust::device_vector<size_t>} and hold the indices to the left and right
-vector elements.
+vector elements. 
+\code{phase_oscillators_functor} implements \eqref{eq:phasesystem} similarly to the \code{lorenz_functor} above and is thus omitted for brevity.
 
 The stencil operator in CMTL4 is a minimalistic matrix type.
 Its application is expressed by a matrix-vector product that is assigned
@@ -803,7 +803,7 @@ struct phase_oscillators {
     const state_type&  omega;
     mtl::matrix::stencil1D<stencil_kernel> S;
 
-    sys_func(const State& w) : omega(w), S(num_rows(w)) {}
+    phase_oscillators(const State& w) : omega(w), S(num_rows(w)) {}
 
     void operator()(const State &x, State &dxdt, double t) const {
 	dxdt = S * x;
@@ -846,7 +846,7 @@ typedef viennacl::vector<double> state_type;
 
 struct phase_oscillators {
     const state_type &omega;
-    sys_func(const state_type &w) : omega(w) { }
+    phase_oscillators(const state_type &w) : omega(w) { }
 
     void operator()(const state_type &x, state_type &dxdt, double t) const {
       typedef viennacl::generator::vector<value_type> vec;
@@ -952,7 +952,7 @@ performance:
 typedef vex::vector<double> state_type;
 VEX_FUNCTION(pow3, value_type(value_type),  "return prm1 * prm1 * prm1;");
 
-void ham_lattice::operator()(const state_type &q, state_type &dp) const {
+void operator()(const state_type &q, state_type &dp) const {
     dp = (-beta) * pow3(q) + A * q;
 }
 \end{lstlisting}
@@ -964,7 +964,7 @@ operation:
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
-void ham_lattice::operator()(const state_type &q, state_type &dp) const {
+void operator()(const state_type &q, state_type &dp) const {
     typedef viennacl::generator::vector<value_type> vec;
 
     dp = viennacl::linalg::prod(m_A, q);
