@@ -132,14 +132,14 @@ libraries under consideration in the context of solving ordinary differential
 equations.  The comparison is based on odeint\footnote{\href{
 http://odeint.com }{ http://odeint.com } }, a modern \Cpp library for solving
 ordinary differential equations (ODEs) numerically  \cite{OdeintRef2,OdeintRef1}
-that has been included into the Boost
+which has been included into the Boost
 libraries\footnote{ \href{ http://boost.org } { http://boost.org } } recently.
 It is developed in a generic way using template meta-programming techniques,
 which leads to extraordinary high flexibility at utmost performance. The
 numerical algorithms are implemented independently of the underlying
 arithmetics. This results in a broad applicability of the library, especially
 in non-standard environments.  For example, odeint supports matrix types,
-arbitrary precision arithmetics, and can be easily adopted to use either CUDA
+arbitrary precision arithmetics, and can be easily adapted to use either CUDA
 or OpenCL frameworks.
 
 The GPGPU libraries considered in this work are MTL4, VexCL, and ViennaCL. We
@@ -153,7 +153,7 @@ distributed with the NVIDIA CUDA Toolkit since version~4.1.
 
 \begin{description}
     \item[MTL4] (The Matrix Template Library)\footnote{ \href{ http://mtl4.org }{
-        http://mtl4.org }} is a \Cpp linear algebra library that provides
+        http://mtl4.org }} is a \Cpp linear algebra library providing
         an intuitive interface by establishing a domain-specific language
         embedded in \Cpp~\cite{pg_ccgrid12}.
         The library aims for maximal performance achievable by high-level languages
@@ -161,9 +161,9 @@ distributed with the NVIDIA CUDA Toolkit since version~4.1.
         % For this purpose, source code is transformed during compile time by expression
         % templates and meta-tuning.
         Currently, three versions exist:
-        the open-source edition that supports single- and multi-core
+        the open-source edition supporting single- and multi-core
         CPUs, the supercomputing edition providing generic MPI-based
-        parallelism, and the CUDA edition that is introduced in this
+        parallelism, and the CUDA edition introduced in this
         paper. In the following, we will refer to the CUDA version of
         MTL4 as CMTL4.
     \item[VexCL] is a vector expression template
@@ -196,7 +196,7 @@ runtime for the specific NVIDIA device the kernel is launched on. Since PTX is
 already very low-level, this just-in-time kernel compilation has low overhead.
 In OpenCL the compute kernels are compiled at runtime from higher-level C-like
 sources, adding an overhead which is particularly noticeable for smaller
-sized problems. A pre-compilation to some low-level pseudo-code as in CUDA is
+sized problems. A portable pre-compilation to some low-level pseudo-code as in CUDA is
 not feasible in OpenCL because of hardware agnosticism by design.
 
 The approach taken for the generation and compilation of the compute kernels is
@@ -212,8 +212,9 @@ this design decision, vector expressions with several operands may result in the
 of more than one kernel. It should be noted that because of the main focus
 of ViennaCL being on iterative solvers for large sparse systems of equations,
 where complex vector expressions are rare, predefined kernels are favorable in
-such a setting.  The implications of these two distinct design decisions in
-VexCL and ViennaCL will be further addressed in the discussion of the results.
+such a setting.  
+%The implications of these two distinct design decisions in
+%VexCL and ViennaCL will be further addressed in the discussion of the results. %[KR]: This is not further addressed actually...
 
 The other difference between CUDA and OpenCL is that CUDA supports a subset of
 the \Cpp language in compute kernels, while OpenCL kernels are written in a subset
@@ -221,7 +222,7 @@ of C99. Therefore, CUDA programmers may use template meta-programming techniques
 which may lead to more efficient and compact code. The native OpenCL API does
 not provide such features, but the drawback is balanced by the ability of
 kernel source generation during runtime. Modern \Cpp libraries such as those
-considered in this work successfully use this approach and hide gory details
+considered in this work successfully use this approach and hide low-level details
 from their users.
 
 
@@ -237,7 +238,7 @@ disciplines. They occur naturally in the context of mechanical systems, like
 granular \cite{poschel_computational_2005} and molecular dynamics. In fact, the
 Newtonian and Hamiltonian mechanics are formulated as ODEs
 \cite{landau_mechanics_1976}.  Many other applications can be found in such
-diverse fields as biology \cite{brauer_mathematical_2001,Murray-93} and
+diverse fields as biology \cite{brauer_mathematical_2001,Murray-93},
 neuroscience \cite{izhikevich_dynamical_2006}, chemistry
 \cite{atkins_physical_2001}, and social sciences \cite{Helbing01}. Furthermore,
 ODEs are also encountered in the context of the numerical solution of
@@ -311,7 +312,7 @@ object \code{ode} represents the ODE and must be provided by the
 user. It calculates the right hand side $f(x,t)$ of \eqref{eq:ode} and
 stores the result in \code{m_dxdt}.  The call of \code{for_each3}
 iterates simultaneously over all elements of three vectors and applies
-on each triple \code{scale_sum2}. The operation is performed in-place,
+\code{scale_sum2} to each triple. The operation is performed in-place,
 meaning that $x$ is updated to the new value.  In the code-snippet
 above, the call to \code{for_each3} is thus equivalent to the vector
 operation
@@ -438,8 +439,9 @@ and allows to process several vectors in a single efficient sweep.
   deallocated for each of such composite operations, resulting in a
   dramatic decrease of performance.  To address such problems,
   ViennaCL provides a kernel generator \cite{tillet:kernel-generator},
-  which is able to generate specialized operations for ViennaCL. These
-  use a custom kernel generation mechanism provided by the library.
+  which is able to generate specialized operations for ViennaCL. 
+  %These
+  %use a custom kernel generation mechanism provided by the library. %[KR] Sentence is redundant
   For example, the \code{scale_sum2} operation is defined as:
 \begin{lstlisting}
 struct viennacl_operations {
@@ -593,9 +595,9 @@ struct lorenz_system {
     }
 };
 \end{lstlisting}
-This class was originally designed for building a generic matrix as a set of
-column vectors and expressing all matrix operations in terms of underlying
-vectors' operations.
+This class was originally designed for building a generic matrix as a set of  % [KR] Is this historical note important for the paper? Maybe rephrase?
+column vectors and expressing all matrix operations in terms of operations 
+on the underlying vectors.
 In this sense, all operations are performed on the sub-vectors of \code{x} and
 \code{dxdt} where each vector operation is a kernel call.
 
@@ -620,8 +622,8 @@ is significant: we observed 150\,\% overhead with 3-component vector with 4K
 entries compared to one vector of size 12K.
 
 
-The VexCL implementation of the Lorenz attractor ensemble example looks as
-compact as CMTL4's. Here, the state is represented by the
+The VexCL implementation of the Lorenz attractor ensemble example is as
+compact as that of CMTL4. Here, the state is represented by the
 \code{vex::multivector<double,3>} type, which holds three instances of
 \code{vex::vector<double>} and transparently dispatches all operations to the
 underlying components. The code for the body of \code{operator()} practically
@@ -642,28 +644,28 @@ struct lorenz_system {
 \end{lstlisting}
 
 However, the drawback of this variant is that it leads to three kernel
-launches, namely one per each vector assignment. As we have shown in
-the above discussion of the CMTL4 variant, this results in suboptimal
-performance. A direct use of multi-vectors arithmetic operations is
+launches, namely one per each vector assignment. As we have discussed previously
+for the CMTL4 variant, this results in suboptimal
+performance. A direct use of arithmetic operations for multi-vectors is
 not possible due to mixed components in the right hand side
 expressions.  These additional kernel launches can be eliminated in
 VexCL by assigning a tuple of expressions to a multi-vector. The
-required notation is only slightly more cumbersome than the above
+required implementation is only slightly longer than the above
 variant:
 \begin{lstlisting}[firstnumber=9]
     dxdt = std::tie(   sigma * (x(1) - x(0)),
                        R * x(0) - x(1) - x(0) * x(2),
                        x(0) * x(1) - b * x(2)          );
 \end{lstlisting}
-The performance boost of these fused expressions is a bit larger
-(25\,\% for large systems) compared to the performance boost for the
-CMTL4. The reason might be the larger launch overhead for OpenCL
+The performance gain of these fused expressions is a bit larger
+(25\,\% for large systems) compared to CMTL4. 
+The reason might be the larger kernel launch overhead for OpenCL
 kernels.
 
 For the ViennaCL version of the Lorenz attractor example a
 \code{boost::fusion::vector} is used to pack the coordinate components of the
 state vector into a single type. Individual components are instances of the
-\code{viennacl::vector<double>} type.  The ViennaCL kernel generation facility described in
+\code{viennacl::vector<double>} type.  The ViennaCL kernel generation facility already used in
 Sec.~\ref{sec:adapting-odeint} is then used to avoid multiple kernel launches.
 Even though a \code{custom_operation} object is instantiated in each call to \code{operator()},
 the kernel is created only once and then buffered internally for further reuse.
@@ -727,11 +729,11 @@ coupled phase oscillators \cite{Cohen-Rand-Holmes-82}:
 The index $i$ denotes here the $i$-th phase in the chain. Note, that
 the phase velocity is different for each oscillator.
 
-The Thrust version for the coupled phase oscillator chain looks very similar to
+The Thrust version for the coupled phase oscillator chain is very similar to
 the Lorenz attractor example. Again, a zip iterator is used to pack the required
 components and to process the resulting sequence with a single sweep of the
 \code{for_each} algorithm. The only difference here is that values of
-neighboring vector elements are needed. In order to provide the values, we use Thrust's
+neighboring vector elements are needed. In order to access these values, we use Thrust's
 permutation iterator, so that \code{operator()} of the system function object becomes
 \begin{lstlisting}
 thrust::for_each(
@@ -752,7 +754,7 @@ thrust::for_each(
 \end{lstlisting}
 Here, \code{prev} and \code{next} are vectors of type
 \code{thrust::device_vector<size_t>} and hold the indices to the left and right
-vector elements. 
+vector elements. The function object
 \code{phase_oscillators_functor} implements \eqref{eq:phasesystem} similarly to the \code{lorenz_functor} above and is thus omitted for brevity.
 
 The stencil operator in CMTL4 is a minimalistic matrix type.
@@ -792,10 +794,10 @@ The parameter \code{offset} is needed when vector parts are cached so that the
 addressing is shifted.
 For the sake of backward (and forward) compatibility the non-portable keywords
 \code{__device__} and \code{__host__} should be replaced by a macro that is
-defined suitable for the according platform, e.g.~to an empty string on regular
-compilers.  Thus, the user code is entirely platform-independent.
+defined suitably for the according platform, e.g.~to an empty string on regular
+compilers.  This makes the user code entirely platform-independent.
 
-The stencil function object is used as template argument of the stencil matrix:
+The stencil function object is passed as a template argument to the stencil matrix:
 \begin{lstlisting}
 typedef mtl::dense_vector<double>  state_type;
 
@@ -817,9 +819,9 @@ and to avoid non-coalesced memory accesses.
 
 The VexCL version of the example is the most concise variant. The sum of
 sines in \eqref{eq:phasesystem} is encoded using the
-\code{VEX_STENCIL_OPERATOR} preprocessor macro. Its parameters are name of the
-resulting functor, return type, stencil width, center, and the body string for
-the generated OpenCL function encoding required operation.  Once the stencil
+\code{VEX_STENCIL_OPERATOR} preprocessor macro. Its parameters are the name of the
+resulting function object, the return type, the stencil width, the center, and the body string for
+the generated OpenCL function encoding the required operation.  Once the stencil
 operator is defined, \code{operator()} of the system function object is
 implemented with a single line of code:
 \begin{lstlisting}
@@ -840,7 +842,7 @@ struct phase_oscillators {
 The stencil operations are implemented in ViennaCL using the \code{shift()} operation,
 which shifts the indices of a vector by a certain offset. 
 New shifted values at the beginning or at the end of the vector are by default the same as the first or last entry of the vector, respectively,
-which is just what is needed here:
+which is just the required behavior for this example:
 \begin{lstlisting}
 typedef viennacl::vector<double> state_type;
 
@@ -923,8 +925,8 @@ void operator()(const state_type &q , state_type &dp) const {
 \end{lstlisting}
 Here, \code{handle}, \code{descr}, and \code{A} are CUSPARSE data structures
 holding the CUSPARSE context and sparse matrix data. The
-\code{thrust::transform()} algorithm is used in lines 5 and 6 to compute the
-scaled third power of the input vector \code{q}. Lines 8--10 call the sparse
+\code{thrust::transform()} algorithm is used in line 5 to compute the
+scaled third power of the input vector \code{q}. Lines 7--9 call the sparse
 matrix-vector product kernel in CUSPARSE, where
 \code{thrust::raw_pointer_cast()} is used to convert the thrust device vector
 iterator to a raw device pointer.
@@ -942,7 +944,7 @@ Here \code{A} is an instance of a sparse matrix holding the discretization of
 the linear combination $- \omega_{i,j}^2 q_i + \Delta_d q_{i,j}$. The
 expression \code{q * q * q} computes the triple element-wise product of column
 vector \code{q}.  Usually, products of column/row vectors among themselves are
-often program errors and therefore are not allowed in CMTL4.  Their use may be
+often program errors and therefore not allowed in CMTL4.  Their use may be
 enabled by defining an according macro during compilation.
 
 The VexCL version employs the user-defined OpenCL function \code{pow3}, which
@@ -986,7 +988,7 @@ All the libraries tested in this paper with the exception of CMTL4 and CUSPARSE
 allow for the use of both CPU and GPU devices.  Thrust supports an OpenMP-based
 execution on the CPU, which is enabled by a compilation switch, while OpenCL
 libraries natively support CPUs provided that the respective runtime is
-installed. Two OpenCL implementations from AMD and from Intel were used.  The
+installed. OpenCL implementations from AMD and from Intel were used on the CPU and from AMD and NVIDIA on GPUs.  The
 timings provided were obtained on a Gentoo Linux operating system for two GPUs,
 namely an NVIDIA Tesla C2070 and an AMD Radeon HD~7970 (Tahiti), as well as for
 an Intel Core i7 930 CPU.  All reported values are median values of execution
@@ -996,7 +998,7 @@ Figures \ref{fig:lorenz:perf} through \ref{fig:lattice:perf} show performance
 data for the three examples discussed in the previous section.  The top row in
 each figure shows the performance obtained from CPU-based experiments, while
 bottom rows shows GPU-based data. On the GPU plots the graphs for NVIDIA Tesla
-and AMD Tahiti cards are correspondingly plotted with solid and dotted lines.
+and AMD Tahiti boards are correspondingly plotted with solid and dotted lines.
 The plots on the left show absolute solution time over the size of the problem
 being solved, while the plots on the right depict performances relative to the
 Thrust version with two exceptions, where ViennaCL is selected as the reference
@@ -1007,8 +1009,8 @@ combination of Thrust and CUSPARSE is not able to run on a CPU.
 
 Absolute execution times for the largest problem size for all of the considered
 libraries are given in Table~\ref{tab:abstimes}. The table also provides
-achieved memory bandwidth values in GB/sec and in fractions of theoretical peak
-values for each of the compute devices.
+the achieved memory bandwidth in GB/sec and in fractions of the theoretical peak
+for each of the compute devices.
 
 \begin{figure}
     \begin{center}
@@ -1050,12 +1052,12 @@ by a few percent, which is usually negligible in practice.  Apparently, the
 CUSPARSE implementation of the sparse matrix-vector product is more efficient
 than that of the rest of the libraries, since it outperforms the competitors by
 about 20-30\% in the disordered Hamiltonian lattice experiment.  The
-implementation of phase oscillator chain example for Thrust is rather
-ineffective since it uses permutation iterator which requires an additional
-global vector for storing indices. CMTL4 and ViennaCL implementations of
-stencil operators are slightly more efficient than that of VexCL.
+implementation of the phase oscillator chain example for Thrust is rather
+ineffective since it uses a permutation iterator requiring an additional
+global vector for storing indices. The implementations of stencil operations 
+in CMTL4 and ViennaCL are slightly more efficient than those of VexCL.
 
-Conversely, the overhead of using high-level libraries is negligible compared
+Moreover, the overhead of using high-level libraries is negligible compared
 to the effort spent in getting familiar with the details of CUDA or OpenCL.
 Thus, we have successfully countered productivity concerns for GPU computing
 raised in the past~\cite{bordawekar:gpu-productivity}.
@@ -1063,8 +1065,8 @@ raised in the past~\cite{bordawekar:gpu-productivity}.
 
 \subsection{CPU-Performance}
 
-Thrust, VexCL, and ViennaCL show very similar performance on the CPU for the
-larger problem sizes. For the smaller problems the difference between Thrust
+Thrust, VexCL, and ViennaCL show very similar performance on the CPU for
+larger problem sizes. For smaller problems the difference between Thrust
 and OpenCL-based libraries is more pronounced, since Thrust uses an OpenMP backend
 which does not have any overhead such as OpenCL initialization and kernel
 compilation.  The difference between the OpenCL
@@ -1169,7 +1171,7 @@ differences in the programming interfaces of the libraries are more likely to
 determine the choice of a particular library for a specific application rather than raw performance.
 
 The focus of Thrust is more on providing low-level primitives with an
-interface very close to the \Cpp Standard Library. Special purpose
+interface very close to the \Cpp Standard Template Library. Special purpose
 functionality is available via separate libraries such as CUSPARSE and
 can be integrated without a lot of effort.  The rest of the libraries
 we looked at demonstrated that they are able to provide a more
@@ -1177,7 +1179,7 @@ convenient interface for a scientific programmer than a direct
 implementation in CUDA or OpenCL.  CMTL4 and VexCL have a richer set of
 element-wise vector operations and allow for the shortest
 implementations in the context of the ODEs considered in this work.
-ViennaCL requires two additional lines of code in each of the examples due to the use of the kernel generator facility.
+ViennaCL requires two to three additional lines of code in each of the examples due to the use of the kernel generator facility.
 Still, this extra effort is acceptable considering that the library's focus is on sparse
 linear systems solvers, which are, however, beyond the scope of this
 paper.
