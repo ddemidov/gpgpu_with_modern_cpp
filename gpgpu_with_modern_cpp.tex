@@ -650,7 +650,7 @@ performance. A direct use of arithmetic operations for multi-vectors is
 not possible due to mixed components in the right hand side
 expressions.  These additional kernel launches can be eliminated in
 VexCL by assigning a tuple of expressions to a multi-vector. The
-required implementation is only slightly longer than the above
+required implementation is only slightly less intuitive than the above
 variant:
 \begin{lstlisting}[firstnumber=9]
     dxdt = std::tie(   sigma * (x(1) - x(0)),
