@@ -595,11 +595,11 @@ struct lorenz_system {
     }
 };
 \end{lstlisting}
-This class was originally designed for building a generic matrix as a set of  % [KR] Is this historical note important for the paper? Maybe rephrase?
-column vectors and expressing all matrix operations in terms of operations 
-on the underlying vectors.
-In this sense, all operations are performed on the sub-vectors of \code{x} and
-\code{dxdt} where each vector operation is a kernel call.
+In this context, the class \code{multi_vector} is used in two ways:
+expressing  operations on sub-vectors and on entire vectors.
+Each operation on sub-vectors of  \code{x} and
+\code{dxdt} causes a kernel call. 
+
 
 There is potential for optimization when the three operations are performed by one
 kernel.
