@@ -11,7 +11,6 @@
 #include <boost/numeric/odeint.hpp>
 
 namespace odeint = boost::numeric::odeint;
-namespace fusion = boost::fusion;
 
 typedef double value_type;
 
@@ -56,9 +55,9 @@ int main( int argc , char **argv )
 
     // State types that would become kernel parameters:
     sym_state  sym_S = {{
-	sym_vector::VectorParameter,
-	sym_vector::VectorParameter,
-	sym_vector::VectorParameter
+	sym_vector(sym_vector::VectorParameter),
+	sym_vector(sym_vector::VectorParameter),
+	sym_vector(sym_vector::VectorParameter)
     }};
 
     sym_vector sym_R(sym_vector::VectorParameter, sym_vector::Const);
