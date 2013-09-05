@@ -14,7 +14,7 @@ namespace odeint = boost::numeric::odeint;
 
 typedef double value_type;
 
-typedef vex::generator::symbolic< value_type > sym_vector;
+typedef vex::symbolic< value_type > sym_vector;
 
 typedef std::array<sym_vector, 3> sym_state;
 
