@@ -6,8 +6,7 @@
 #include <vexcl/vexcl.hpp>
 
 #include <boost/numeric/odeint.hpp>
-#include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
-#include <boost/numeric/odeint/external/vexcl/vexcl_resize.hpp>
+#include <boost/numeric/odeint/external/vexcl/vexcl.hpp>
 
 namespace odeint = boost::numeric::odeint;
 
@@ -41,7 +40,7 @@ const value_type t_max = 100.0;
 
 int main( int argc , char **argv )
 {
-    n = argc > 1 ? atoi(argv[1]) : 1024;
+    n = 10;
     using namespace std;
 
     vex::Context ctx( vex::Filter::Exclusive( vex::Filter::Env ) );
@@ -49,14 +48,11 @@ int main( int argc , char **argv )
 
 
 
-    value_type Rmin = 0.1 , Rmax = 50.0 , dR = ( Rmax - Rmin ) / value_type( n - 1 );
-    std::vector<value_type> r( n );
-    for( size_t i=0 ; i<n ; ++i ) r[i] = Rmin + dR * value_type( i );
-
     state_type X(ctx.queue(), n);
     X = 10.0;
 
-    vector_type R( ctx.queue() , r );
+    vector_type R( ctx.queue() , n);
+    R = (vex::element_index() + 1) * 5;
 
     odeint::runge_kutta4<
 	    state_type , value_type , state_type , value_type ,
@@ -65,10 +61,7 @@ int main( int argc , char **argv )
 
     odeint::integrate_const( stepper , sys_func( R ) , X , value_type(0.0) , t_max , dt );
 
-    std::vector< value_type > res( n );
-    vex::copy( X(0) , res );
-    //for( size_t i=0 ; i<n ; ++i )
-    //	cout << res[i] << "\t" << r[i] << "\n";
-    cout << res[0] << endl;
+    std::cout << "R = " << R << std::endl;
+    std::cout << "X = " << X << std::endl;
 
 }
